@@ -1,4 +1,4 @@
-package api
+package db
 
 import (
 	"log"
@@ -49,9 +49,16 @@ func (db *DB) Update(collection string, key string, value string, updates map[st
 	}
 }
 
-func (db *DB) FindAll(collection string) ([]*clover.Document, error) {
+func (db *DB) FindAll(collection string) ([]map[string]string, error) {
+	var result []map[string]string
 	query := db.api.Query(collection)
-	return query.FindAll()
+	docs, err := query.FindAll()
+	for _, doc := range docs {
+		var inInterface map[string]string
+		doc.Unmarshal(&inInterface)
+		result = append(result, inInterface)
+	}
+	return result, err
 }
 
 func (db *DB) Print() {

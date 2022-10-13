@@ -30,9 +30,6 @@ func (dh *dynamicHandler) getRoot(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		io.WriteString(w, err.Error())
 	}
-	for _, doc := range devices {
-		log.Println(doc)
-	}
 	data, err := json.Marshal(devices)
 	if err != nil {
 		log.Fatal(err)
