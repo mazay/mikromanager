@@ -1,0 +1,24 @@
+{{ define "content" }}
+  <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Identity</th>
+      <th scope="col">Address</th>
+      <th scope="col">Arch</th>
+      <th scope="col">Version</th>
+      <th scope="col">Uptime</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{ range $device := . }}
+    <tr>
+      <td>{{ $device.Identity }}</td>
+      <td>{{ $device.Address }}</td>
+      <td>{{ $device.ArchitectureName }}</td>
+      <td>{{ $device.Version }}</td>
+      <td>{{ $device.Uptime }}</td>
+    </tr>
+  {{ end }}
+  </tbody>
+</table>
+{{ end }}
