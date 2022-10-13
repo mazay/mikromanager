@@ -1,17 +1,23 @@
 package http
 
 import (
-	"encoding/json"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
 
-	database "github.com/mazay/mikromanager/db"
+	"github.com/mazay/mikromanager/db"
+	"github.com/mazay/mikromanager/utils"
+)
+
+var (
+	baseTmpl = path.Join("templates", "base.html")
 )
 
 type dynamicHandler struct {
-	db *database.DB
+	db *db.DB
 }
 
 func handlerWrapper(fn http.HandlerFunc) http.HandlerFunc {
@@ -26,18 +32,28 @@ func handlerWrapper(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 func (dh *dynamicHandler) getRoot(w http.ResponseWriter, r *http.Request) {
+	var indexTmpl = path.Join("templates", "index.html")
+	var d = &utils.Device{}
+
 	devices, err := dh.db.FindAll("devices")
 	if err != nil {
 		io.WriteString(w, err.Error())
 	}
-	data, err := json.Marshal(devices)
+
+	deviceList := d.FromCloverDocs(devices)
+
+	tmpl, err := template.New("").ParseFiles(indexTmpl, baseTmpl)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	io.WriteString(w, string(data))
+
+	if err := tmpl.ExecuteTemplate(w, "base", deviceList); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-func HttpServer(httpPort string, db *database.DB) {
+func HttpServer(httpPort string, db *db.DB) {
 	log.Printf("starting http server on port %s", httpPort)
 	dh := dynamicHandler{db: db}
 	fs := http.FileServer(http.Dir("./static"))
