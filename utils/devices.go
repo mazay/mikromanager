@@ -28,7 +28,7 @@ type Device struct {
 	WriteSectTotal       int64  `json:"write-sect-total"`
 }
 
-func (d *Device) FromCloverDocs(docs []map[string]string) []*Device {
+func (d *Device) FromListOfMaps(docs []map[string]string) []*Device {
 	var deviceList []*Device
 
 	for _, doc := range docs {

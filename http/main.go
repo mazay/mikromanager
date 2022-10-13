@@ -40,7 +40,7 @@ func (dh *dynamicHandler) getRoot(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, err.Error())
 	}
 
-	deviceList := d.FromCloverDocs(devices)
+	deviceList := d.FromListOfMaps(devices)
 
 	tmpl, err := template.New("").ParseFiles(indexTmpl, baseTmpl)
 	if err != nil {
