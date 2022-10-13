@@ -49,6 +49,11 @@ func (db *DB) Update(collection string, key string, value string, updates map[st
 	}
 }
 
+func (db *DB) FindAll(collection string) ([]*clover.Document, error) {
+	query := db.api.Query(collection)
+	return query.FindAll()
+}
+
 func (db *DB) Print() {
 	query := db.api.Query("devices")
 	docs, _ := query.FindAll()
