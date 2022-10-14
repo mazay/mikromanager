@@ -5,15 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	database "github.com/mazay/mikromanager/db"
 )
 
 type Credentials struct {
-	Id                string `json:"_id"`
-	Alias             string `json:"alias"`
-	Username          string `json:"username"`
-	EncryptedPassword string `json:"encryptedPassword"`
+	Id                string    `json:"_id"`
+	Alias             string    `json:"alias"`
+	Username          string    `json:"username"`
+	EncryptedPassword string    `json:"encryptedPassword"`
+	Created           time.Time `json:"created"`
+	Updated           time.Time `json:"updated"`
 }
 
 func (c *Credentials) Create(db *database.DB) error {
@@ -23,6 +26,8 @@ func (c *Credentials) Create(db *database.DB) error {
 	if exists {
 		return errors.New(fmt.Sprintf("Alias '%s' already exists, please pick another name", c.Alias))
 	}
+	c.Created = time.Now()
+	c.Updated = time.Now()
 	inrec, _ := json.Marshal(c)
 	json.Unmarshal(inrec, &inInterface)
 	_, err := db.Insert("credentials", inInterface)
