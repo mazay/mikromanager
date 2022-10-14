@@ -6,22 +6,30 @@ import (
 	"github.com/ostafen/clover"
 )
 
+var (
+	collections = []string{
+		"credentials",
+		"devices",
+	}
+)
+
 type DB struct {
 	Path string
 	api  *clover.DB
 }
 
 func (db *DB) Init() (bool, error) {
+	// open or create the DB
 	database, err := clover.Open(db.Path)
 	if err != nil {
 		return false, err
 	}
-
 	db.api = database
-
-	exists, _ := db.api.HasCollection("devices")
-	if !exists {
-		db.api.CreateCollection("devices")
+	// create the set of collections
+	for _, collection := range collections {
+		if !db.HasCollection(collection) {
+			db.CreateCollection(collection)
+		}
 	}
 
 	return true, nil
@@ -29,6 +37,18 @@ func (db *DB) Init() (bool, error) {
 
 func (db *DB) Close() error {
 	return db.api.Close()
+}
+
+func (db *DB) HasCollection(collection string) bool {
+	exists, err := db.api.HasCollection(collection)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return exists
+}
+
+func (db *DB) CreateCollection(collection string) error {
+	return db.api.CreateCollection(collection)
 }
 
 func (db *DB) Insert(collection string, values map[string]interface{}) (string, error) {
