@@ -2,7 +2,6 @@ package http
 
 import (
 	"html/template"
-	"io"
 	"net/http"
 	"path"
 
@@ -11,22 +10,24 @@ import (
 
 func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request) {
 	var indexTmpl = path.Join("templates", "credentials.html")
-	var d = &utils.Device{}
+	var c = &utils.Credentials{}
 
-	devices, err := dh.db.FindAll("credentials")
+	// fetch devices
+	credList, err := c.GetAll(dh.db)
 	if err != nil {
-		io.WriteString(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	deviceList := d.FromListOfMaps(devices)
-
+	// load templates
 	tmpl, err := template.New("").ParseFiles(indexTmpl, baseTmpl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "base", deviceList); err != nil {
+	// render the templates
+	if err := tmpl.ExecuteTemplate(w, "base", credList); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

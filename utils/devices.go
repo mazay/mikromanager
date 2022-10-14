@@ -2,6 +2,9 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
+
+	database "github.com/mazay/mikromanager/db"
 )
 
 type Device struct {
@@ -28,8 +31,14 @@ type Device struct {
 	WriteSectTotal       int64  `json:"write-sect-total"`
 }
 
-func (d *Device) FromListOfMaps(docs []map[string]string) []*Device {
+func (d *Device) GetAll(db *database.DB) ([]*Device, error) {
 	var deviceList []*Device
+
+	docs, err := db.FindAll("devices")
+	if err != nil {
+		log.Fatal(err)
+		return deviceList, err
+	}
 
 	for _, doc := range docs {
 		dm := &Device{}
@@ -38,5 +47,5 @@ func (d *Device) FromListOfMaps(docs []map[string]string) []*Device {
 		deviceList = append(deviceList, dm)
 	}
 
-	return deviceList
+	return deviceList, nil
 }
