@@ -14,7 +14,8 @@ var (
 )
 
 type dynamicHandler struct {
-	db *db.DB
+	db            *db.DB
+	encryptionKey string
 }
 
 func handlerWrapper(fn http.HandlerFunc) http.HandlerFunc {
@@ -28,12 +29,13 @@ func handlerWrapper(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func HttpServer(httpPort string, db *db.DB) {
+func HttpServer(httpPort string, db *db.DB, encryptionKey string) {
 	log.Printf("starting http server on port %s", httpPort)
-	dh := dynamicHandler{db: db}
+	dh := dynamicHandler{db: db, encryptionKey: encryptionKey}
 	fs := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/", handlerWrapper(dh.getDevices))
 	http.HandleFunc("/credentials", handlerWrapper(dh.getCredentials))
+	http.HandleFunc("/credentials/add", handlerWrapper(dh.addCredentials))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	log.Fatal(http.ListenAndServe(":"+httpPort, nil))
 }

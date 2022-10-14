@@ -9,12 +9,20 @@ import (
 
 type Credentials struct {
 	Id                string `json:"_id"`
+	Alias             string `json:"alias"`
 	Username          string `json:"username"`
 	EncryptedPassword string `json:"encryptedPassword"`
-	Default           bool   `json:"default"`
 }
 
-func (d *Credentials) GetAll(db *database.DB) ([]*Credentials, error) {
+func (c *Credentials) Create(db *database.DB) error {
+	var inInterface map[string]interface{}
+	inrec, _ := json.Marshal(c)
+	json.Unmarshal(inrec, &inInterface)
+	_, err := db.Insert("credentials", inInterface)
+	return err
+}
+
+func (c *Credentials) GetAll(db *database.DB) ([]*Credentials, error) {
 	var credList []*Credentials
 
 	docs, err := db.FindAll("credentials")
