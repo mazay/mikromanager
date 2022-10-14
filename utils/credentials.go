@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 
 	database "github.com/mazay/mikromanager/db"
@@ -16,6 +18,11 @@ type Credentials struct {
 
 func (c *Credentials) Create(db *database.DB) error {
 	var inInterface map[string]interface{}
+	// check if credentials with that alias already exist
+	exists, _ := db.Exists("credentials", "alias", c.Alias)
+	if exists {
+		return errors.New(fmt.Sprintf("Alias '%s' already exists, please pick another name", c.Alias))
+	}
 	inrec, _ := json.Marshal(c)
 	json.Unmarshal(inrec, &inInterface)
 	_, err := db.Insert("credentials", inInterface)

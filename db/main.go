@@ -69,6 +69,10 @@ func (db *DB) Update(collection string, key string, value string, updates map[st
 	}
 }
 
+func (db *DB) Exists(collection string, key string, value string) (bool, error) {
+	return db.api.Query(collection).Where(clover.Field(key).Eq(value)).Exists()
+}
+
 func (db *DB) FindAll(collection string) ([]map[string]string, error) {
 	var result []map[string]string
 	query := db.api.Query(collection)
