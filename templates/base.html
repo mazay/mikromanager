@@ -1,3 +1,5 @@
+{{ define "nav-devices" }}{{ end }}
+{{ define "nav-credentials" }}{{ end }}
 {{ define "base" }}
 <!doctype html>
 <html lang="en">
@@ -8,7 +10,7 @@
         <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
-    <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">MikroManager</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,10 +19,10 @@
             <div class="collapse navbar-collapse" id="navbarScroll">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">Devices</a>
+                <a class="nav-link {{ template "nav-devices" . }}" href="/">Devices</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="/credentials">Credentials</a>
+                <a class="nav-link {{ template "nav-credentials" . }}" href="/credentials">Credentials</a>
                 </li>
             </ul>
             </div>
