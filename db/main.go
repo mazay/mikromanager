@@ -59,7 +59,7 @@ func (db *DB) Insert(collection string, values map[string]interface{}) (string, 
 }
 
 func (db *DB) Update(collection string, key string, value string, updates map[string]interface{}) error {
-	exists, _ := db.api.Query(collection).Where(clover.Field(key).Eq(value)).Exists()
+	exists, _ := db.Exists(collection, key, value)
 	if exists {
 		return db.api.Query(collection).Where(clover.Field(key).Eq(value)).Update(updates)
 	} else {
