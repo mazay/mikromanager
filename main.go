@@ -54,9 +54,10 @@ func main() {
 	wg.Wait()
 }
 
-func devicesPoller(config *Config, db *db.DB, pollerCH chan<- PollerCFG) {
+func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 	var d = &utils.Device{}
 	logger.Info("starting device poller/scheduler")
+	logger.Infof("apiPollerInterval is %s", cfg.ApiPollerInterval)
 	for {
 		devices, err := d.GetAll(db)
 		if err != nil {
@@ -70,7 +71,7 @@ func devicesPoller(config *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 				return
 			}
 			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
-			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, config.EncryptionKey)
+			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
 			if encryptionErr != nil {
 				logger.Error(err)
 				return
@@ -85,7 +86,7 @@ func devicesPoller(config *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 			}
 			pollerCH <- PollerCFG{Client: client, Db: db}
 		}
-		time.Sleep(300 * time.Second)
+		time.Sleep(cfg.ApiPollerInterval)
 	}
 }
 

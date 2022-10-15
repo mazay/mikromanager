@@ -3,15 +3,17 @@ package main
 import (
 	"errors"
 	"os"
+	"time"
 
 	yaml "gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	ApiPollers    int    `yaml:"apiPollers"`
-	DbPath        string `yaml:"dbPath"`
-	EncryptionKey string `yaml:"encryptionKey"`
-	LogLevel      string `yaml:"logLevel"`
+	ApiPollers        int           `yaml:"apiPollers"`
+	ApiPollerInterval time.Duration `yaml:"apiPollerInterval"`
+	DbPath            string        `yaml:"dbPath"`
+	EncryptionKey     string        `yaml:"encryptionKey"`
+	LogLevel          string        `yaml:"logLevel"`
 }
 
 func configProcessError(err error) {
@@ -23,6 +25,9 @@ func (cfg *Config) setDefaults() {
 	if cfg.ApiPollers == 0 {
 		// there should be at least 1 poller
 		cfg.ApiPollers = 1
+	}
+	if cfg.ApiPollerInterval == 0 {
+		cfg.ApiPollerInterval = time.Millisecond * 1000 * 300
 	}
 	if cfg.DbPath == "" {
 		cfg.DbPath = "database.clover"
