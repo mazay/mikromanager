@@ -35,7 +35,8 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string) {
 	fs := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/", handlerWrapper(dh.getDevices))
 	http.HandleFunc("/credentials", handlerWrapper(dh.getCredentials))
-	http.HandleFunc("/credentials/add", handlerWrapper(dh.addCredentials))
+	http.HandleFunc("/credentials/edit", handlerWrapper(dh.editCredentials))
+	http.HandleFunc("/credentials/delete", handlerWrapper(dh.deleteCredentials))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	log.Fatal(http.ListenAndServe(":"+httpPort, nil))
 }

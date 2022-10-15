@@ -22,14 +22,8 @@
                 <li class="nav-item">
                 <a class="nav-link {{ template "nav-devices" . }}" href="/">Devices</a>
                 </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle {{ template "nav-credentials" . }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Credentials
-                  </a>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/credentials">List</a></li>
-                    <li><a class="dropdown-item" href="/credentials/add">Create</a></li>
-                  </ul>
+                <li class="nav-item">
+                <a class="nav-link {{ template "nav-credentials" . }}" href="/credentials">Credentials</a>
                 </li>
             </ul>
             </div>

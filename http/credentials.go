@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 )
 
 type credentialsForm struct {
+	Id       string
 	Alias    string
 	Username string
 	Msg      string
@@ -39,32 +41,65 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (dh *dynamicHandler) addCredentials(w http.ResponseWriter, r *http.Request) {
+func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
 		credsTmpl = path.Join("templates", "credentials-form.html")
 		data      = &credentialsForm{}
 	)
 
 	if r.Method == "POST" {
+		// parse the form
 		r.ParseForm()
+		id := r.PostForm.Get("idInput")
+		alias := r.PostForm.Get("alias")
+		username := r.PostForm.Get("username")
 		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), dh.encryptionKey)
+
 		if err != nil {
 			log.Fatal(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
 		creds := &utils.Credentials{
-			Alias:             r.PostForm.Get("alias"),
-			Username:          r.PostForm.Get("username"),
+			Id:                id,
+			Alias:             alias,
+			Username:          username,
 			EncryptedPassword: encryptedPw,
 		}
-		credsErr := creds.Create(dh.db)
+
+		credsErr := errors.New("")
+		if id == "" {
+			// "id" is unset - create new credentials
+			credsErr = creds.Create(dh.db)
+		} else {
+			// "id" is set - update existing credentials
+			creds.GetById(dh.db)
+			creds.Alias = alias
+			creds.Username = username
+			creds.EncryptedPassword = encryptedPw
+			credsErr = creds.Update(dh.db)
+		}
+
 		if credsErr != nil {
-			data.Alias = r.PostForm.Get("alias")
-			data.Username = r.PostForm.Get("username")
+			// return data with errors if validation failed
+			data.Id = id
+			data.Alias = alias
+			data.Username = username
 			data.Msg = credsErr.Error()
 		} else {
 			http.Redirect(w, r, "/credentials", 302)
 			return
+		}
+	} else {
+		// fill in the form if "id" GET parameter set
+		id := r.URL.Query().Get("id")
+		if id != "" {
+			c := &utils.Credentials{}
+			c.Id = id
+			c.GetById(dh.db)
+			data.Id = c.Id
+			data.Alias = c.Alias
+			data.Username = c.Username
 		}
 	}
 
@@ -79,4 +114,18 @@ func (dh *dynamicHandler) addCredentials(w http.ResponseWriter, r *http.Request)
 	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Request) {
+	var c = &utils.Credentials{}
+
+	c.Id = r.URL.Query().Get("id")
+
+	err := c.Delete(dh.db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/credentials", 302)
 }

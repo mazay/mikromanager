@@ -34,6 +34,34 @@ func (c *Credentials) Create(db *database.DB) error {
 	return err
 }
 
+func (c *Credentials) Update(db *database.DB) error {
+	log.Print("updating")
+	var inInterface map[string]interface{}
+	c.Updated = time.Now()
+	log.Print(c.Created)
+	inrec, _ := json.Marshal(c)
+	json.Unmarshal(inrec, &inInterface)
+	log.Print(inInterface)
+	return db.Update("credentials", "_id", c.Id, inInterface)
+}
+
+func (c *Credentials) Delete(db *database.DB) error {
+	return db.DeleteById("credentials", c.Id)
+}
+
+func (c *Credentials) GetById(db *database.DB) error {
+	doc, err := db.FindById("credentials", c.Id)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	dj, err := json.Marshal(doc)
+	json.Unmarshal(dj, c)
+
+	return err
+}
+
 func (c *Credentials) GetAll(db *database.DB) ([]*Credentials, error) {
 	var credList []*Credentials
 

@@ -69,8 +69,20 @@ func (db *DB) Update(collection string, key string, value string, updates map[st
 	}
 }
 
+func (db *DB) DeleteById(collection string, id string) error {
+	return db.api.Query(collection).DeleteById(id)
+}
+
 func (db *DB) Exists(collection string, key string, value string) (bool, error) {
 	return db.api.Query(collection).Where(clover.Field(key).Eq(value)).Exists()
+}
+
+func (db *DB) FindById(collection string, id string) (map[string]string, error) {
+	var inInterface map[string]string
+	query := db.api.Query(collection)
+	doc, err := query.FindById(id)
+	doc.Unmarshal(&inInterface)
+	return inInterface, err
 }
 
 func (db *DB) FindAll(collection string) ([]map[string]string, error) {

@@ -1,6 +1,6 @@
 {{ define "nav-devices" }}active{{ end }}
 {{ define "content" }}
-  <table class="table table-hover">
+  <table class="table table-striped table-hover">
   <thead>
     <tr>
       <th scope="col">Identity</th>
@@ -8,6 +8,7 @@
       <th scope="col">Arch</th>
       <th scope="col">Version</th>
       <th scope="col">Uptime</th>
+      <th scope="col">Last Polled</th>
     </tr>
   </thead>
   <tbody>
@@ -18,6 +19,7 @@
       <td>{{ $device.ArchitectureName }}</td>
       <td>{{ $device.Version }}</td>
       <td>{{ $device.Uptime }}</td>
+      <td>{{ $device.PolledAt.Format "2006-01-02 15:04:05 UTC" }}</td>
     </tr>
   {{ end }}
   </tbody>
