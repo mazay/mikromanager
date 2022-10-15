@@ -20,6 +20,7 @@ apiPollers: 2
 # apiPollerInterval defines how often devices should be polled,
 # the time is between finish of a previous run and start of the new one
 # defaults to 300 seconds if ommited
+# valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 # apiPollerInterval: 30s
 
 # full or relative path to the database, defaults to `database.clover` if ommited
