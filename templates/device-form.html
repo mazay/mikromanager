@@ -27,7 +27,7 @@
     <select name="credentialsId" class="form-select" aria-label="Default select example">
       <option value="">---</option>
     {{ range $creds := .Credentials }}
-      <option value="{{ $creds.Id }}">{{ $creds.Alias }}</option>
+      <option value="{{ $creds.Id }}" {{ if eq $.CredentialsId $creds.Id }}selected{{ end }}>{{ $creds.Alias }}</option>
     {{ end }}
     </select>
   </div>
