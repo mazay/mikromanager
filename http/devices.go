@@ -84,12 +84,14 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 	// load templates
 	tmpl, err := template.New("").ParseFiles(deviceTmpl, baseTmpl)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// render the templates
 	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -101,6 +103,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	// fetch devices
 	deviceList, err := d.GetAll(dh.db)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -108,12 +111,14 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	// load templates
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(indexTmpl, baseTmpl)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// render the templates
 	if err := tmpl.ExecuteTemplate(w, "base", deviceList); err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -125,6 +130,7 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	err := d.Delete(dh.db)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

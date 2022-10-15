@@ -3,7 +3,6 @@ package http
 import (
 	"errors"
 	"html/template"
-	"log"
 	"net/http"
 	"path"
 
@@ -24,6 +23,7 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 	// fetch devices
 	credList, err := c.GetAll(dh.db)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -31,12 +31,14 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 	// load templates
 	tmpl, err := template.New("").ParseFiles(credsTmpl, baseTmpl)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// render the templates
 	if err := tmpl.ExecuteTemplate(w, "base", credList); err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -56,7 +58,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), dh.encryptionKey)
 
 		if err != nil {
-			log.Fatal(err)
+			dh.logger.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
@@ -106,12 +108,14 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 	// load templates
 	tmpl, err := template.New("").ParseFiles(credsTmpl, baseTmpl)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// render the templates
 	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -123,6 +127,7 @@ func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Reque
 
 	err := c.Delete(dh.db)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
