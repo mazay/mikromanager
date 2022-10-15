@@ -22,7 +22,7 @@
       <td>{{ $device.ArchitectureName }}</td>
       <td>{{ $device.Version }}</td>
       <td>{{ $device.Uptime }}</td>
-      <td>{{ $device.PolledAt.Format "2006-01-02 15:04:05 UTC" }}</td>
+      <td>{{ timeAgo $device.PolledAt }}</td>
       <td>
         <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $device.Address "." "" }}">
