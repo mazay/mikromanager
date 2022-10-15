@@ -2,5 +2,16 @@
 # make sure you change it and keep persistent otherwise the app won't be able to decrypt the data
 encryptionKey: eek3eagheCo1phah4shi2Nai3ce8tiehaeVe5baph6Aixi9oorai5iepa1woh4ieQuaiz4outhakeixohn6aech8riep7beeluum
 
-logLevel: trace
+# logLevel valid options are as follows, from most to least verbose:
+# trace
+# debug
+# info
+# warn
+# error
+# fatal
+# panic
+logLevel: debug
+
+# MikroTik API pollers, having more than 1 makes sense when you have significant amount of devices
+# as polling is supposed to be relatively fast
 apiPollers: 1
