@@ -85,6 +85,13 @@ func (db *DB) FindById(collection string, id string) (map[string]string, error) 
 	return inInterface, err
 }
 
+func (db *DB) FindByKeyValue(collection string, key string, value string) (map[string]string, error) {
+	var inInterface map[string]string
+	doc, err := db.api.Query(collection).Where(clover.Field(key).Eq(value)).FindFirst()
+	doc.Unmarshal(&inInterface)
+	return inInterface, err
+}
+
 func (db *DB) FindAll(collection string) ([]map[string]string, error) {
 	var result []map[string]string
 	query := db.api.Query(collection)

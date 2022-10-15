@@ -19,6 +19,7 @@ type Device struct {
 	CpuCount             int       `json:"cpu-count"`
 	CpuFrequency         int       `json:"cpu-frequency"`
 	CpuLoad              int       `json:"cpu-load"`
+	CredentialsId        string    `json:"credentialsId"`
 	FactorySoftware      string    `json:"factory-software"`
 	FreeHddSpace         int64     `json:"free-hdd-space"`
 	FreeMemory           int64     `json:"free-memory"`
@@ -50,4 +51,16 @@ func (d *Device) GetAll(db *database.DB) ([]*Device, error) {
 	}
 
 	return deviceList, nil
+}
+
+func (d *Device) GetCredentials(db *database.DB) (*Credentials, error) {
+	var c = &Credentials{}
+	if d.CredentialsId == "" {
+		err := c.GetDefault(db)
+		return c, err
+	} else {
+		c.Id = d.CredentialsId
+		err := c.GetById(db)
+		return c, err
+	}
 }

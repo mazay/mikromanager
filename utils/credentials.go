@@ -35,18 +35,27 @@ func (c *Credentials) Create(db *database.DB) error {
 }
 
 func (c *Credentials) Update(db *database.DB) error {
-	log.Print("updating")
 	var inInterface map[string]interface{}
 	c.Updated = time.Now()
-	log.Print(c.Created)
 	inrec, _ := json.Marshal(c)
 	json.Unmarshal(inrec, &inInterface)
-	log.Print(inInterface)
 	return db.Update("credentials", "_id", c.Id, inInterface)
 }
 
 func (c *Credentials) Delete(db *database.DB) error {
 	return db.DeleteById("credentials", c.Id)
+}
+
+func (c *Credentials) GetDefault(db *database.DB) error {
+	creds, err := db.FindByKeyValue("credentials", "alias", "Default")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	inrec, err := json.Marshal(creds)
+	json.Unmarshal(inrec, c)
+	return err
 }
 
 func (c *Credentials) GetById(db *database.DB) error {
