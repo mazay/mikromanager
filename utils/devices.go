@@ -14,29 +14,29 @@ type Device struct {
 	Id                   string    `json:"_id"`
 	Address              string    `json:"address"`
 	ArchitectureName     string    `json:"architecture-name"`
-	BadBlocks            int64     `json:"bad-blocks"`
+	BadBlocks            string    `json:"bad-blocks"`
 	BoardName            string    `json:"board-name"`
 	BuildTime            string    `json:"build-time"`
 	CPU                  string    `json:"cpu"`
-	CpuCount             int       `json:"cpu-count"`
-	CpuFrequency         int       `json:"cpu-frequency"`
-	CpuLoad              int       `json:"cpu-load"`
+	CpuCount             string    `json:"cpu-count"`
+	CpuFrequency         string    `json:"cpu-frequency"`
+	CpuLoad              string    `json:"cpu-load"`
 	Created              time.Time `json:"created"`
 	CredentialsId        string    `json:"credentialsId"`
 	FactorySoftware      string    `json:"factory-software"`
-	FreeHddSpace         int64     `json:"free-hdd-space"`
-	FreeMemory           int64     `json:"free-memory"`
+	FreeHddSpace         string    `json:"free-hdd-space"`
+	FreeMemory           string    `json:"free-memory"`
 	Identity             string    `json:"identity"`
 	Platform             string    `json:"platform"`
 	PolledAt             time.Time `json:"polledAt"`
 	Port                 string    `json:"port"`
-	TotalHddSpace        int64     `json:"total-hdd-space"`
-	TotalMemory          int64     `json:"total-memory"`
+	TotalHddSpace        string    `json:"total-hdd-space"`
+	TotalMemory          string    `json:"total-memory"`
 	Updated              time.Time `json:"updated"`
 	Uptime               string    `json:"uptime"`
 	Version              string    `json:"version"`
-	WriteSectSinceReboot int64     `json:"write-sect-since-reboot"`
-	WriteSectTotal       int64     `json:"write-sect-total"`
+	WriteSectSinceReboot string    `json:"write-sect-since-reboot"`
+	WriteSectTotal       string    `json:"write-sect-total"`
 }
 
 func (d *Device) GetAll(db *database.DB) ([]*Device, error) {
