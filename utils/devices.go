@@ -27,8 +27,9 @@ type Device struct {
 	FreeHddSpace         int64     `json:"free-hdd-space"`
 	FreeMemory           int64     `json:"free-memory"`
 	Identity             string    `json:"identity"`
-	PolledAt             time.Time `json:"polledAt"`
 	Platform             string    `json:"platform"`
+	PolledAt             time.Time `json:"polledAt"`
+	Port                 string    `json:"port"`
 	TotalHddSpace        int64     `json:"total-hdd-space"`
 	TotalMemory          int64     `json:"total-memory"`
 	Updated              time.Time `json:"updated"`

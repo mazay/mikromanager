@@ -12,11 +12,16 @@
   {{ end }}
   <div class="mb-3">
     <label for="inputAddress" class="form-label">Address</label>
-    <input name="address" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="inputAddress" aria-describedby="aliasHelp addressValidationFeedback" required value="{{ .Address }}">
-    <div id="aliasHelp" class="form-text">MikroTik API endpoint, eg. 10.10.10.10:8728.</div>
+    <input name="address" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="inputAddress" aria-describedby="addressHelp addressValidationFeedback" required value="{{ .Address }}">
+    <div id="addressHelp" class="form-text">MikroTik API endpoint IP address or FQDN.</div>
     <div id="addressValidationFeedback" class="invalid-feedback">
       {{ .Msg }}
     </div>
+  </div>
+  <div class="mb-3">
+    <label for="inputPort" class="form-label">Port</label>
+    <input name="port" type="text" class="form-control" id="inputPort" aria-describedby="portHelp" value="{{ .Port }}">
+    <div id="portHelp" class="form-text">MikroTik API endpoint port, will use default port "8728" if ommited.</div>
   </div>
   <div class="mb-3">
     <select name="credentialsId" class="form-select" aria-label="Default select example">

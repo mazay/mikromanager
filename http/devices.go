@@ -12,6 +12,7 @@ import (
 type deviceForm struct {
 	Id            string
 	Address       string
+	Port          string
 	CredentialsId string
 	Msg           string
 	Credentials   []*utils.Credentials
@@ -32,11 +33,13 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		id := r.PostForm.Get("idInput")
 		address := r.PostForm.Get("address")
+		port := r.PostForm.Get("port")
 		credentialsId := r.PostForm.Get("credentialsId")
 
 		device := &utils.Device{
 			Id:            id,
 			Address:       address,
+			Port:          port,
 			CredentialsId: credentialsId,
 		}
 
@@ -48,6 +51,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			// "id" is set - update existing credentials
 			device.GetById(dh.db)
 			device.Address = address
+			device.Port = port
 			device.CredentialsId = credentialsId
 			deviceErr = device.Update(dh.db)
 		}
@@ -56,6 +60,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			// return data with errors if validation failed
 			data.Id = id
 			data.Address = address
+			data.Port = port
 			data.CredentialsId = credentialsId
 			data.Msg = deviceErr.Error()
 		} else {
@@ -71,6 +76,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			d.GetById(dh.db)
 			data.Id = d.Id
 			data.Address = d.Address
+			data.Port = d.Port
 			data.CredentialsId = d.CredentialsId
 		}
 	}

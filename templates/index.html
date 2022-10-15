@@ -5,6 +5,7 @@
     <tr>
       <th scope="col">Identity</th>
       <th scope="col">Address</th>
+      <th scope="col">Port</th>
       <th scope="col">Arch</th>
       <th scope="col">Version</th>
       <th scope="col">Uptime</th>
@@ -17,24 +18,25 @@
     <tr id="{{ $device.Id }}">
       <td>{{ $device.Identity }}</td>
       <td>{{ $device.Address }}</td>
+      <td>{{ $device.Port }}</td>
       <td>{{ $device.ArchitectureName }}</td>
       <td>{{ $device.Version }}</td>
       <td>{{ $device.Uptime }}</td>
       <td>{{ $device.PolledAt.Format "2006-01-02 15:04:05 UTC" }}</td>
       <td>
         <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
-        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#{{ $device.Identity }}">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $device.Address "." "" }}">
           <i class="bi-trash"></i>
         </button>
       </td>
     </tr>
 
     <!-- Modal -->
-    <div class="modal fade" id="{{ $device.Identity }}" tabindex="-1" aria-labelledby="{{ $device.Identity }}Label" aria-hidden="true">
+    <div class="modal fade" id="IP{{ replace $device.Address "." "" }}" tabindex="-1" aria-labelledby="{{ replace $device.Address "." "" }}Label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="{{ $device.Identity }}Label">Warning</h1>
+            <h1 class="modal-title fs-5" id="{{ replace $device.Address "." "" }}Label">Warning</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">

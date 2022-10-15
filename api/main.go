@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -10,17 +11,27 @@ import (
 
 type API struct {
 	Address  string
+	Port     string
 	Username string
 	Password string
 	UseTLS   bool
 	Async    bool
 }
 
-func (api *API) dial() (*routeros.Client, error) {
-	if api.UseTLS {
-		return routeros.DialTLS(api.Address, api.Username, api.Password, nil)
+func (api *API) getEndpoint() string {
+	if api.Port == "" {
+		return fmt.Sprintf("%s:8728", api.Address)
+	} else {
+		return fmt.Sprintf("%s:%s", api.Address, api.Port)
 	}
-	return routeros.Dial(api.Address, api.Username, api.Password)
+}
+
+func (api *API) dial() (*routeros.Client, error) {
+	endpoint := api.getEndpoint()
+	if api.UseTLS {
+		return routeros.DialTLS(endpoint, api.Username, api.Password, nil)
+	}
+	return routeros.Dial(endpoint, api.Username, api.Password)
 }
 
 func (api *API) Run(command string) ([]*proto.Sentence, error) {

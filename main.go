@@ -60,6 +60,7 @@ func devicesPoller(db *db.DB, pollerCH chan<- PollerCFG) {
 			}
 			client := &api.API{
 				Address:  device.Address,
+				Port:     device.Port,
 				Username: creds.Username,
 				Password: decryptedPw,
 				Async:    false,
