@@ -119,7 +119,6 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 					values["identity"] = string(identity[0].Map["name"])
 					values["polledAt"] = time.Now()
 					cfg.Db.Update("devices", "address", cfg.Client.Address, values)
-					cfg.Db.Export("devices", "devices_export.json")
 				}
 			}
 		}()
