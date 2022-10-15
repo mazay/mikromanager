@@ -123,6 +123,38 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
+	var deviceTmpl = path.Join("templates", "device-details.html")
+	var d = &utils.Device{}
+	var id = r.URL.Query().Get("id")
+
+	if id == "" {
+		http.Error(w, "Something went wrong, no device ID provided", http.StatusInternalServerError)
+		return
+	}
+
+	d.Id = id
+	err := d.GetById(dh.db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// load templates
+	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(deviceTmpl, baseTmpl)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// render the templates
+	if err := tmpl.ExecuteTemplate(w, "base", d); err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	var d = &utils.Device{}
 

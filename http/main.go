@@ -36,6 +36,7 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, logger *logrus
 	dh := dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger}
 	fs := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/", handlerWrapper(dh.getDevices, logger))
+	http.HandleFunc("/details", handlerWrapper(dh.getDevice, logger))
 	http.HandleFunc("/edit", handlerWrapper(dh.editDevice, logger))
 	http.HandleFunc("/delete", handlerWrapper(dh.deleteDevice, logger))
 	http.HandleFunc("/credentials", handlerWrapper(dh.getCredentials, logger))
