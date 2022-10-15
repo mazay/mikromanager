@@ -50,5 +50,8 @@ func (api *API) Run(command string) ([]*proto.Sentence, error) {
 	}
 
 	result, err := client.RunArgs(strings.Split(command, " "))
+	if err != nil {
+		recover()
+	}
 	return result.Re, err
 }

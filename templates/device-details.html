@@ -5,7 +5,7 @@
   <hr class="border border-primary border-3 opacity-75">
   <div class="row align-items-start">
     <div class="col">
-      <dl class="row p-3 border bg-light">
+      <dl class="row p-3 border {{ if eq .PollingSucceeded "0" }}bg-warning{{ else }}bg-light{{ end }}">
         <dt class="col-sm-3">Identity</dt>
         <dd class="col-sm-9">{{ .Identity }}</dd>
 
@@ -29,12 +29,12 @@
       </dl>
     </div>
     <div class="col">
-      <dl class="row p-3 border bg-light">
+      <dl class="row p-3 border {{ if eq .PollingSucceeded "0" }}bg-warning{{ else }}bg-light{{ end }}">
         <dt class="col-sm-3">CPU Load</dt>
-        <dd class="col-sm-9">{{ .CpuLoad }}%</dd>
+        <dd class="col-sm-9">{{ if .CpuLoad }}{{ .CpuLoad }}%{{ end }}</dd>
 
-        <dt class="col-sm-3">Memory Free</dt>
-        <dd class="col-sm-9">{{ .FreeMemory }}</dd>
+        <dt class="col-sm-3">Memory Usage</dt>
+        <dd class="col-sm-9">{{ if and .TotalMemory .FreeMemory }}{{ memoryUsage .TotalMemory .FreeMemory }}%{{ end }}</dd>
 
         <dt class="col-sm-3">Last Polled</dt>
         <dd class="col-sm-9">{{ .PolledAt.Format "2006-01-02 15:04:05" }}</dd>
