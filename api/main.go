@@ -26,7 +26,8 @@ func (api *API) dial() (*routeros.Client, error) {
 func (api *API) Run(command string) ([]*proto.Sentence, error) {
 	client, err := api.dial()
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return []*proto.Sentence{}, err
 	}
 	defer client.Close()
 
@@ -36,7 +37,7 @@ func (api *API) Run(command string) ([]*proto.Sentence, error) {
 
 	result, err := client.RunArgs(strings.Split(command, " "))
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return result.Re, err

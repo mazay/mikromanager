@@ -1,0 +1,32 @@
+{{ define "nav-devices" }}active{{ end }}
+{{ define "content" }}
+<form method="POST" action="/edit">
+  {{ if ne .Id "" }}
+  <legend>Edit device</legend>
+  <div class="mb-3">
+    <label for="disabledIdInput" class="form-label">ID</label>
+    <input name="idInput" type="text" id="disabledIdInput" class="form-control" readonly value="{{ .Id }}">
+  </div>
+  {{ else }}
+  <legend>Create device</legend>
+  {{ end }}
+  <div class="mb-3">
+    <label for="inputAddress" class="form-label">Address</label>
+    <input name="address" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="inputAddress" aria-describedby="aliasHelp addressValidationFeedback" required value="{{ .Address }}">
+    <div id="aliasHelp" class="form-text">MikroTik API endpoint, eg. 10.10.10.10:8728.</div>
+    <div id="addressValidationFeedback" class="invalid-feedback">
+      {{ .Msg }}
+    </div>
+  </div>
+  <div class="mb-3">
+    <select name="credentialsId" class="form-select" aria-label="Default select example">
+      <option value="">---</option>
+    {{ range $creds := .Credentials }}
+      <option value="{{ $creds.Id }}">{{ $creds.Alias }}</option>
+    {{ end }}
+    </select>
+  </div>
+  <a class="btn btn-danger" role="button" href="/">Cancel</a>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{{ end }}

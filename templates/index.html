@@ -9,6 +9,7 @@
       <th scope="col">Version</th>
       <th scope="col">Uptime</th>
       <th scope="col">Last Polled</th>
+      <th scope="col"><a class="btn btn-success btn-sm" role="button" href="/edit"><i class="bi-plus-square"></i></a></th>
     </tr>
   </thead>
   <tbody>
@@ -20,7 +21,32 @@
       <td>{{ $device.Version }}</td>
       <td>{{ $device.Uptime }}</td>
       <td>{{ $device.PolledAt.Format "2006-01-02 15:04:05 UTC" }}</td>
+      <td>
+        <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#{{ $device.Identity }}">
+          <i class="bi-trash"></i>
+        </button>
+      </td>
     </tr>
+
+    <!-- Modal -->
+    <div class="modal fade" id="{{ $device.Identity }}" tabindex="-1" aria-labelledby="{{ $device.Identity }}Label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ $device.Identity }}Label">Warning</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            You are about to delete device with address "{{ $device.Address }}", this action cannot be undone. Are you sure you want to proceed?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
+            <a class="btn btn-danger" role="button" href="/delete?id={{ $device.Id }}">Delete</a>
+          </div>
+        </div>
+      </div>
+    </div>
   {{ end }}
   </tbody>
 </table>
