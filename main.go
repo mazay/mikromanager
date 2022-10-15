@@ -23,7 +23,8 @@ var (
 	configPath string
 	httpPort   string
 
-	logger = logrus.New().WithFields(logrus.Fields{"app": "mikromanager"})
+	log    = logrus.New()
+	logger = log.WithFields(logrus.Fields{"app": "mikromanager"})
 	wg     = sync.WaitGroup{}
 	osExit = os.Exit
 )
@@ -35,6 +36,7 @@ func main() {
 	flag.Parse()
 
 	config := readConfigFile(configPath)
+	initLogger(config)
 
 	pollerCH := make(chan PollerCFG)
 
