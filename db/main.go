@@ -1,9 +1,8 @@
 package db
 
 import (
-	"log"
-
 	"github.com/ostafen/clover"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -14,8 +13,9 @@ var (
 )
 
 type DB struct {
-	Path string
-	api  *clover.DB
+	Path   string
+	api    *clover.DB
+	Logger *logrus.Entry
 }
 
 func (db *DB) Init() (bool, error) {
@@ -42,7 +42,7 @@ func (db *DB) Close() error {
 func (db *DB) HasCollection(collection string) bool {
 	exists, err := db.api.HasCollection(collection)
 	if err != nil {
-		log.Fatal(err)
+		db.Logger.Error(err)
 	}
 	return exists
 }
@@ -109,7 +109,7 @@ func (db *DB) Print() {
 	docs, _ := query.FindAll()
 
 	for _, doc := range docs {
-		log.Println(doc)
+		db.Logger.Info(doc)
 	}
 }
 

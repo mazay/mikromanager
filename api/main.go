@@ -2,9 +2,9 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/routeros.v2"
 	"gopkg.in/routeros.v2/proto"
 )
@@ -16,6 +16,7 @@ type API struct {
 	Password string
 	UseTLS   bool
 	Async    bool
+	Logger   *logrus.Entry
 }
 
 func (api *API) getEndpoint() string {
@@ -37,7 +38,7 @@ func (api *API) dial() (*routeros.Client, error) {
 func (api *API) Run(command string) ([]*proto.Sentence, error) {
 	client, err := api.dial()
 	if err != nil {
-		log.Print(err)
+		api.Logger.Error(err)
 		return []*proto.Sentence{}, err
 	}
 	defer client.Close()
@@ -48,7 +49,7 @@ func (api *API) Run(command string) ([]*proto.Sentence, error) {
 
 	result, err := client.RunArgs(strings.Split(command, " "))
 	if err != nil {
-		log.Print(err)
+		api.Logger.Error(err)
 	}
 
 	return result.Re, err
