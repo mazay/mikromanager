@@ -13,7 +13,7 @@
         <dd class="col-sm-9">{{ .ArchitectureName }}</dd>
 
         <dt class="col-sm-3">BoardName</dt>
-        <dd class="col-sm-9"><a href="https://mikrotik.com/products?filter&s=c&search={{ .BoardName }}" target="_blank">{{ .BoardName }}</a></dd>
+        <dd class="col-sm-9"><a href="{{ if eq .BoardName "CHR" }}https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234{{ else }}https://mikrotik.com/products?filter&s=c&search={{ .BoardName }}{{ end }}" target="_blank">{{ .BoardName }}</a></dd>
 
         <dt class="col-sm-3">CPU</dt>
         <dd class="col-sm-9">{{ .CPU }}</dd>
