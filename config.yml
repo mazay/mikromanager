@@ -12,9 +12,10 @@ encryptionKey: eek3eagheCo1phah4shi2Nai3ce8tiehaeVe5baph6Aixi9oorai5iepa1woh4ieQ
 # panic
 logLevel: debug
 
-# MikroTik API pollers, defaults to `database.clover` if ommited
-# having more than 1 makes sense when you have significant amount of devices as polling is supposed to be relatively fast
-apiPollers: 1
+# MikroTik API pollers, defaults to `1` if ommited
+# it is recommended to have at lest 2 pollers in order to mitigate possible network issues,
+# i.e. if a devices times out this will slow down polling for other resources as they will be waiting in the queue
+apiPollers: 2
 
 # full or relative path to the database, defaults to `database.clover` if ommited
 # the path will be created and new DB initialised if missing
