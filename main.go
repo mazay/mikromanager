@@ -1,7 +1,9 @@
 package main
 
 import (
-	"log"
+	"flag"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type PollerCFG struct {
@@ -17,45 +20,57 @@ type PollerCFG struct {
 }
 
 var (
-	wg            = sync.WaitGroup{}
-	encryptionKey = "eek3eagheCo1phah4shi2Nai3ce8tiehaeVe5baph6Aixi9oorai5iepa1woh4ieQuaiz4outhakeixohn6aech8riep7beeluum"
+	configPath string
+	httpPort   string
+
+	logger = logrus.New().WithFields(logrus.Fields{"app": "mikromanager"})
+	wg     = sync.WaitGroup{}
+	osExit = os.Exit
 )
 
 func main() {
-	wg.Add(1)
+	// Read command line args
+	flag.StringVar(&configPath, "config", "config.yml", "Path to the config.yml")
+	flag.StringVar(&httpPort, "http-port", "8080", "Port for the HTTP server")
+	flag.Parse()
+
+	config := readConfigFile(configPath)
+
 	pollerCH := make(chan PollerCFG)
+
+	wg.Add(1)
 
 	db := &db.DB{Path: "database.clover"}
 	db.Init()
 	defer db.Close()
 
-	go http.HttpServer("8000", db, encryptionKey)
+	go http.HttpServer("8000", db, config.EncryptionKey, logger)
 
-	go apiPoller(pollerCH)
-	go devicesPoller(db, pollerCH)
+	apiPoller(config, pollerCH)
+	go devicesPoller(config, db, pollerCH)
 
 	wg.Wait()
 }
 
-func devicesPoller(db *db.DB, pollerCH chan<- PollerCFG) {
+func devicesPoller(config *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 	var d = &utils.Device{}
-	log.Print("starting device poller/scheduler")
+	logger.Info("starting device poller/scheduler")
 	for {
 		devices, err := d.GetAll(db)
 		if err != nil {
-			log.Print(err)
+			logger.Error(err)
 			return
 		}
 		for _, device := range devices {
 			creds, err := device.GetCredentials(db)
 			if err != nil {
-				log.Print(err)
+				logger.Error(err)
 				return
 			}
-			log.Printf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
-			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, encryptionKey)
+			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, config.EncryptionKey)
 			if encryptionErr != nil {
-				log.Print(err)
+				logger.Error(err)
 				return
 			}
 			client := &api.API{
@@ -72,35 +87,39 @@ func devicesPoller(db *db.DB, pollerCH chan<- PollerCFG) {
 	}
 }
 
-func apiPoller(pollerCH <-chan PollerCFG) {
-	log.Print("starting MikroTik API poller")
-	for {
-		select {
-		case cfg := <-pollerCH:
-			log.Printf("polling device '%s'", cfg.Client.Address)
-			resource, err := cfg.Client.Run("/system/resource/print")
-			if err != nil {
-				log.Print(err)
-				return
-			}
-			log.Printf("fetched resource data for %s", cfg.Client.Address)
+func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
+	logger.Infof("starting %s MikroTik API pollers", strconv.Itoa(cfg.ApiPollers))
+	for x := 0; x < cfg.ApiPollers; x++ {
+		wg.Add(1)
+		go func() {
+			for {
+				select {
+				case cfg := <-pollerCH:
+					logger.Infof("polling device '%s'", cfg.Client.Address)
+					resource, err := cfg.Client.Run("/system/resource/print")
+					if err != nil {
+						logger.Error(err)
+						return
+					}
+					logger.Debugf("fetched resource data for %s", cfg.Client.Address)
 
-			identity, err := cfg.Client.Run("/system/identity/print")
-			if err != nil {
-				log.Print(err)
-				return
-			}
-			log.Printf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
+					identity, err := cfg.Client.Run("/system/identity/print")
+					if err != nil {
+						logger.Error(err)
+						return
+					}
+					logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
 
-			values := make(map[string]interface{}, len(resource[0].Map))
-			for k, v := range resource[0].Map {
-				values[k] = v
+					values := make(map[string]interface{}, len(resource[0].Map))
+					for k, v := range resource[0].Map {
+						values[k] = v
+					}
+					values["identity"] = string(identity[0].Map["name"])
+					values["polledAt"] = time.Now()
+					cfg.Db.Update("devices", "address", cfg.Client.Address, values)
+					cfg.Db.Export("devices", "devices_export.json")
+				}
 			}
-			values["identity"] = string(identity[0].Map["name"])
-			values["polledAt"] = time.Now()
-			cfg.Db.Update("devices", "address", cfg.Client.Address, values)
-			// cfg.Db.Print()
-			cfg.Db.Export("devices", "devices_export.json")
-		}
+		}()
 	}
 }

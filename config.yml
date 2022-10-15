@@ -1,0 +1,6 @@
+# encryptionKey is used for envcrypting sensitive data in the DB
+# make sure you change it and keep persistent otherwise the app won't be able to decrypt the data
+encryptionKey: eek3eagheCo1phah4shi2Nai3ce8tiehaeVe5baph6Aixi9oorai5iepa1woh4ieQuaiz4outhakeixohn6aech8riep7beeluum
+
+logLevel: trace
+apiPollers: 1
