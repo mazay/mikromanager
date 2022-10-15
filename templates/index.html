@@ -24,7 +24,7 @@
       <td>{{ $device.ArchitectureName }}</td>
       <td>{{ $device.Version }}</td>
       <td>{{ $device.Uptime }}</td>
-      <td>{{ timeAgo $device.PolledAt }}</td>
+      <td>{{ $device.PolledAt.Format "2006-01-02 15:04:05" }}</td>
       <td>
         <a class="btn btn-info btn-sm" role="button" href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
         <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
