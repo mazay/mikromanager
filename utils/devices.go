@@ -29,6 +29,7 @@ type Device struct {
 	Identity             string    `json:"identity"`
 	Platform             string    `json:"platform"`
 	PolledAt             time.Time `json:"polledAt"`
+	PollingSucceeded     string    `json:"pollingSucceeded"`
 	Port                 string    `json:"port"`
 	TotalHddSpace        string    `json:"total-hdd-space"`
 	TotalMemory          string    `json:"total-memory"`

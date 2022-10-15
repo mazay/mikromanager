@@ -98,9 +98,11 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 			for {
 				select {
 				case cfg := <-pollerCH:
+					values := make(map[string]interface{})
 					logger.Infof("polling device '%s'", cfg.Client.Address)
 					resource, err := cfg.Client.Run("/system/resource/print")
 					if err != nil {
+						values["pollingSucceeded"] = "0"
 						logger.Error(err)
 						recover()
 					} else {
@@ -109,19 +111,21 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 
 					identity, err := cfg.Client.Run("/system/identity/print")
 					if err != nil {
+						values["pollingSucceeded"] = "0"
 						logger.Error(err)
 						recover()
 					} else {
 						logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
 
-						values := make(map[string]interface{}, len(resource[0].Map))
+						values = make(map[string]interface{}, len(resource[0].Map))
 						for k, v := range resource[0].Map {
 							values[k] = v
 						}
+						values["pollingSucceeded"] = "1"
 						values["identity"] = string(identity[0].Map["name"])
 						values["polledAt"] = time.Now()
-						cfg.Db.Update("devices", "address", cfg.Client.Address, values)
 					}
+					cfg.Db.Update("devices", "address", cfg.Client.Address, values)
 				}
 			}
 		}()
