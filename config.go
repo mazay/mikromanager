@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
+	ApiPollers    int    `yaml:"apiPollers"`
+	DbPath        string `yaml:"dbPath"`
 	EncryptionKey string `yaml:"encryptionKey"`
 	LogLevel      string `yaml:"logLevel"`
-	ApiPollers    int    `yaml:"apiPollers"`
 }
 
 func configProcessError(err error) {
@@ -19,15 +20,18 @@ func configProcessError(err error) {
 }
 
 func (cfg *Config) setDefaults() {
-	if cfg.LogLevel == "" {
-		cfg.LogLevel = "info"
-	}
 	if cfg.ApiPollers == 0 {
 		// there should be at least 1 poller
 		cfg.ApiPollers = 1
 	}
+	if cfg.DbPath == "" {
+		cfg.DbPath = "database.clover"
+	}
 	if cfg.EncryptionKey == "" {
 		configProcessError(errors.New("the encryptionKey should be set"))
+	}
+	if cfg.LogLevel == "" {
+		cfg.LogLevel = "info"
 	}
 }
 

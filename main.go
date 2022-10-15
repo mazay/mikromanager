@@ -42,7 +42,7 @@ func main() {
 
 	wg.Add(1)
 
-	db := &db.DB{Path: "database.clover"}
+	db := &db.DB{Path: config.DbPath}
 	db.Init()
 	defer db.Close()
 
