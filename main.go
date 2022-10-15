@@ -101,24 +101,26 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 					resource, err := cfg.Client.Run("/system/resource/print")
 					if err != nil {
 						logger.Error(err)
-						return
+						recover()
+					} else {
+						logger.Debugf("fetched resource data for %s", cfg.Client.Address)
 					}
-					logger.Debugf("fetched resource data for %s", cfg.Client.Address)
 
 					identity, err := cfg.Client.Run("/system/identity/print")
 					if err != nil {
 						logger.Error(err)
-						return
-					}
-					logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
+						recover()
+					} else {
+						logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
 
-					values := make(map[string]interface{}, len(resource[0].Map))
-					for k, v := range resource[0].Map {
-						values[k] = v
+						values := make(map[string]interface{}, len(resource[0].Map))
+						for k, v := range resource[0].Map {
+							values[k] = v
+						}
+						values["identity"] = string(identity[0].Map["name"])
+						values["polledAt"] = time.Now()
+						cfg.Db.Update("devices", "address", cfg.Client.Address, values)
 					}
-					values["identity"] = string(identity[0].Map["name"])
-					values["polledAt"] = time.Now()
-					cfg.Db.Update("devices", "address", cfg.Client.Address, values)
 				}
 			}
 		}()
