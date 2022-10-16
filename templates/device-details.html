@@ -2,10 +2,10 @@
 {{ define "content" }}
 <div class="container">
   <legend class="text-center display-6">Device details</legend>
-  <hr class="border border-primary border-3 opacity-75">
+  <hr class="border {{ if eq .PollingSucceeded "0" }}border-danger{{ else }}border-primary{{ end }} border-3 opacity-75">
   <div class="row align-items-start">
     <div class="col">
-      <dl class="row p-3 border {{ if eq .PollingSucceeded "0" }}bg-warning{{ else }}bg-light{{ end }}">
+      <dl class="row">
         <dt class="col-sm-3">Identity</dt>
         <dd class="col-sm-9">{{ .Identity }}</dd>
 
@@ -29,7 +29,7 @@
       </dl>
     </div>
     <div class="col">
-      <dl class="row p-3 border {{ if eq .PollingSucceeded "0" }}bg-warning{{ else }}bg-light{{ end }}">
+      <dl class="row">
         <dt class="col-sm-3">CPU Load</dt>
         <dd class="col-sm-9">{{ if .CpuLoad }}{{ .CpuLoad }}%{{ end }}</dd>
 
