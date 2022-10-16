@@ -104,15 +104,6 @@ func (db *DB) FindAll(collection string) ([]map[string]string, error) {
 	return result, err
 }
 
-func (db *DB) Print() {
-	query := db.api.Query("devices")
-	docs, _ := query.FindAll()
-
-	for _, doc := range docs {
-		db.Logger.Info(doc)
-	}
-}
-
 func (db *DB) Export(collection string, filename string) {
 	db.api.ExportCollection(collection, filename)
 }
