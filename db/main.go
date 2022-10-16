@@ -34,6 +34,10 @@ func (db *DB) Close() error {
 	return db.api.Close()
 }
 
+func (db *DB) ListCollections() ([]string, error) {
+	return db.api.ListCollections()
+}
+
 func (db *DB) HasCollection(collection string) bool {
 	exists, err := db.api.HasCollection(collection)
 	if err != nil {
@@ -80,14 +84,18 @@ func (db *DB) FindById(collection string, id string) (map[string]string, error) 
 	var inInterface map[string]string
 	query := db.api.Query(collection)
 	doc, err := query.FindById(id)
-	doc.Unmarshal(&inInterface)
+	if err == nil && doc != nil {
+		err = doc.Unmarshal(&inInterface)
+	}
 	return inInterface, err
 }
 
 func (db *DB) FindByKeyValue(collection string, key string, value string) (map[string]string, error) {
 	var inInterface map[string]string
 	doc, err := db.api.Query(collection).Where(clover.Field(key).Eq(value)).FindFirst()
-	doc.Unmarshal(&inInterface)
+	if err == nil && doc != nil {
+		err = doc.Unmarshal(&inInterface)
+	}
 	return inInterface, err
 }
 

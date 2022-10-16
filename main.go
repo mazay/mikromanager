@@ -6,6 +6,7 @@ import (
 	"flag"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -48,6 +49,9 @@ func main() {
 	db := &db.DB{Path: config.DbPath}
 	db.Init()
 	defer db.Close()
+
+	collections, _ := db.ListCollections()
+	logger.Debugf("DB has the following collections: %s", strings.Join(collections, ", "))
 
 	go http.HttpServer("8000", db, config.EncryptionKey, logger)
 
