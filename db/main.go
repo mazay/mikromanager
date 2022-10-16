@@ -94,8 +94,8 @@ func (db *DB) ExistsByCriteriaSet(collection string, set []map[string]string) (b
 	return db.api.Query(collection).Where(criteria).Exists()
 }
 
-func (db *DB) FindById(collection string, id string) (map[string]string, error) {
-	var inInterface map[string]string
+func (db *DB) FindById(collection string, id string) (map[string]interface{}, error) {
+	var inInterface map[string]interface{}
 	query := db.api.Query(collection)
 	doc, err := query.FindById(id)
 	if err == nil && doc != nil {
@@ -104,8 +104,8 @@ func (db *DB) FindById(collection string, id string) (map[string]string, error) 
 	return inInterface, err
 }
 
-func (db *DB) FindByKeyValue(collection string, key string, value string) (map[string]string, error) {
-	var inInterface map[string]string
+func (db *DB) FindByKeyValue(collection string, key string, value string) (map[string]interface{}, error) {
+	var inInterface map[string]interface{}
 	doc, err := db.api.Query(collection).Where(clover.Field(key).Eq(value)).FindFirst()
 	if err == nil && doc != nil {
 		err = doc.Unmarshal(&inInterface)
@@ -113,8 +113,8 @@ func (db *DB) FindByKeyValue(collection string, key string, value string) (map[s
 	return inInterface, err
 }
 
-func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map[string]string, error) {
-	var inInterface map[string]string
+func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map[string]interface{}, error) {
+	var inInterface map[string]interface{}
 	var criteria = &clover.Criteria{}
 	for idx, crt := range set {
 		for k, v := range crt {
@@ -132,12 +132,12 @@ func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map
 	return inInterface, err
 }
 
-func (db *DB) FindAll(collection string) ([]map[string]string, error) {
-	var result []map[string]string
+func (db *DB) FindAll(collection string) ([]map[string]interface{}, error) {
+	var result []map[string]interface{}
 	query := db.api.Query(collection)
 	docs, err := query.FindAll()
 	for _, doc := range docs {
-		var inInterface map[string]string
+		var inInterface map[string]interface{}
 		doc.Unmarshal(&inInterface)
 		result = append(result, inInterface)
 	}
