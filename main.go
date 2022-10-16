@@ -111,6 +111,7 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 						cfg.Device.PollingSucceeded = "0"
 						logger.Error(err)
 					} else {
+						cfg.Device.PollingSucceeded = "1"
 						logger.Debugf("fetched resource data for %s", cfg.Client.Address)
 					}
 
