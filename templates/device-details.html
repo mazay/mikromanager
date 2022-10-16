@@ -15,6 +15,27 @@
         <dt class="col-sm-3">BoardName</dt>
         <dd class="col-sm-9"><a href="{{ if eq .BoardName "CHR" }}https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234{{ else }}https://mikrotik.com/products?filter&s=c&search={{ .BoardName }}{{ end }}" target="_blank">{{ .BoardName }}</a></dd>
 
+        <dt class="col-sm-3">Version</dt>
+        <dd class="col-sm-9">{{ .Version }}</dd>
+
+        <dt class="col-sm-3">BuildTime</dt>
+        <dd class="col-sm-9">{{ .BuildTime }}</dd>
+
+        <dt class="col-sm-3">Factory Software</dt>
+        <dd class="col-sm-9">{{ .FactorySoftware }}</dd>
+
+        <dt class="col-sm-3">Created</dt>
+        <dd class="col-sm-9">{{ .Created.Format "2006-01-02 15:04:05" }}</dd>
+
+        <dt class="col-sm-3">Updated</dt>
+        <dd class="col-sm-9">{{ .Updated.Format "2006-01-02 15:04:05" }}</dd>
+      </dl>
+    </div>
+    <div class="col">
+      <dl class="row">
+        <dt class="col-sm-3">Bad Blocks</dt>
+        <dd class="col-sm-9">{{ .BadBlocks }}</dd>
+
         <dt class="col-sm-3">CPU</dt>
         <dd class="col-sm-9">{{ .CPU }}</dd>
 
@@ -24,12 +45,6 @@
         <dt class="col-sm-3">CPU Frequency</dt>
         <dd class="col-sm-9">{{ if .CpuFrequency }}{{ .CpuFrequency }}{{ else }}N/A{{ end }}</dd>
 
-        <dt class="col-sm-3">Platform</dt>
-        <dd class="col-sm-9">{{ .Platform }}</dd>
-      </dl>
-    </div>
-    <div class="col">
-      <dl class="row">
         <dt class="col-sm-3">CPU Load</dt>
         <dd class="col-sm-9">{{ .CpuLoad }}%</dd>
 
@@ -39,17 +54,8 @@
         <dt class="col-sm-3">Last Polled</dt>
         <dd class="col-sm-9">{{ .PolledAt.Format "2006-01-02 15:04:05" }}</dd>
 
-        <dt class="col-sm-3">Version</dt>
-        <dd class="col-sm-9">{{ .Version }}</dd>
-
-        <dt class="col-sm-3">BuildTime</dt>
-        <dd class="col-sm-9">{{ .BuildTime }}</dd>
-
-        <dt class="col-sm-3">Created</dt>
-        <dd class="col-sm-9">{{ .Created.Format "2006-01-02 15:04:05" }}</dd>
-
-        <dt class="col-sm-3">Updated</dt>
-        <dd class="col-sm-9">{{ .Updated.Format "2006-01-02 15:04:05" }}</dd>
+        <dt class="col-sm-3">Address</dt>
+        <dd class="col-sm-9"><a href="http://{{ .Address }}" target="_blank">{{ .Address }}</a></dd>
       </dl>
     </div>
   </div>
