@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"flag"
 	"os"
 	"strconv"
@@ -17,6 +19,7 @@ import (
 type PollerCFG struct {
 	Client *api.API
 	Db     *db.DB
+	Device *utils.Device
 }
 
 var (
@@ -84,7 +87,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 				Async:    false,
 				UseTLS:   false,
 			}
-			pollerCH <- PollerCFG{Client: client, Db: db}
+			pollerCH <- PollerCFG{Client: client, Db: db, Device: device}
 		}
 		time.Sleep(cfg.ApiPollerInterval)
 	}
@@ -98,34 +101,37 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 			for {
 				select {
 				case cfg := <-pollerCH:
-					values := make(map[string]interface{})
 					logger.Infof("polling device '%s'", cfg.Client.Address)
 					resource, err := cfg.Client.Run("/system/resource/print")
 					if err != nil {
-						values["pollingSucceeded"] = "0"
+						cfg.Device.PollingSucceeded = "0"
 						logger.Error(err)
-						recover()
 					} else {
 						logger.Debugf("fetched resource data for %s", cfg.Client.Address)
 					}
 
 					identity, err := cfg.Client.Run("/system/identity/print")
 					if err != nil {
-						values["pollingSucceeded"] = "0"
+						cfg.Device.PollingSucceeded = "0"
 						logger.Error(err)
-						recover()
 					} else {
 						logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
 
-						values = make(map[string]interface{}, len(resource[0].Map))
-						for k, v := range resource[0].Map {
-							values[k] = v
-						}
-						values["pollingSucceeded"] = "1"
-						values["identity"] = string(identity[0].Map["name"])
-						values["polledAt"] = time.Now()
+						inrec, _ := json.Marshal(resource[0].Map)
+						json.Unmarshal(inrec, &cfg.Device)
+						cfg.Device.PollingSucceeded = "1"
+						cfg.Device.Identity = string(identity[0].Map["name"])
+						cfg.Device.PolledAt = time.Now()
 					}
-					cfg.Db.Update("devices", "address", cfg.Client.Address, values)
+					dbErr := errors.New("")
+					if cfg.Device.Id != "" {
+						dbErr = cfg.Device.Update(cfg.Db)
+					} else {
+						dbErr = cfg.Device.Create(cfg.Db)
+					}
+					if dbErr != nil {
+						logger.Error(dbErr)
+					}
 				}
 			}
 		}()
