@@ -80,6 +80,20 @@ func (db *DB) Exists(collection string, key string, value string) (bool, error) 
 	return db.api.Query(collection).Where(clover.Field(key).Eq(value)).Exists()
 }
 
+func (db *DB) ExistsByCriteriaSet(collection string, set []map[string]string) (bool, error) {
+	var criteria = &clover.Criteria{}
+	for idx, crt := range set {
+		for k, v := range crt {
+			if idx == 0 {
+				criteria = clover.Field(k).Eq(v)
+			} else {
+				criteria = criteria.And(clover.Field(k).Eq(v))
+			}
+		}
+	}
+	return db.api.Query(collection).Where(criteria).Exists()
+}
+
 func (db *DB) FindById(collection string, id string) (map[string]string, error) {
 	var inInterface map[string]string
 	query := db.api.Query(collection)
@@ -93,6 +107,25 @@ func (db *DB) FindById(collection string, id string) (map[string]string, error) 
 func (db *DB) FindByKeyValue(collection string, key string, value string) (map[string]string, error) {
 	var inInterface map[string]string
 	doc, err := db.api.Query(collection).Where(clover.Field(key).Eq(value)).FindFirst()
+	if err == nil && doc != nil {
+		err = doc.Unmarshal(&inInterface)
+	}
+	return inInterface, err
+}
+
+func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map[string]string, error) {
+	var inInterface map[string]string
+	var criteria = &clover.Criteria{}
+	for idx, crt := range set {
+		for k, v := range crt {
+			if idx == 0 {
+				criteria = clover.Field(k).Eq(v)
+			} else {
+				criteria = criteria.And(clover.Field(k).Eq(v))
+			}
+		}
+	}
+	doc, err := db.api.Query(collection).Where(criteria).FindFirst()
 	if err == nil && doc != nil {
 		err = doc.Unmarshal(&inInterface)
 	}

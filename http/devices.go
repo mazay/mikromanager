@@ -125,7 +125,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	var deviceTmpl = path.Join("templates", "device-details.html")
-	var d = &utils.Device{}
+	var device = &utils.Device{}
 	var id = r.URL.Query().Get("id")
 
 	if id == "" {
@@ -133,8 +133,9 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d.Id = id
-	err := d.GetById(dh.db)
+	// fetch device from the DB
+	device.Id = id
+	err := device.GetById(dh.db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -149,7 +150,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", d); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "base", device); err != nil {
 		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
