@@ -64,6 +64,10 @@ func (db *DB) Update(collection string, key string, value string, updates map[st
 	}
 }
 
+func (db *DB) UpdateById(collection string, id string, updates map[string]interface{}) error {
+	return db.api.Query(collection).UpdateById(id, updates)
+}
+
 func (db *DB) DeleteById(collection string, id string) error {
 	return db.api.Query(collection).DeleteById(id)
 }

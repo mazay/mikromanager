@@ -91,7 +91,7 @@ func (d *Device) Update(db *database.DB) error {
 	d.Updated = time.Now()
 	inrec, _ := json.Marshal(d)
 	json.Unmarshal(inrec, &inInterface)
-	return db.Update(db.Collections["devices"], "_id", d.Id, inInterface)
+	return db.UpdateById(db.Collections["devices"], d.Id, inInterface)
 }
 
 func (d *Device) GetById(db *database.DB) error {
