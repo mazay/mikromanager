@@ -5,17 +5,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	collections = []string{
-		"credentials",
-		"devices",
-	}
-)
-
 type DB struct {
-	Path   string
-	api    *clover.DB
-	Logger *logrus.Entry
+	Path        string
+	api         *clover.DB
+	Logger      *logrus.Entry
+	Collections map[string]string
 }
 
 func (db *DB) Init() (bool, error) {
@@ -25,10 +19,11 @@ func (db *DB) Init() (bool, error) {
 		return false, err
 	}
 	db.api = database
+	db.Collections = collectionsMap()
 	// create the set of collections
-	for _, collection := range collections {
-		if !db.HasCollection(collection) {
-			db.CreateCollection(collection)
+	for _, name := range db.Collections {
+		if !db.HasCollection(db.Collections[name]) {
+			db.CreateCollection(db.Collections[name])
 		}
 	}
 

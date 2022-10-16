@@ -22,7 +22,7 @@ type Credentials struct {
 func (c *Credentials) Create(db *database.DB) error {
 	var inInterface map[string]interface{}
 	// check if credentials with that alias already exist
-	exists, _ := db.Exists("credentials", "alias", c.Alias)
+	exists, _ := db.Exists(db.Collections["credentials"], "alias", c.Alias)
 	if exists {
 		return errors.New(fmt.Sprintf("Alias '%s' already exists, please pick another name", c.Alias))
 	}
@@ -30,7 +30,7 @@ func (c *Credentials) Create(db *database.DB) error {
 	c.Updated = time.Now()
 	inrec, _ := json.Marshal(c)
 	json.Unmarshal(inrec, &inInterface)
-	_, err := db.Insert("credentials", inInterface)
+	_, err := db.Insert(db.Collections["credentials"], inInterface)
 	return err
 }
 
@@ -39,15 +39,15 @@ func (c *Credentials) Update(db *database.DB) error {
 	c.Updated = time.Now()
 	inrec, _ := json.Marshal(c)
 	json.Unmarshal(inrec, &inInterface)
-	return db.Update("credentials", "_id", c.Id, inInterface)
+	return db.Update(db.Collections["credentials"], "_id", c.Id, inInterface)
 }
 
 func (c *Credentials) Delete(db *database.DB) error {
-	return db.DeleteById("credentials", c.Id)
+	return db.DeleteById(db.Collections["credentials"], c.Id)
 }
 
 func (c *Credentials) GetDefault(db *database.DB) error {
-	creds, err := db.FindByKeyValue("credentials", "alias", "Default")
+	creds, err := db.FindByKeyValue(db.Collections["credentials"], "alias", "Default")
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -59,7 +59,7 @@ func (c *Credentials) GetDefault(db *database.DB) error {
 }
 
 func (c *Credentials) GetById(db *database.DB) error {
-	doc, err := db.FindById("credentials", c.Id)
+	doc, err := db.FindById(db.Collections["credentials"], c.Id)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -74,7 +74,7 @@ func (c *Credentials) GetById(db *database.DB) error {
 func (c *Credentials) GetAll(db *database.DB) ([]*Credentials, error) {
 	var credList []*Credentials
 
-	docs, err := db.FindAll("credentials")
+	docs, err := db.FindAll(db.Collections["credentials"])
 	if err != nil {
 		log.Fatal(err)
 		return credList, err

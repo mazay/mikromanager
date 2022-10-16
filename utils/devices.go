@@ -43,7 +43,7 @@ type Device struct {
 func (d *Device) GetAll(db *database.DB) ([]*Device, error) {
 	var deviceList []*Device
 
-	docs, err := db.FindAll("devices")
+	docs, err := db.FindAll(db.Collections["devices"])
 	if err != nil {
 		log.Fatal(err)
 		return deviceList, err
@@ -74,7 +74,7 @@ func (d *Device) GetCredentials(db *database.DB) (*Credentials, error) {
 func (d *Device) Create(db *database.DB) error {
 	var inInterface map[string]interface{}
 	// check if credentials with that alias already exist
-	exists, _ := db.Exists("devices", "address", d.Address)
+	exists, _ := db.Exists(db.Collections["devices"], "address", d.Address)
 	if exists {
 		return errors.New(fmt.Sprintf("Device with address '%s' already exists", d.Address))
 	}
@@ -82,7 +82,7 @@ func (d *Device) Create(db *database.DB) error {
 	d.Updated = time.Now()
 	inrec, _ := json.Marshal(d)
 	json.Unmarshal(inrec, &inInterface)
-	_, err := db.Insert("devices", inInterface)
+	_, err := db.Insert(db.Collections["devices"], inInterface)
 	return err
 }
 
@@ -91,11 +91,11 @@ func (d *Device) Update(db *database.DB) error {
 	d.Updated = time.Now()
 	inrec, _ := json.Marshal(d)
 	json.Unmarshal(inrec, &inInterface)
-	return db.Update("devices", "_id", d.Id, inInterface)
+	return db.Update(db.Collections["devices"], "_id", d.Id, inInterface)
 }
 
 func (d *Device) GetById(db *database.DB) error {
-	doc, err := db.FindById("devices", d.Id)
+	doc, err := db.FindById(db.Collections["devices"], d.Id)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -108,5 +108,5 @@ func (d *Device) GetById(db *database.DB) error {
 }
 
 func (d *Device) Delete(db *database.DB) error {
-	return db.DeleteById("devices", d.Id)
+	return db.DeleteById(db.Collections["devices"], d.Id)
 }
