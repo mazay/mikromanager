@@ -14,30 +14,30 @@ type Device struct {
 	Id                   string    `json:"_id"`
 	Address              string    `json:"address"`
 	ArchitectureName     string    `json:"architecture-name"`
-	BadBlocks            string    `json:"bad-blocks"`
+	BadBlocks            int64     `json:"bad-blocks,string"`
 	BoardName            string    `json:"board-name"`
 	BuildTime            string    `json:"build-time"`
 	CPU                  string    `json:"cpu"`
-	CpuCount             string    `json:"cpu-count"`
-	CpuFrequency         string    `json:"cpu-frequency"`
-	CpuLoad              string    `json:"cpu-load"`
+	CpuCount             int64     `json:"cpu-count,string"`
+	CpuFrequency         int64     `json:"cpu-frequency,string"`
+	CpuLoad              int64     `json:"cpu-load,string"`
 	Created              time.Time `json:"created"`
 	CredentialsId        string    `json:"credentialsId"`
 	FactorySoftware      string    `json:"factory-software"`
-	FreeHddSpace         string    `json:"free-hdd-space"`
-	FreeMemory           string    `json:"free-memory"`
+	FreeHddSpace         int64     `json:"free-hdd-space,string"`
+	FreeMemory           int64     `json:"free-memory,string"`
 	Identity             string    `json:"identity"`
 	Platform             string    `json:"platform"`
 	PolledAt             time.Time `json:"polledAt"`
-	PollingSucceeded     string    `json:"pollingSucceeded"`
+	PollingSucceeded     int64     `json:"pollingSucceeded,string"`
 	Port                 string    `json:"port"`
-	TotalHddSpace        string    `json:"total-hdd-space"`
-	TotalMemory          string    `json:"total-memory"`
+	TotalHddSpace        int64     `json:"total-hdd-space,string"`
+	TotalMemory          int64     `json:"total-memory,string"`
 	Updated              time.Time `json:"updated"`
 	Uptime               string    `json:"uptime"`
 	Version              string    `json:"version"`
-	WriteSectSinceReboot string    `json:"write-sect-since-reboot"`
-	WriteSectTotal       string    `json:"write-sect-total"`
+	WriteSectSinceReboot int64     `json:"write-sect-since-reboot,string"`
+	WriteSectTotal       int64     `json:"write-sect-total,string"`
 }
 
 func (d *Device) GetAll(db *database.DB) ([]*Device, error) {

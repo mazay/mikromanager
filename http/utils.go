@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 	"html/template"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -24,15 +23,7 @@ func timeAgo(t time.Time) string {
 	return out.Format("15:04:05")
 }
 
-func memoryUsage(total string, free string) string {
-	totalInt, err := strconv.Atoi(total)
-	if err != nil {
-		return err.Error()
-	}
-	freeInt, err := strconv.Atoi(free)
-	if err != nil {
-		return err.Error()
-	}
-	usage := (float64(totalInt) - float64(freeInt)) / float64(totalInt) * 100
+func memoryUsage(total int64, free int64) string {
+	usage := (float64(total) - float64(free)) / float64(total) * 100
 	return fmt.Sprintf("%.2f", usage)
 }

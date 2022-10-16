@@ -19,7 +19,7 @@
   <tbody>
   {{ range $device := . }}
     <tr id="{{ $device.Id }}">
-      <td>{{ if eq $device.PollingSucceeded "0" }}<abbr title="Last polling attemple failed" class="bi bi-exclamation-triangle text-danger"></abbr>{{ end }}</td>
+      <td>{{ if eq $device.PollingSucceeded 0 }}<abbr title="Last polling attemple failed" class="bi bi-exclamation-triangle text-danger"></abbr>{{ end }}</td>
       <td>{{ $device.Identity }}</td>
       <td><a href="http://{{ $device.Address }}" target="_blank">{{ $device.Address }}</a></td>
       <td>{{ $device.Port }}</td>

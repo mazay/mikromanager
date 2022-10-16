@@ -2,7 +2,7 @@
 {{ define "content" }}
 <div class="container">
   <legend class="text-center display-6">Device details</legend>
-  <hr class="border {{ if eq .PollingSucceeded "0" }}border-danger{{ else }}border-primary{{ end }} border-3 opacity-75">
+  <hr class="border {{ if eq .PollingSucceeded 0 }}border-danger{{ else }}border-primary{{ end }} border-3 opacity-75">
   <div class="row align-items-start">
     <div class="col">
       <dl class="row">
@@ -22,7 +22,7 @@
         <dd class="col-sm-9">{{ .CpuCount }}</dd>
 
         <dt class="col-sm-3">CPU Frequency</dt>
-        <dd class="col-sm-9">{{ .CpuFrequency }}</dd>
+        <dd class="col-sm-9">{{ if .CpuFrequency }}{{ .CpuFrequency }}{{ else }}N/A{{ end }}</dd>
 
         <dt class="col-sm-3">Platform</dt>
         <dd class="col-sm-9">{{ .Platform }}</dd>
@@ -31,7 +31,7 @@
     <div class="col">
       <dl class="row">
         <dt class="col-sm-3">CPU Load</dt>
-        <dd class="col-sm-9">{{ if .CpuLoad }}{{ .CpuLoad }}%{{ end }}</dd>
+        <dd class="col-sm-9">{{ .CpuLoad }}%</dd>
 
         <dt class="col-sm-3">Memory Usage</dt>
         <dd class="col-sm-9">{{ if and .TotalMemory .FreeMemory }}{{ memoryUsage .TotalMemory .FreeMemory }}%{{ end }}</dd>

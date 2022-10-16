@@ -108,23 +108,23 @@ func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
 					logger.Infof("polling device '%s'", cfg.Client.Address)
 					resource, err := cfg.Client.Run("/system/resource/print")
 					if err != nil {
-						cfg.Device.PollingSucceeded = "0"
+						cfg.Device.PollingSucceeded = 0
 						logger.Error(err)
 					} else {
-						cfg.Device.PollingSucceeded = "1"
+						cfg.Device.PollingSucceeded = 1
 						logger.Debugf("fetched resource data for %s", cfg.Client.Address)
 					}
 
 					identity, err := cfg.Client.Run("/system/identity/print")
 					if err != nil {
-						cfg.Device.PollingSucceeded = "0"
+						cfg.Device.PollingSucceeded = 0
 						logger.Error(err)
 					} else {
 						logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
 
 						inrec, _ := json.Marshal(resource[0].Map)
 						json.Unmarshal(inrec, &cfg.Device)
-						cfg.Device.PollingSucceeded = "1"
+						cfg.Device.PollingSucceeded = 1
 						cfg.Device.Identity = string(identity[0].Map["name"])
 						cfg.Device.PolledAt = time.Now()
 					}
