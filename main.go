@@ -60,7 +60,7 @@ func main() {
 func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 	var d = &utils.Device{}
 	logger.Info("starting device poller/scheduler")
-	logger.Infof("apiPollerInterval is %s", cfg.ApiPollerInterval)
+	logger.Debugf("devicePollerInterval is %s", cfg.DevicePollerInterval)
 	for {
 		devices, err := d.GetAll(db)
 		if err != nil {
@@ -89,7 +89,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 			}
 			pollerCH <- PollerCFG{Client: client, Db: db, Device: device}
 		}
-		time.Sleep(cfg.ApiPollerInterval)
+		time.Sleep(cfg.DevicePollerInterval)
 	}
 }
 
