@@ -47,7 +47,11 @@ func main() {
 	wg.Add(1)
 
 	db := &db.DB{Path: config.DbPath}
-	db.Init()
+	err := db.Init()
+	if db.Init() != nil {
+		logger.Panicf("DB init issue: %s", err)
+		osExit(1)
+	}
 	defer db.Close()
 
 	collections, _ := db.ListCollections()

@@ -12,11 +12,11 @@ type DB struct {
 	Collections map[string]string
 }
 
-func (db *DB) Init() (bool, error) {
+func (db *DB) Init() error {
 	// open or create the DB
 	database, err := clover.Open(db.Path)
 	if err != nil {
-		return false, err
+		return err
 	}
 	db.api = database
 	db.Collections = collectionsMap()
@@ -24,12 +24,12 @@ func (db *DB) Init() (bool, error) {
 	for _, name := range db.Collections {
 		if !db.HasCollection(db.Collections[name]) {
 			if db.CreateCollection(db.Collections[name]) != nil {
-				return false, err
+				return err
 			}
 		}
 	}
 
-	return true, nil
+	return nil
 }
 
 func (db *DB) Close() error {
