@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -24,7 +23,7 @@ func (c *Credentials) Create(db *database.DB) error {
 	// check if credentials with that alias already exist
 	exists, _ := db.Exists(db.Collections["credentials"], "alias", c.Alias)
 	if exists {
-		return errors.New(fmt.Sprintf("Alias '%s' already exists, please pick another name", c.Alias))
+		return fmt.Errorf("Alias '%s' already exists, please pick another name", c.Alias)
 	}
 	c.Created = time.Now()
 	c.Updated = time.Now()
