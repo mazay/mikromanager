@@ -48,7 +48,7 @@ func main() {
 
 	db := &db.DB{Path: config.DbPath}
 	err := db.Init()
-	if db.Init() != nil {
+	if err != nil {
 		logger.Panicf("DB init issue: %s", err)
 		osExit(1)
 	}
