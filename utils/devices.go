@@ -15,7 +15,7 @@ type Device struct {
 	ArchitectureName     string            `json:"architecture-name"`
 	BadBlocks            int64             `json:"bad-blocks,string"`
 	BoardName            string            `json:"board-name"`
-	BuildTime            FirmwareBuildTime `json:"build-time,string"`
+	BuildTime            FirmwareBuildTime `json:"build-time"`
 	CPU                  string            `json:"cpu"`
 	CpuCount             int64             `json:"cpu-count,string"`
 	CpuFrequency         int64             `json:"cpu-frequency,string"`
