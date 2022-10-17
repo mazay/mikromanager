@@ -85,7 +85,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
 			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
 			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
 			if encryptionErr != nil {
-				logger.Error(err)
+				logger.Error(encryptionErr)
 				return
 			}
 			client := &api.API{
