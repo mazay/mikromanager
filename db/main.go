@@ -140,7 +140,7 @@ func (db *DB) FindAll(collection string) ([]map[string]interface{}, error) {
 	docs, err := query.FindAll()
 	for _, doc := range docs {
 		var inInterface map[string]interface{}
-		if doc.Unmarshal(&inInterface) != nil {
+		if doc.Unmarshal(&inInterface) == nil {
 			result = append(result, inInterface)
 		}
 	}
