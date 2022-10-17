@@ -15,6 +15,8 @@ ARG TARGETPLATFORM
 LABEL maintainer="Yevgeniy Valeyev <z.mazay@gmail.com>"
 RUN apk --no-cache add ca-certificates
 WORKDIR /app/
+COPY templates ./templates
+COPY static ./static
 COPY config.yml .
 COPY --from=builder /go/src/github.com/mazay/mikromanager/mikromanager .
 CMD ["./mikromanager"]
