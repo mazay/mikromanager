@@ -28,8 +28,11 @@ func (c *Credentials) Create(db *database.DB) error {
 	c.Created = time.Now()
 	c.Updated = time.Now()
 	inrec, _ := json.Marshal(c)
-	json.Unmarshal(inrec, &inInterface)
-	_, err := db.Insert(db.Collections["credentials"], inInterface)
+	err := json.Unmarshal(inrec, &inInterface)
+	if err != nil {
+		return err
+	}
+	_, err = db.Insert(db.Collections["credentials"], inInterface)
 	return err
 }
 
@@ -37,7 +40,10 @@ func (c *Credentials) Update(db *database.DB) error {
 	var inInterface map[string]interface{}
 	c.Updated = time.Now()
 	inrec, _ := json.Marshal(c)
-	json.Unmarshal(inrec, &inInterface)
+	err := json.Unmarshal(inrec, &inInterface)
+	if err != nil {
+		return err
+	}
 	return db.Update(db.Collections["credentials"], "_id", c.Id, inInterface)
 }
 
@@ -53,7 +59,13 @@ func (c *Credentials) GetDefault(db *database.DB) error {
 	}
 
 	inrec, err := json.Marshal(creds)
-	json.Unmarshal(inrec, c)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(inrec, c)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -65,7 +77,13 @@ func (c *Credentials) GetById(db *database.DB) error {
 	}
 
 	dj, err := json.Marshal(doc)
-	json.Unmarshal(dj, c)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(dj, c)
+	if err != nil {
+		return err
+	}
 
 	return err
 }

@@ -79,17 +79,29 @@ func (d *Device) Create(db *database.DB) error {
 	}
 	d.Created = time.Now()
 	d.Updated = time.Now()
-	inrec, _ := json.Marshal(d)
-	json.Unmarshal(inrec, &inInterface)
-	_, err := db.Insert(db.Collections["devices"], inInterface)
+	inrec, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(inrec, &inInterface)
+	if err != nil {
+		return err
+	}
+	_, err = db.Insert(db.Collections["devices"], inInterface)
 	return err
 }
 
 func (d *Device) Update(db *database.DB) error {
 	var inInterface map[string]interface{}
 	d.Updated = time.Now()
-	inrec, _ := json.Marshal(d)
-	json.Unmarshal(inrec, &inInterface)
+	inrec, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(inrec, &inInterface)
+	if err != nil {
+		return err
+	}
 	return db.UpdateById(db.Collections["devices"], d.Id, inInterface)
 }
 
@@ -101,7 +113,13 @@ func (d *Device) GetById(db *database.DB) error {
 	}
 
 	dj, err := json.Marshal(doc)
-	json.Unmarshal(dj, d)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(dj, d)
+	if err != nil {
+		return err
+	}
 
 	return err
 }

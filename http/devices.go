@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"html/template"
 	"net/http"
 	"path"
@@ -20,6 +19,7 @@ type deviceForm struct {
 
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 	var (
+		deviceErr  error
 		deviceTmpl = path.Join("templates", "device-form.html")
 		data       = &deviceForm{}
 		creds      = &utils.Credentials{}
@@ -30,7 +30,12 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		// parse the form
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			dh.logger.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		id := r.PostForm.Get("idInput")
 		address := r.PostForm.Get("address")
 		port := r.PostForm.Get("port")
@@ -43,13 +48,15 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			CredentialsId: credentialsId,
 		}
 
-		deviceErr := errors.New("")
 		if id == "" {
 			// "id" is unset - create new credentials
 			deviceErr = device.Create(dh.db)
 		} else {
 			// "id" is set - update existing credentials
-			device.GetById(dh.db)
+			err := device.GetById(dh.db)
+			if err != nil {
+				data.Msg = err.Error()
+			}
 			device.Address = address
 			device.Port = port
 			device.CredentialsId = credentialsId
@@ -73,11 +80,15 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		if id != "" {
 			d := &utils.Device{}
 			d.Id = id
-			d.GetById(dh.db)
-			data.Id = d.Id
-			data.Address = d.Address
-			data.Port = d.Port
-			data.CredentialsId = d.CredentialsId
+			err := d.GetById(dh.db)
+			if err != nil {
+				data.Msg = err.Error()
+			} else {
+				data.Id = d.Id
+				data.Address = d.Address
+				data.Port = d.Port
+				data.CredentialsId = d.CredentialsId
+			}
 		}
 	}
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -42,7 +42,7 @@ func main() {
 	config := readConfigFile(configPath)
 	initLogger(config)
 
-	pollerCH := make(chan PollerCFG)
+	pollerCH := make(chan *PollerCFG)
 
 	wg.Add(1)
 
@@ -65,8 +65,9 @@ func main() {
 	wg.Wait()
 }
 
-func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- PollerCFG) {
+func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
 	var d = &utils.Device{}
+	wg.Add(1)
 	logger.Info("starting device poller/scheduler")
 	logger.Debugf("devicePollerInterval is %s", cfg.DevicePollerInterval)
 	for {
@@ -95,54 +96,71 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- PollerCFG) {
 				Async:    false,
 				UseTLS:   false,
 			}
-			pollerCH <- PollerCFG{Client: client, Db: db, Device: device}
+			pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
 		}
 		time.Sleep(cfg.DevicePollerInterval)
 	}
 }
 
-func apiPoller(cfg *Config, pollerCH <-chan PollerCFG) {
+func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
 	logger.Infof("starting %s MikroTik API pollers", strconv.Itoa(cfg.ApiPollers))
 	for x := 0; x < cfg.ApiPollers; x++ {
 		wg.Add(1)
 		go func() {
-			for {
-				select {
-				case cfg := <-pollerCH:
-					logger.Infof("polling device '%s'", cfg.Client.Address)
-					resource, err := cfg.Client.Run("/system/resource/print")
-					if err != nil {
-						cfg.Device.PollingSucceeded = 0
-						logger.Error(err)
-					} else {
-						cfg.Device.PollingSucceeded = 1
-						logger.Debugf("fetched resource data for %s", cfg.Client.Address)
-					}
+			for cfg := range pollerCH {
+				var fetchErr error
+				var dbErr error
+				logger.Infof("polling device '%s'", cfg.Client.Address)
+				fetchErr = fetchResources(cfg)
+				if fetchErr != nil {
+					logger.Error(fetchErr)
+				}
 
-					identity, err := cfg.Client.Run("/system/identity/print")
-					if err != nil {
-						cfg.Device.PollingSucceeded = 0
-						logger.Error(err)
-					} else {
-						logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
+				fetchErr = fetchIdentity(cfg)
+				if fetchErr != nil {
+					logger.Error(fetchErr)
+				}
 
-						inrec, _ := json.Marshal(resource[0].Map)
-						json.Unmarshal(inrec, &cfg.Device)
-						cfg.Device.PollingSucceeded = 1
-						cfg.Device.Identity = string(identity[0].Map["name"])
-						cfg.Device.PolledAt = time.Now()
-					}
-					dbErr := errors.New("")
-					if cfg.Device.Id != "" {
-						dbErr = cfg.Device.Update(cfg.Db)
-					} else {
-						dbErr = cfg.Device.Create(cfg.Db)
-					}
-					if dbErr != nil {
-						logger.Error(dbErr)
-					}
+				if fetchErr != nil {
+					cfg.Device.PollingSucceeded = 0
+				} else {
+					cfg.Device.PollingSucceeded = 1
+					cfg.Device.PolledAt = time.Now()
+				}
+
+				if cfg.Device.Id != "" {
+					dbErr = cfg.Device.Update(cfg.Db)
+				} else {
+					dbErr = cfg.Device.Create(cfg.Db)
+				}
+
+				if dbErr != nil {
+					logger.Error(dbErr)
 				}
 			}
 		}()
 	}
+}
+
+func fetchResources(cfg *PollerCFG) error {
+	resource, err := cfg.Client.Run("/system/resource/print")
+	if err != nil {
+		return err
+	}
+	logger.Debugf("fetched resource data for %s", cfg.Client.Address)
+	inrec, _ := json.Marshal(resource[0].Map)
+	return json.Unmarshal(inrec, &cfg.Device)
+}
+
+func fetchIdentity(cfg *PollerCFG) error {
+	identity, err := cfg.Client.Run("/system/identity/print")
+	if err != nil {
+		return err
+	}
+	if len(identity) > 0 {
+		logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
+		cfg.Device.Identity = string(identity[0].Map["name"])
+		return nil
+	}
+	return fmt.Errorf("got an empty identity data")
 }

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"html/template"
 	"net/http"
 	"path"
@@ -45,13 +44,19 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 
 func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
+		credsErr  error
 		credsTmpl = path.Join("templates", "credentials-form.html")
 		data      = &credentialsForm{}
 	)
 
 	if r.Method == "POST" {
 		// parse the form
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			dh.logger.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		id := r.PostForm.Get("idInput")
 		alias := r.PostForm.Get("alias")
 		username := r.PostForm.Get("username")
@@ -60,6 +65,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		if err != nil {
 			dh.logger.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		creds := &utils.Credentials{
@@ -69,13 +75,17 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 			EncryptedPassword: encryptedPw,
 		}
 
-		credsErr := errors.New("")
 		if id == "" {
 			// "id" is unset - create new credentials
 			credsErr = creds.Create(dh.db)
 		} else {
 			// "id" is set - update existing credentials
-			creds.GetById(dh.db)
+			err = creds.GetById(dh.db)
+			if err != nil {
+				dh.logger.Error(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			creds.Alias = alias
 			creds.Username = username
 			creds.EncryptedPassword = encryptedPw
@@ -98,10 +108,14 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		if id != "" {
 			c := &utils.Credentials{}
 			c.Id = id
-			c.GetById(dh.db)
-			data.Id = c.Id
-			data.Alias = c.Alias
-			data.Username = c.Username
+			err := c.GetById(dh.db)
+			if err != nil {
+				data.Msg = err.Error()
+			} else {
+				data.Id = c.Id
+				data.Alias = c.Alias
+				data.Username = c.Username
+			}
 		}
 	}
 
