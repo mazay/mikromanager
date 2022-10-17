@@ -18,7 +18,7 @@ func replace(input, from, to string) string {
 }
 
 func timeAgo(t time.Time) string {
-	diff := time.Now().Sub(t)
+	diff := time.Since(t)
 	out := time.Time{}.Add(diff)
 	return out.Format("15:04:05")
 }
