@@ -23,7 +23,9 @@ func (db *DB) Init() (bool, error) {
 	// create the set of collections
 	for _, name := range db.Collections {
 		if !db.HasCollection(db.Collections[name]) {
-			db.CreateCollection(db.Collections[name])
+			if db.CreateCollection(db.Collections[name]) != nil {
+				return false, err
+			}
 		}
 	}
 
@@ -138,12 +140,13 @@ func (db *DB) FindAll(collection string) ([]map[string]interface{}, error) {
 	docs, err := query.FindAll()
 	for _, doc := range docs {
 		var inInterface map[string]interface{}
-		doc.Unmarshal(&inInterface)
-		result = append(result, inInterface)
+		if doc.Unmarshal(&inInterface) != nil {
+			result = append(result, inInterface)
+		}
 	}
 	return result, err
 }
 
-func (db *DB) Export(collection string, filename string) {
-	db.api.ExportCollection(collection, filename)
+func (db *DB) Export(collection string, filename string) error {
+	return db.api.ExportCollection(collection, filename)
 }
