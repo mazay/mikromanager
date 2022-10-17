@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -27,15 +26,12 @@ func (api *API) getEndpoint() string {
 }
 
 func (api *API) dial() (*routeros.Client, error) {
-	var client *routeros.Client
-	err := errors.New("")
 	endpoint := api.getEndpoint()
 	if api.UseTLS {
-		client, err = routeros.DialTLS(endpoint, api.Username, api.Password, nil)
+		return routeros.DialTLS(endpoint, api.Username, api.Password, nil)
 	} else {
-		client, err = routeros.Dial(endpoint, api.Username, api.Password)
+		return routeros.Dial(endpoint, api.Username, api.Password)
 	}
-	return client, err
 }
 
 func (api *API) Run(command string) ([]*proto.Sentence, error) {
