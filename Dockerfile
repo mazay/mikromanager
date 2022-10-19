@@ -14,6 +14,12 @@ FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.16.2
 ARG TARGETPLATFORM
 LABEL maintainer="Yevgeniy Valeyev <z.mazay@gmail.com>"
 RUN apk --no-cache add ca-certificates
+RUN adduser \
+    --disabled-password \
+    --no-create-home \
+    -u 8888 \
+    mikromanager
+USER mikromanager
 WORKDIR /app/
 COPY templates ./templates
 COPY static ./static
