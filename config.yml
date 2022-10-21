@@ -26,3 +26,10 @@ apiPollers: 2
 # full or relative path to the database, defaults to `database.clover` if ommited
 # the path will be created and new DB initialised if missing
 dbPath: database.clover
+
+# full or relative path to the backups
+# the path will be created
+backupPath: backups
+
+# MikroManager API pollers, can be ommited or set to 0 if backups are not created
+backupWorkers: 10

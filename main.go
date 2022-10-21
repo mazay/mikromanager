@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -13,6 +13,7 @@ import (
 	"github.com/mazay/mikromanager/api"
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
+	"github.com/mazay/mikromanager/ssh"
 	"github.com/mazay/mikromanager/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -43,6 +44,7 @@ func main() {
 	initLogger(config)
 
 	pollerCH := make(chan *PollerCFG)
+	backupCH := make(chan *PollerCFG)
 
 	wg.Add(1)
 
@@ -60,12 +62,13 @@ func main() {
 	go http.HttpServer("8000", db, config.EncryptionKey, logger)
 
 	apiPoller(config, pollerCH)
-	go devicesPoller(config, db, pollerCH)
+	backupWorker(config, backupCH)
+	go devicesPoller(config, db, pollerCH, backupCH)
 
 	wg.Wait()
 }
 
-func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
+func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, backupCH chan<- *PollerCFG) {
 	var d = &utils.Device{}
 	wg.Add(1)
 	logger.Info("starting device poller/scheduler")
@@ -97,13 +100,14 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
 				UseTLS:   false,
 			}
 			pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
+			backupCH <- &PollerCFG{Client: client, Db: db, Device: device}
 		}
 		time.Sleep(cfg.DevicePollerInterval)
 	}
 }
 
 func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
-	logger.Infof("starting %s MikroTik API pollers", strconv.Itoa(cfg.ApiPollers))
+	logger.Infof("starting %d MikroTik API pollers", cfg.ApiPollers)
 	for x := 0; x < cfg.ApiPollers; x++ {
 		wg.Add(1)
 		go func() {
@@ -142,6 +146,33 @@ func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
 	}
 }
 
+func backupWorker(config *Config, backupCH <-chan *PollerCFG) {
+	logger.Infof("starting %d MikroManager backup workers", config.ApiPollers)
+	for x := 0; x < config.BackupWorkers; x++ {
+		wg.Add(1)
+		go func() {
+			for cfg := range backupCH {
+				logger.Infof("creating backup for device with IP address %s", cfg.Client.Address)
+				sshCli := ssh.SshClient{
+					Host:     cfg.Device.Address,
+					Port:     "22",
+					User:     cfg.Client.Username,
+					Password: cfg.Client.Password,
+				}
+
+				export, sshErr := sshCli.Run("/export")
+				if sshErr == nil {
+					time := time.Now().Unix()
+					filename := fmt.Sprintf("%s/%s/%d.rsc", config.BackupPath, cfg.Client.Address, time)
+					writeBackupFile(filename, export)
+				} else {
+					logger.Error(sshErr)
+				}
+			}
+		}()
+	}
+}
+
 func fetchResources(cfg *PollerCFG) error {
 	resource, err := cfg.Client.Run("/system/resource/print")
 	if err != nil {
@@ -163,4 +194,24 @@ func fetchIdentity(cfg *PollerCFG) error {
 		return nil
 	}
 	return fmt.Errorf("got an empty identity data")
+}
+
+func writeBackupFile(filename string, data []byte) {
+	if err := os.MkdirAll(filepath.Dir(filename), 0770); err != nil {
+		logger.Fatal(err)
+		osExit(4)
+	}
+
+	f, err := os.Create(filename)
+	if err != nil {
+		logger.Fatal(err)
+		osExit(4)
+	}
+	defer f.Close()
+
+	_, err = f.Write(data)
+	if err != nil {
+		logger.Fatal(err)
+		osExit(4)
+	}
 }

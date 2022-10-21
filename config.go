@@ -10,6 +10,8 @@ import (
 
 type Config struct {
 	ApiPollers           int           `yaml:"apiPollers"`
+	BackupPath           string        `yaml:"backupPath"`
+	BackupWorkers        int           `yaml:"backupWorkers"`
 	DevicePollerInterval time.Duration `yaml:"devicePollerInterval"`
 	DbPath               string        `yaml:"dbPath"`
 	EncryptionKey        string        `yaml:"encryptionKey"`

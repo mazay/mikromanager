@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/ostafen/clover v1.2.0
 	github.com/sirupsen/logrus v1.9.0
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	gopkg.in/routeros.v2 v2.0.0-20190905230420-1bbf141cdd91
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
