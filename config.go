@@ -13,6 +13,7 @@ type Config struct {
 	BackupPath           string        `yaml:"backupPath"`
 	ExportWorkers        int           `yaml:"exportWorkers"`
 	DevicePollerInterval time.Duration `yaml:"devicePollerInterval"`
+	DeviceExportInterval time.Duration `yaml:"deviceExportInterval"`
 	DbPath               string        `yaml:"dbPath"`
 	EncryptionKey        string        `yaml:"encryptionKey"`
 	LogLevel             string        `yaml:"logLevel"`
@@ -30,6 +31,9 @@ func (cfg *Config) setDefaults() {
 	}
 	if cfg.DevicePollerInterval == 0 {
 		cfg.DevicePollerInterval = time.Millisecond * 1000 * 300
+	}
+	if cfg.DeviceExportInterval == 0 {
+		cfg.DeviceExportInterval = time.Hour * 1
 	}
 	if cfg.DbPath == "" {
 		cfg.DbPath = "database.clover"

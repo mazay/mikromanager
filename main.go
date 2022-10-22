@@ -63,12 +63,13 @@ func main() {
 
 	apiPoller(config, pollerCH)
 	exportWorker(config, exportCH)
-	go devicesPoller(config, db, pollerCH, exportCH)
+	go devicesPoller(config, db, pollerCH)
+	go backupScheduler(config, db, exportCH)
 
 	wg.Wait()
 }
 
-func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, exportCH chan<- *PollerCFG) {
+func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
 	var d = &utils.Device{}
 	wg.Add(1)
 	logger.Info("starting device poller/scheduler")
@@ -100,9 +101,45 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, exportCH 
 				UseTLS:   false,
 			}
 			pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
-			exportCH <- &PollerCFG{Client: client, Db: db, Device: device}
 		}
 		time.Sleep(cfg.DevicePollerInterval)
+	}
+}
+
+func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *PollerCFG) {
+	var d = &utils.Device{}
+	wg.Add(1)
+	logger.Info("starting backup scheduler")
+	logger.Debugf("deviceExportInterval is %s", cfg.DeviceExportInterval)
+	for {
+		devices, err := d.GetAll(db)
+		if err != nil {
+			logger.Error(err)
+			return
+		}
+		for _, device := range devices {
+			creds, err := device.GetCredentials(db)
+			if err != nil {
+				logger.Error(err)
+				return
+			}
+			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
+			if encryptionErr != nil {
+				logger.Error(encryptionErr)
+				return
+			}
+			client := &api.API{
+				Address:  device.Address,
+				Port:     device.ApiPort,
+				Username: creds.Username,
+				Password: decryptedPw,
+				Async:    false,
+				UseTLS:   false,
+			}
+			exportCH <- &PollerCFG{Client: client, Db: db, Device: device}
+		}
+		time.Sleep(cfg.DeviceExportInterval)
 	}
 }
 

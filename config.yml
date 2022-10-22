@@ -23,6 +23,12 @@ apiPollers: 2
 # valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 # devicePollerInterval: 30s
 
+# deviceExportInterval defines how often devices config should be exported/backed up,
+# the time is between finish of a previous run and start of the new one
+# defaults to 1 hour if ommited
+# valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
+# deviceExportInterval: 1h
+
 # full or relative path to the database, defaults to `database.clover` if ommited
 # the path will be created and new DB initialised if missing
 dbPath: database.clover
