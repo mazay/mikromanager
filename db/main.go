@@ -10,6 +10,7 @@ type DB struct {
 	api         *clover.DB
 	Logger      *logrus.Entry
 	Collections map[string]string
+	SortBy      *clover.SortOption
 }
 
 func (db *DB) Init() error {
@@ -50,6 +51,21 @@ func (db *DB) HasCollection(collection string) bool {
 
 func (db *DB) CreateCollection(collection string) error {
 	return db.api.CreateCollection(collection)
+}
+
+func (db *DB) Sort(field string, direction int) {
+	db.SortBy = &clover.SortOption{
+		Field:     field,
+		Direction: direction,
+	}
+}
+
+func (db *DB) getBaseQuery(collection string) *clover.Query {
+	baseQuery := db.api.Query(collection)
+	if db.SortBy != (&clover.SortOption{}) {
+		baseQuery = db.api.Query(collection).Sort(*db.SortBy)
+	}
+	return baseQuery
 }
 
 func (db *DB) Insert(collection string, values map[string]interface{}) (string, error) {
@@ -117,7 +133,8 @@ func (db *DB) FindByKeyValue(collection string, key string, value string) (map[s
 
 func (db *DB) FindAllByKeyValue(collection string, key string, value string) ([]map[string]interface{}, error) {
 	var result []map[string]interface{}
-	docs, err := db.api.Query(collection).Where(clover.Field(key).Eq(value)).FindAll()
+	baseQuery := db.getBaseQuery(collection)
+	docs, err := baseQuery.Where(clover.Field(key).Eq(value)).FindAll()
 	for _, doc := range docs {
 		var inInterface map[string]interface{}
 		if doc.Unmarshal(&inInterface) == nil {
@@ -139,7 +156,8 @@ func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map
 			}
 		}
 	}
-	doc, err := db.api.Query(collection).Where(criteria).FindFirst()
+	baseQuery := db.getBaseQuery(collection)
+	doc, err := baseQuery.Where(criteria).FindFirst()
 	if err == nil && doc != nil {
 		err = doc.Unmarshal(&inInterface)
 	}
@@ -148,8 +166,8 @@ func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map
 
 func (db *DB) FindAll(collection string) ([]map[string]interface{}, error) {
 	var result []map[string]interface{}
-	query := db.api.Query(collection)
-	docs, err := query.FindAll()
+	baseQuery := db.getBaseQuery(collection)
+	docs, err := baseQuery.FindAll()
 	for _, doc := range docs {
 		var inInterface map[string]interface{}
 		if doc.Unmarshal(&inInterface) == nil {

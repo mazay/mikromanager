@@ -58,6 +58,7 @@ func (b *Export) GetById(db *database.DB) error {
 func (b *Export) GetByDeviceId(db *database.DB, deviceId string) ([]*Export, error) {
 	var exportList []*Export
 
+	db.Sort("created", -1)
 	docs, err := db.FindAllByKeyValue(db.Collections["exports"], "deviceId", deviceId)
 	if err != nil {
 		log.Fatal(err)

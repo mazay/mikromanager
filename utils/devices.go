@@ -43,6 +43,7 @@ type Device struct {
 func (d *Device) GetAll(db *database.DB) ([]*Device, error) {
 	var deviceList []*Device
 
+	db.Sort("address", 1)
 	docs, err := db.FindAll(db.Collections["devices"])
 	if err != nil {
 		log.Fatal(err)
