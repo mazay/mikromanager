@@ -18,6 +18,11 @@ type deviceForm struct {
 	Credentials   []*utils.Credentials
 }
 
+type deviceDetails struct {
+	Device  *utils.Device
+	Exports []*utils.Export
+}
+
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		deviceErr  error
@@ -143,6 +148,8 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	var deviceTmpl = path.Join("templates", "device-details.html")
 	var device = &utils.Device{}
+	var details = &deviceDetails{}
+	var export = &utils.Export{}
 	var id = r.URL.Query().Get("id")
 
 	if id == "" {
@@ -157,6 +164,14 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	details.Device = device
+
+	exports, err := export.GetByDeviceId(dh.db, device.Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	details.Exports = exports
 
 	// load templates
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(deviceTmpl, baseTmpl)
@@ -167,7 +182,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", device); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "base", details); err != nil {
 		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

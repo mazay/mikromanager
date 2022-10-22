@@ -31,5 +31,5 @@ dbPath: database.clover
 # the path will be created
 backupPath: backups
 
-# MikroManager API pollers, can be ommited or set to 0 if backups are not created
-backupWorkers: 10
+# MikroManager export workers, can be ommited or set to 0 if backups are not created
+exportWorkers: 10

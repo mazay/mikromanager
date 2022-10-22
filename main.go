@@ -44,7 +44,7 @@ func main() {
 	initLogger(config)
 
 	pollerCH := make(chan *PollerCFG)
-	backupCH := make(chan *PollerCFG)
+	exportCH := make(chan *PollerCFG)
 
 	wg.Add(1)
 
@@ -59,16 +59,16 @@ func main() {
 	collections, _ := db.ListCollections()
 	logger.Debugf("DB has the following collections: %s", strings.Join(collections, ", "))
 
-	go http.HttpServer("8000", db, config.EncryptionKey, logger)
+	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger)
 
 	apiPoller(config, pollerCH)
-	backupWorker(config, backupCH)
-	go devicesPoller(config, db, pollerCH, backupCH)
+	exportWorker(config, exportCH)
+	go devicesPoller(config, db, pollerCH, exportCH)
 
 	wg.Wait()
 }
 
-func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, backupCH chan<- *PollerCFG) {
+func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, exportCH chan<- *PollerCFG) {
 	var d = &utils.Device{}
 	wg.Add(1)
 	logger.Info("starting device poller/scheduler")
@@ -100,7 +100,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, backupCH 
 				UseTLS:   false,
 			}
 			pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
-			backupCH <- &PollerCFG{Client: client, Db: db, Device: device}
+			exportCH <- &PollerCFG{Client: client, Db: db, Device: device}
 		}
 		time.Sleep(cfg.DevicePollerInterval)
 	}
@@ -146,12 +146,12 @@ func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
 	}
 }
 
-func backupWorker(config *Config, backupCH <-chan *PollerCFG) {
-	logger.Infof("starting %d MikroManager backup workers", config.ApiPollers)
-	for x := 0; x < config.BackupWorkers; x++ {
+func exportWorker(config *Config, exportCH <-chan *PollerCFG) {
+	logger.Infof("starting %d MikroManager export workers", config.ExportWorkers)
+	for x := 0; x < config.ExportWorkers; x++ {
 		wg.Add(1)
 		go func() {
-			for cfg := range backupCH {
+			for cfg := range exportCH {
 				logger.Infof("creating backup for device with IP address %s", cfg.Client.Address)
 				sshCli := ssh.SshClient{
 					Host:     cfg.Device.Address,
@@ -162,9 +162,21 @@ func backupWorker(config *Config, backupCH <-chan *PollerCFG) {
 
 				export, sshErr := sshCli.Run("/export")
 				if sshErr == nil {
-					time := time.Now().Unix()
-					filename := fmt.Sprintf("%s/%s/%d.rsc", config.BackupPath, cfg.Client.Address, time)
-					writeBackupFile(filename, export)
+					creationTime := time.Now()
+					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Client.Address, creationTime.Unix())
+					err := writeBackupFile(filename, export)
+					if err != nil {
+						logger.Error(err)
+					} else {
+						export := &utils.Export{
+							DeviceId: cfg.Device.Id,
+							Filename: filename,
+						}
+						err := export.Create(cfg.Db)
+						if err != nil {
+							logger.Fatal(err)
+						}
+					}
 				} else {
 					logger.Error(sshErr)
 				}
@@ -196,22 +208,23 @@ func fetchIdentity(cfg *PollerCFG) error {
 	return fmt.Errorf("got an empty identity data")
 }
 
-func writeBackupFile(filename string, data []byte) {
+func writeBackupFile(filename string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(filename), 0770); err != nil {
 		logger.Fatal(err)
-		osExit(4)
+		return err
 	}
 
 	f, err := os.Create(filename)
 	if err != nil {
 		logger.Fatal(err)
-		osExit(4)
+		return err
 	}
 	defer f.Close()
 
 	_, err = f.Write(data)
 	if err != nil {
 		logger.Fatal(err)
-		osExit(4)
+		return err
 	}
+	return nil
 }

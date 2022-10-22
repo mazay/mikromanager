@@ -115,6 +115,18 @@ func (db *DB) FindByKeyValue(collection string, key string, value string) (map[s
 	return inInterface, err
 }
 
+func (db *DB) FindAllByKeyValue(collection string, key string, value string) ([]map[string]interface{}, error) {
+	var result []map[string]interface{}
+	docs, err := db.api.Query(collection).Where(clover.Field(key).Eq(value)).FindAll()
+	for _, doc := range docs {
+		var inInterface map[string]interface{}
+		if doc.Unmarshal(&inInterface) == nil {
+			result = append(result, inInterface)
+		}
+	}
+	return result, err
+}
+
 func (db *DB) FindByCriteriaSet(collection string, set []map[string]string) (map[string]interface{}, error) {
 	var inInterface map[string]interface{}
 	var criteria = &clover.Criteria{}
