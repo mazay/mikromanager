@@ -93,7 +93,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG, backupCH 
 			}
 			client := &api.API{
 				Address:  device.Address,
-				Port:     device.Port,
+				Port:     device.ApiPort,
 				Username: creds.Username,
 				Password: decryptedPw,
 				Async:    false,

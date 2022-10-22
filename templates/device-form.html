@@ -26,10 +26,17 @@
       </div>
     </div>
     <div class="row mb-3">
-      <label for="inputPort" class="col-sm-2 col-form-label">Port</label>
+      <label for="inputApiPort" class="col-sm-2 col-form-label">API Port</label>
       <div class="col-sm-10">
-        <input name="port" type="text" class="form-control" id="inputPort" aria-describedby="portHelp" value="{{ .Port }}">
-        <div id="portHelp" class="form-text">MikroTik API endpoint port, will use default port "8728" if ommited.</div>
+        <input name="apiPort" type="number" class="form-control" id="inputApiPort" aria-describedby="apiPortHelp" value="{{ .ApiPort }}">
+        <div id="apiPortHelp" class="form-text">MikroTik API endpoint port, will use port "8728" if ommited.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="inputSshPort" class="col-sm-2 col-form-label">SSH Port</label>
+      <div class="col-sm-10">
+        <input name="sshPort" type="number" class="form-control" id="inputSshPort" aria-describedby="sshPortHelp" value="{{ .ApiPort }}">
+        <div id="sshPortHelp" class="form-text">MikroTik API endpoint port, will use port "22" if ommited.</div>
       </div>
     </div>
     <div class="row mb-3">

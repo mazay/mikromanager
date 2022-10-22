@@ -11,7 +11,8 @@ import (
 type deviceForm struct {
 	Id            string
 	Address       string
-	Port          string
+	ApiPort       string
+	SshPort       string
 	CredentialsId string
 	Msg           string
 	Credentials   []*utils.Credentials
@@ -38,13 +39,15 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		}
 		id := r.PostForm.Get("idInput")
 		address := r.PostForm.Get("address")
-		port := r.PostForm.Get("port")
+		apiPort := r.PostForm.Get("apiPort")
+		sshPort := r.PostForm.Get("sshPort")
 		credentialsId := r.PostForm.Get("credentialsId")
 
 		device := &utils.Device{
 			Id:            id,
 			Address:       address,
-			Port:          port,
+			ApiPort:       apiPort,
+			SshPort:       sshPort,
 			CredentialsId: credentialsId,
 		}
 
@@ -58,7 +61,8 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 				data.Msg = err.Error()
 			}
 			device.Address = address
-			device.Port = port
+			device.ApiPort = apiPort
+			device.SshPort = sshPort
 			device.CredentialsId = credentialsId
 			deviceErr = device.Update(dh.db)
 		}
@@ -67,7 +71,8 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			// return data with errors if validation failed
 			data.Id = id
 			data.Address = address
-			data.Port = port
+			data.ApiPort = apiPort
+			data.SshPort = sshPort
 			data.CredentialsId = credentialsId
 			data.Msg = deviceErr.Error()
 		} else {
@@ -86,7 +91,8 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			} else {
 				data.Id = d.Id
 				data.Address = d.Address
-				data.Port = d.Port
+				data.ApiPort = d.ApiPort
+				data.SshPort = d.SshPort
 				data.CredentialsId = d.CredentialsId
 			}
 		}

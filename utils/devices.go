@@ -12,6 +12,7 @@ import (
 type Device struct {
 	Id                   string            `json:"_id"`
 	Address              string            `json:"address"`
+	ApiPort              string            `json:"apiPort"`
 	ArchitectureName     string            `json:"architecture-name"`
 	BadBlocks            int64             `json:"bad-blocks,string"`
 	BoardName            string            `json:"board-name"`
@@ -29,7 +30,7 @@ type Device struct {
 	Platform             string            `json:"platform"`
 	PolledAt             time.Time         `json:"polledAt"`
 	PollingSucceeded     int64             `json:"pollingSucceeded,string"`
-	Port                 string            `json:"port"`
+	SshPort              string            `json:"sshPort"`
 	TotalHddSpace        int64             `json:"total-hdd-space,string"`
 	TotalMemory          int64             `json:"total-memory,string"`
 	Updated              time.Time         `json:"updated"`
