@@ -22,6 +22,12 @@ type PollerCFG struct {
 	Device *utils.Device
 }
 
+type BackupCFG struct {
+	Client *ssh.SshClient
+	Db     *db.DB
+	Device *utils.Device
+}
+
 var (
 	configPath string
 	httpPort   string
@@ -42,7 +48,7 @@ func main() {
 	initLogger(config)
 
 	pollerCH := make(chan *PollerCFG)
-	exportCH := make(chan *PollerCFG)
+	exportCH := make(chan *BackupCFG)
 
 	wg.Add(1)
 
@@ -104,43 +110,6 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
 	}
 }
 
-func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *PollerCFG) {
-	var d = &utils.Device{}
-	wg.Add(1)
-	logger.Info("starting backup scheduler")
-	logger.Debugf("deviceExportInterval is %s", cfg.DeviceExportInterval)
-	for {
-		devices, err := d.GetAll(db)
-		if err != nil {
-			logger.Error(err)
-			return
-		}
-		for _, device := range devices {
-			creds, err := device.GetCredentials(db)
-			if err != nil {
-				logger.Error(err)
-				return
-			}
-			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
-			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
-			if encryptionErr != nil {
-				logger.Error(encryptionErr)
-				return
-			}
-			client := &api.API{
-				Address:  device.Address,
-				Port:     device.ApiPort,
-				Username: creds.Username,
-				Password: decryptedPw,
-				Async:    false,
-				UseTLS:   false,
-			}
-			exportCH <- &PollerCFG{Client: client, Db: db, Device: device}
-		}
-		time.Sleep(cfg.DeviceExportInterval)
-	}
-}
-
 func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
 	logger.Infof("starting %d MikroTik API pollers", cfg.ApiPollers)
 	for x := 0; x < cfg.ApiPollers; x++ {
@@ -181,24 +150,53 @@ func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
 	}
 }
 
-func exportWorker(config *Config, exportCH <-chan *PollerCFG) {
+func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
+	var d = &utils.Device{}
+	wg.Add(1)
+	logger.Info("starting backup scheduler")
+	logger.Debugf("deviceExportInterval is %s", cfg.DeviceExportInterval)
+	for {
+		devices, err := d.GetAll(db)
+		if err != nil {
+			logger.Error(err)
+			return
+		}
+		for _, device := range devices {
+			creds, err := device.GetCredentials(db)
+			if err != nil {
+				logger.Error(err)
+				return
+			}
+			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
+			if encryptionErr != nil {
+				logger.Error(encryptionErr)
+				return
+			}
+			client := &ssh.SshClient{
+				Host:     device.Address,
+				Port:     device.SshPort,
+				User:     creds.Username,
+				Password: decryptedPw,
+			}
+			exportCH <- &BackupCFG{Client: client, Db: db, Device: device}
+		}
+		time.Sleep(cfg.DeviceExportInterval)
+	}
+}
+
+func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 	logger.Infof("starting %d MikroManager export workers", config.ExportWorkers)
 	for x := 0; x < config.ExportWorkers; x++ {
 		wg.Add(1)
 		go func() {
 			for cfg := range exportCH {
-				logger.Infof("creating backup for device with IP address %s", cfg.Client.Address)
-				sshCli := ssh.SshClient{
-					Host:     cfg.Device.Address,
-					Port:     cfg.Device.SshPort,
-					User:     cfg.Client.Username,
-					Password: cfg.Client.Password,
-				}
+				logger.Infof("creating backup for device with IP address %s", cfg.Client.Host)
 
-				export, sshErr := sshCli.Run("/export")
+				export, sshErr := cfg.Client.Run("/export")
 				if sshErr == nil {
 					creationTime := time.Now()
-					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Client.Address, creationTime.Unix())
+					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Client.Host, creationTime.Unix())
 					err := writeBackupFile(filename, export)
 					if err != nil {
 						logger.Error(err)
