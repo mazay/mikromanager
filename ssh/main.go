@@ -28,6 +28,10 @@ func (cli *SshClient) init() {
 			// ssh.PublicKeys(signer),
 		},
 	}
+
+	if cli.Port == "" {
+		cli.Port = "22"
+	}
 }
 
 func (cli *SshClient) Run(command string) ([]byte, error) {

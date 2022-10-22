@@ -190,7 +190,7 @@ func exportWorker(config *Config, exportCH <-chan *PollerCFG) {
 				logger.Infof("creating backup for device with IP address %s", cfg.Client.Address)
 				sshCli := ssh.SshClient{
 					Host:     cfg.Device.Address,
-					Port:     "22",
+					Port:     cfg.Device.SshPort,
 					User:     cfg.Client.Username,
 					Password: cfg.Client.Password,
 				}
