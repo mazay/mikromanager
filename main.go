@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/mazay/mikromanager/api"
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
@@ -65,52 +66,60 @@ func main() {
 
 	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger)
 
-	apiPoller(config, pollerCH)
+	scheduler := gocron.NewScheduler(time.Local)
+	logger.Debugf("devicePollerInterval is %s", config.DevicePollerInterval)
+	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, db, pollerCH)
+	if pollerErr != nil {
+		logger.Debugf("Job: %v, Error: %v", pollerJob, pollerErr)
+	}
+	logger.Debugf("deviceExportInterval is %s", config.DeviceExportInterval)
+	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, db, exportCH)
+	if pollerErr != nil {
+		logger.Debugf("Job: %v, Error: %v", exportJob, exportErr)
+	}
+	scheduler.StartAsync()
+
+	apiWorker(config, pollerCH)
 	exportWorker(config, exportCH)
-	go devicesPoller(config, db, pollerCH)
-	go backupScheduler(config, db, exportCH)
 
 	wg.Wait()
 }
 
-func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) {
+func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 	var d = &utils.Device{}
 	wg.Add(1)
-	logger.Info("starting device poller/scheduler")
-	logger.Debugf("devicePollerInterval is %s", cfg.DevicePollerInterval)
-	for {
-		devices, err := d.GetAll(db)
+	logger.Info("starting device polling task")
+	devices, err := d.GetAll(db)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+	for _, device := range devices {
+		creds, err := device.GetCredentials(db)
 		if err != nil {
 			logger.Error(err)
-			return
+			return err
 		}
-		for _, device := range devices {
-			creds, err := device.GetCredentials(db)
-			if err != nil {
-				logger.Error(err)
-				return
-			}
-			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
-			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
-			if encryptionErr != nil {
-				logger.Error(encryptionErr)
-				return
-			}
-			client := &api.API{
-				Address:  device.Address,
-				Port:     device.ApiPort,
-				Username: creds.Username,
-				Password: decryptedPw,
-				Async:    false,
-				UseTLS:   false,
-			}
-			pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
+		logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+		decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
+		if encryptionErr != nil {
+			logger.Error(encryptionErr)
+			return err
 		}
-		time.Sleep(cfg.DevicePollerInterval)
+		client := &api.API{
+			Address:  device.Address,
+			Port:     device.ApiPort,
+			Username: creds.Username,
+			Password: decryptedPw,
+			Async:    false,
+			UseTLS:   false,
+		}
+		pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
 	}
+	return nil
 }
 
-func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
+func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 	logger.Infof("starting %d MikroTik API pollers", cfg.ApiPollers)
 	for x := 0; x < cfg.ApiPollers; x++ {
 		wg.Add(1)
@@ -153,35 +162,31 @@ func apiPoller(cfg *Config, pollerCH <-chan *PollerCFG) {
 func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
 	var d = &utils.Device{}
 	wg.Add(1)
-	logger.Info("starting backup scheduler")
-	logger.Debugf("deviceExportInterval is %s", cfg.DeviceExportInterval)
-	for {
-		devices, err := d.GetAll(db)
+	logger.Info("starting backup task")
+	devices, err := d.GetAll(db)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	for _, device := range devices {
+		creds, err := device.GetCredentials(db)
 		if err != nil {
 			logger.Error(err)
 			return
 		}
-		for _, device := range devices {
-			creds, err := device.GetCredentials(db)
-			if err != nil {
-				logger.Error(err)
-				return
-			}
-			logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
-			decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
-			if encryptionErr != nil {
-				logger.Error(encryptionErr)
-				return
-			}
-			client := &ssh.SshClient{
-				Host:     device.Address,
-				Port:     device.SshPort,
-				User:     creds.Username,
-				Password: decryptedPw,
-			}
-			exportCH <- &BackupCFG{Client: client, Db: db, Device: device}
+		logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+		decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
+		if encryptionErr != nil {
+			logger.Error(encryptionErr)
+			return
 		}
-		time.Sleep(cfg.DeviceExportInterval)
+		client := &ssh.SshClient{
+			Host:     device.Address,
+			Port:     device.SshPort,
+			User:     creds.Username,
+			Password: decryptedPw,
+		}
+		exportCH <- &BackupCFG{Client: client, Db: db, Device: device}
 	}
 }
 
