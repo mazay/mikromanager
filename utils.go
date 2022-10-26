@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func fetchResources(cfg *PollerCFG) error {
@@ -49,4 +50,12 @@ func writeBackupFile(filename string, data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func timeSliceBy(start time.Time, end time.Time, multiplier time.Duration) []time.Time {
+	var times []time.Time
+	for d := start; !d.After(end); d = d.Add(multiplier) {
+		times = append(times, d)
+	}
+	return times
 }
