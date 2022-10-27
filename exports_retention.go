@@ -48,7 +48,10 @@ func exportsToKeep(exports []*utils.Export, timeSlice []time.Time, timeWindow ti
 	return exportList
 }
 
-func rotateHourlyBackups(db *db.DB, exports []*utils.Export, number int64) {
+// rotateHourlyExports return a list of hourly exports that should be kept
+func rotateHourlyExports(db *db.DB, exports []*utils.Export, number int64) []*utils.Export {
+	var exportsList []*utils.Export
+
 	now := time.Now()
 	end := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, now.Location())
 	start := end.Add(-time.Hour * time.Duration(number))
@@ -57,21 +60,17 @@ func rotateHourlyBackups(db *db.DB, exports []*utils.Export, number int64) {
 	timeWindow, err := time.ParseDuration("59m59s")
 	if err != nil {
 		logger.Fatal(err)
-		return
+		return exportsList
 	}
-	exportsToKeep := exportsToKeep(exports, slice, timeWindow)
-	for _, export := range exports {
-		if !exportInSlice(export, exportsToKeep) {
-			logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
-			err := export.Delete(db)
-			if err != nil {
-				logger.Error(err)
-			}
-		}
-	}
+	exportsList = exportsToKeep(exports, slice, timeWindow)
+
+	return exportsList
 }
 
-func rotateDailyBackups(db *db.DB, exports []*utils.Export, number int64) {
+// rotateDailyExports return a list of daily exports that should be kept
+func rotateDailyExports(db *db.DB, exports []*utils.Export, number int64) []*utils.Export {
+	var exportsList []*utils.Export
+
 	now := time.Now()
 	end := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	start := end.Add(-time.Hour * 24 * time.Duration(number))
@@ -80,21 +79,17 @@ func rotateDailyBackups(db *db.DB, exports []*utils.Export, number int64) {
 	timeWindow, err := time.ParseDuration("23h59m59s")
 	if err != nil {
 		logger.Fatal(err)
-		return
+		return exportsList
 	}
-	exportsToKeep := exportsToKeep(exports, slice, timeWindow)
-	for _, export := range exports {
-		if !exportInSlice(export, exportsToKeep) {
-			logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
-			err := export.Delete(db)
-			if err != nil {
-				logger.Error(err)
-			}
-		}
-	}
+	exportsList = exportsToKeep(exports, slice, timeWindow)
+
+	return exportsList
 }
 
-func rotateWeeklyBackups(db *db.DB, exports []*utils.Export, number int64) {
+// rotateWeeklyExports return a list of weekly exports that should be kept
+func rotateWeeklyExports(db *db.DB, exports []*utils.Export, number int64) []*utils.Export {
+	var exportsList []*utils.Export
+
 	now := time.Now()
 	weekDayDiff := 7 - now.Weekday()
 	end := time.Date(now.Year(), now.Month(), now.Day()+int(weekDayDiff), 0, 0, 0, 0, now.Location())
@@ -105,16 +100,9 @@ func rotateWeeklyBackups(db *db.DB, exports []*utils.Export, number int64) {
 	timeWindow, err := time.ParseDuration("167h59m59s")
 	if err != nil {
 		logger.Fatal(err)
-		return
+		return exportsList
 	}
-	exportsToKeep := exportsToKeep(exports, slice, timeWindow)
-	for _, export := range exports {
-		if !exportInSlice(export, exportsToKeep) {
-			logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
-			err := export.Delete(db)
-			if err != nil {
-				logger.Error(err)
-			}
-		}
-	}
+	exportsList = exportsToKeep(exports, slice, timeWindow)
+
+	return exportsList
 }

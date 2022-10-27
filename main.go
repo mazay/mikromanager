@@ -33,6 +33,8 @@ var (
 	configPath string
 	httpPort   string
 
+	policy = &utils.ExportsRetentionPolicy{Name: "Default"}
+
 	log    = logrus.New()
 	logger = log.WithFields(logrus.Fields{"app": "mikromanager"})
 	wg     = sync.WaitGroup{}
@@ -61,6 +63,22 @@ func main() {
 	}
 	defer db.Close()
 
+	logger.Debug("ensure 'Default' exports retention policy exists")
+	policyErr := policy.GetDefault(db)
+	if policyErr != nil || policy.Id == "" {
+		logger.Error(policyErr)
+	}
+
+	if policy.Id == "" {
+		policy.Hourly = 24
+		policy.Daily = 14
+		policy.Weekly = 26
+		policyErr = policy.Create(db)
+		if policyErr != nil {
+			logger.Fatal(policyErr)
+		}
+	}
+
 	collections, _ := db.ListCollections()
 	logger.Debugf("DB has the following collections: %s", strings.Join(collections, ", "))
 
@@ -70,12 +88,17 @@ func main() {
 	logger.Debugf("devicePollerInterval is %s", config.DevicePollerInterval)
 	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, db, pollerCH)
 	if pollerErr != nil {
-		logger.Debugf("Job: %v, Error: %v", pollerJob, pollerErr)
+		logger.Errorf("Job: %v, Error: %v", pollerJob, pollerErr)
 	}
 	logger.Debugf("deviceExportInterval is %s", config.DeviceExportInterval)
 	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, db, exportCH)
-	if pollerErr != nil {
-		logger.Debugf("Job: %v, Error: %v", exportJob, exportErr)
+	if exportErr != nil {
+		logger.Errorf("Job: %v, Error: %v", exportJob, exportErr)
+	}
+	logger.Debug("export retention job interval is 90 minutes")
+	exportRetentionJob, exportRetentionErr := scheduler.Every("90m").Do(rotateExports, db)
+	if exportRetentionErr != nil {
+		logger.Errorf("Job: %v, Error: %v", exportRetentionJob, exportRetentionErr)
 	}
 	scheduler.StartAsync()
 
@@ -87,7 +110,7 @@ func main() {
 
 func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 	var d = &utils.Device{}
-	wg.Add(1)
+
 	logger.Info("starting device polling task")
 	devices, err := d.GetAll(db)
 	if err != nil {
@@ -122,7 +145,6 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 	logger.Infof("starting %d MikroTik API pollers", cfg.ApiPollers)
 	for x := 0; x < cfg.ApiPollers; x++ {
-		wg.Add(1)
 		go func() {
 			for cfg := range pollerCH {
 				var fetchErr error
@@ -161,7 +183,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 
 func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
 	var d = &utils.Device{}
-	wg.Add(1)
+
 	logger.Info("starting backup task")
 	devices, err := d.GetAll(db)
 	if err != nil {
@@ -220,5 +242,44 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 				}
 			}
 		}()
+	}
+}
+
+func rotateExports(db *db.DB) {
+	var err error
+	var exportsList []*utils.Export
+	var device *utils.Device
+
+	logger.Info("starting exports retention task")
+	err = policy.GetDefault(db)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	devices, err := device.GetAll(db)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	for _, device := range devices {
+		var export *utils.Export
+		exports, err := export.GetByDeviceId(db, device.Id)
+		if err != nil {
+			logger.Error(err)
+		} else {
+			exportsList = append(exportsList, rotateHourlyExports(db, exports, policy.Hourly)...)
+			exportsList = append(exportsList, rotateDailyExports(db, exports, policy.Daily)...)
+			exportsList = append(exportsList, rotateWeeklyExports(db, exports, policy.Weekly)...)
+
+			for _, export := range exports {
+				if !exportInSlice(export, exportsList) {
+					logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
+					err := export.Delete(db)
+					if err != nil {
+						logger.Error(err)
+					}
+				}
+			}
+		}
 	}
 }
