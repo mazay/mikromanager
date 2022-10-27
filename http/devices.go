@@ -19,8 +19,9 @@ type deviceForm struct {
 }
 
 type deviceDetails struct {
-	Device  *utils.Device
-	Exports []*utils.Export
+	Device     *utils.Device
+	Exports    []*utils.Export
+	BackupPath string
 }
 
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +149,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	var deviceTmpl = path.Join("templates", "device-details.html")
 	var device = &utils.Device{}
-	var details = &deviceDetails{}
+	var details = &deviceDetails{BackupPath: dh.backupPath}
 	var export = &utils.Export{}
 	var id = r.URL.Query().Get("id")
 

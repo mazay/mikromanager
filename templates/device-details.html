@@ -72,7 +72,7 @@
       {{ range $export := .Exports }}
       <tr id="{{ $export.Id }}">
         <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
-        <td><a href="{{ $export.Filename }}" target="_blank">{{ $export.Filename }}</a></td>
+        <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
       </tr>
       {{ end }}
     </tbody>

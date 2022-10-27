@@ -18,6 +18,7 @@ type dynamicHandler struct {
 	db            *db.DB
 	encryptionKey string
 	logger        *logrus.Entry
+	backupPath    string
 }
 
 func handlerWrapper(fn http.HandlerFunc, logger *logrus.Entry) http.HandlerFunc {
@@ -33,7 +34,7 @@ func handlerWrapper(fn http.HandlerFunc, logger *logrus.Entry) http.HandlerFunc 
 
 func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath string, logger *logrus.Entry) {
 	logger.Infof("starting http server on port %s", httpPort)
-	dh := dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger}
+	dh := dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger, backupPath: backupPath}
 	static := http.FileServer(http.Dir("./static"))
 	backups := http.FileServer(http.Dir(backupPath))
 	http.HandleFunc("/", handlerWrapper(dh.getDevices, logger))
