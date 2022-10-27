@@ -63,7 +63,10 @@ func rotateHourlyBackups(db *db.DB, exports []*utils.Export, number int64) {
 	for _, export := range exports {
 		if !exportInSlice(export, exportsToKeep) {
 			logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
-			export.Delete(db)
+			err := export.Delete(db)
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 	}
 }
@@ -83,7 +86,10 @@ func rotateDailyBackups(db *db.DB, exports []*utils.Export, number int64) {
 	for _, export := range exports {
 		if !exportInSlice(export, exportsToKeep) {
 			logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
-			export.Delete(db)
+			err := export.Delete(db)
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 	}
 }
@@ -105,7 +111,10 @@ func rotateWeeklyBackups(db *db.DB, exports []*utils.Export, number int64) {
 	for _, export := range exports {
 		if !exportInSlice(export, exportsToKeep) {
 			logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
-			export.Delete(db)
+			err := export.Delete(db)
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 	}
 }
