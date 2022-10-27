@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	database "github.com/mazay/mikromanager/db"
@@ -54,7 +53,6 @@ func (c *Credentials) Delete(db *database.DB) error {
 func (c *Credentials) GetDefault(db *database.DB) error {
 	creds, err := db.FindByKeyValue(db.Collections["credentials"], "alias", "Default")
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
@@ -72,7 +70,6 @@ func (c *Credentials) GetDefault(db *database.DB) error {
 func (c *Credentials) GetById(db *database.DB) error {
 	doc, err := db.FindById(db.Collections["credentials"], c.Id)
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
@@ -93,7 +90,6 @@ func (c *Credentials) GetAll(db *database.DB) ([]*Credentials, error) {
 
 	docs, err := db.FindAll(db.Collections["credentials"])
 	if err != nil {
-		log.Fatal(err)
 		return credList, err
 	}
 
