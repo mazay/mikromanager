@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"time"
 
@@ -39,7 +38,6 @@ func (b *Export) Delete(db *database.DB) error {
 func (b *Export) GetById(db *database.DB) error {
 	doc, err := db.FindById(db.Collections["exports"], b.Id)
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
@@ -61,7 +59,6 @@ func (b *Export) GetByDeviceId(db *database.DB, deviceId string) ([]*Export, err
 	db.Sort("created", -1)
 	docs, err := db.FindAllByKeyValue(db.Collections["exports"], "deviceId", deviceId)
 	if err != nil {
-		log.Fatal(err)
 		return exportList, err
 	}
 
@@ -81,7 +78,6 @@ func (b *Export) GetAll(db *database.DB) ([]*Export, error) {
 	db.Sort("created", -1)
 	docs, err := db.FindAll(db.Collections["exports"])
 	if err != nil {
-		log.Fatal(err)
 		return exportList, err
 	}
 

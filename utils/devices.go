@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	database "github.com/mazay/mikromanager/db"
@@ -46,7 +45,6 @@ func (d *Device) GetAll(db *database.DB) ([]*Device, error) {
 	db.Sort("address", 1)
 	docs, err := db.FindAll(db.Collections["devices"])
 	if err != nil {
-		log.Fatal(err)
 		return deviceList, err
 	}
 
@@ -110,7 +108,6 @@ func (d *Device) Update(db *database.DB) error {
 func (d *Device) GetById(db *database.DB) error {
 	doc, err := db.FindById(db.Collections["devices"], d.Id)
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
