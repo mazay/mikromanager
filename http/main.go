@@ -1,7 +1,6 @@
 package http
 
 import (
-	"log"
 	"net/http"
 	"path"
 	"strconv"
@@ -46,5 +45,5 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath str
 	http.HandleFunc("/credentials/delete", handlerWrapper(dh.deleteCredentials, logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
 	http.Handle("/backups/", http.StripPrefix("/backups/", backups))
-	log.Fatal(http.ListenAndServe(":"+httpPort, nil))
+	logger.Fatal(http.ListenAndServe(":"+httpPort, nil))
 }
