@@ -17,9 +17,9 @@ type exportsData struct {
 func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err     error
+		exports []*utils.Export
 		erpTmpl = path.Join("templates", "exports.html")
 		export  = &utils.Export{}
-		exports = []*utils.Export{}
 		data    = &exportsData{BackupPath: dh.backupPath}
 	)
 
