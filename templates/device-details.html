@@ -55,7 +55,11 @@
         <dd class="col-sm-9">{{ .Device.PolledAt.Format "2006-01-02 15:04:05" }}</dd>
 
         <dt class="col-sm-3">Address</dt>
-        <dd class="col-sm-9"><a href="http://{{ .Device.Address }}" target="_blank">{{ .Device.Address }}</a></dd>
+        <dd class="col-sm-9">
+          {{ .Device.Address }}
+          <a href="http://{{ .Device.Address }}" target="_blank"><i class="bi-globe"></i></a>
+          <a href="ssh://{{ .Device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
+        </dd>
       </dl>
     </div>
   </div>
