@@ -1,86 +1,90 @@
 {{ define "nav-inventory" }}active{{ end }}
 {{ define "nav-devices" }}active{{ end }}
 {{ define "content" }}
-<div class="container">
-  <legend class="text-center display-6">Device details</legend>
-  <hr class="border {{ if eq .Device.PollingSucceeded 0 }}border-danger{{ else }}border-primary{{ end }} border-3 opacity-75">
-  <div class="row align-items-start">
-    <div class="col">
-      <dl class="row">
-        <dt class="col-sm-3">Identity</dt>
-        <dd class="col-sm-9">{{ .Device.Identity }}</dd>
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Devices</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ .Device.Id }}</li>
+  </ol>
+</nav>
+<legend class="text-center display-6">Device details</legend>
+<hr class="border {{ if eq .Device.PollingSucceeded 0 }}border-danger{{ else }}border-primary{{ end }} border-3 opacity-75">
+<div class="row align-items-start">
+  <div class="col">
+    <dl class="row">
+      <dt class="col-sm-3">Identity</dt>
+      <dd class="col-sm-9">{{ .Device.Identity }}</dd>
 
-        <dt class="col-sm-3">Arch</dt>
-        <dd class="col-sm-9">{{ .Device.ArchitectureName }}</dd>
+      <dt class="col-sm-3">Arch</dt>
+      <dd class="col-sm-9">{{ .Device.ArchitectureName }}</dd>
 
-        <dt class="col-sm-3">BoardName</dt>
-        <dd class="col-sm-9"><a href="{{ if eq .Device.BoardName "CHR" }}https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234{{ else }}https://mikrotik.com/products?filter&s=c&search={{ .Device.BoardName }}{{ end }}" target="_blank">{{ .Device.BoardName }}</a></dd>
+      <dt class="col-sm-3">BoardName</dt>
+      <dd class="col-sm-9"><a href="{{ if eq .Device.BoardName "CHR" }}https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234{{ else }}https://mikrotik.com/products?filter&s=c&search={{ .Device.BoardName }}{{ end }}" target="_blank">{{ .Device.BoardName }}</a></dd>
 
-        <dt class="col-sm-3">Version</dt>
-        <dd class="col-sm-9">{{ .Device.Version }}</dd>
+      <dt class="col-sm-3">Version</dt>
+      <dd class="col-sm-9">{{ .Device.Version }}</dd>
 
-        <dt class="col-sm-3">BuildTime</dt>
-        <dd class="col-sm-9">{{ .Device.BuildTime }}</dd>
+      <dt class="col-sm-3">BuildTime</dt>
+      <dd class="col-sm-9">{{ .Device.BuildTime }}</dd>
 
-        <dt class="col-sm-3">Factory Software</dt>
-        <dd class="col-sm-9">{{ .Device.FactorySoftware }}</dd>
+      <dt class="col-sm-3">Factory Software</dt>
+      <dd class="col-sm-9">{{ .Device.FactorySoftware }}</dd>
 
-        <dt class="col-sm-3">Created</dt>
-        <dd class="col-sm-9">{{ .Device.Created.Format "2006-01-02 15:04:05" }}</dd>
+      <dt class="col-sm-3">Created</dt>
+      <dd class="col-sm-9">{{ .Device.Created.Format "2006-01-02 15:04:05" }}</dd>
 
-        <dt class="col-sm-3">Updated</dt>
-        <dd class="col-sm-9">{{ .Device.Updated.Format "2006-01-02 15:04:05" }}</dd>
-      </dl>
-    </div>
-    <div class="col">
-      <dl class="row">
-        <dt class="col-sm-3">Bad Blocks</dt>
-        <dd class="col-sm-9">{{ .Device.BadBlocks }}</dd>
-
-        <dt class="col-sm-3">CPU</dt>
-        <dd class="col-sm-9">{{ .Device.CPU }}</dd>
-
-        <dt class="col-sm-3">CPU Count</dt>
-        <dd class="col-sm-9">{{ .Device.CpuCount }}</dd>
-
-        <dt class="col-sm-3">CPU Frequency</dt>
-        <dd class="col-sm-9">{{ if .Device.CpuFrequency }}{{ .Device.CpuFrequency }}{{ else }}N/A{{ end }}</dd>
-
-        <dt class="col-sm-3">CPU Load</dt>
-        <dd class="col-sm-9">{{ .Device.CpuLoad }}%</dd>
-
-        <dt class="col-sm-3">Memory Usage</dt>
-        <dd class="col-sm-9">{{ if and .Device.TotalMemory .Device.FreeMemory }}{{ memoryUsage .Device.TotalMemory .Device.FreeMemory }}%{{ end }}</dd>
-
-        <dt class="col-sm-3">Last Polled</dt>
-        <dd class="col-sm-9">{{ .Device.PolledAt.Format "2006-01-02 15:04:05" }}</dd>
-
-        <dt class="col-sm-3">Address</dt>
-        <dd class="col-sm-9">
-          {{ .Device.Address }}
-          <a href="http://{{ .Device.Address }}" target="_blank"><i class="bi-globe"></i></a>
-          <a href="ssh://{{ .Device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
-        </dd>
-      </dl>
-    </div>
+      <dt class="col-sm-3">Updated</dt>
+      <dd class="col-sm-9">{{ .Device.Updated.Format "2006-01-02 15:04:05" }}</dd>
+    </dl>
   </div>
-  <legend class="text-center display-6">Exports: {{ len .Exports }}</legend>
-  <hr class="border {{ if eq .Device.PollingSucceeded 0 }}border-danger{{ else }}border-primary{{ end }} border-1 opacity-75">
-  <table class="table table-striped table-hover">
-    <thead>
-      <tr>
-        <th scope="col">Created</th>
-        <th scope="col">Filename</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{ range $export := .Exports }}
-      <tr id="{{ $export.Id }}">
-        <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
-        <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
-      </tr>
-      {{ end }}
-    </tbody>
+  <div class="col">
+    <dl class="row">
+      <dt class="col-sm-3">Bad Blocks</dt>
+      <dd class="col-sm-9">{{ .Device.BadBlocks }}</dd>
+
+      <dt class="col-sm-3">CPU</dt>
+      <dd class="col-sm-9">{{ .Device.CPU }}</dd>
+
+      <dt class="col-sm-3">CPU Count</dt>
+      <dd class="col-sm-9">{{ .Device.CpuCount }}</dd>
+
+      <dt class="col-sm-3">CPU Frequency</dt>
+      <dd class="col-sm-9">{{ if .Device.CpuFrequency }}{{ .Device.CpuFrequency }}{{ else }}N/A{{ end }}</dd>
+
+      <dt class="col-sm-3">CPU Load</dt>
+      <dd class="col-sm-9">{{ .Device.CpuLoad }}%</dd>
+
+      <dt class="col-sm-3">Memory Usage</dt>
+      <dd class="col-sm-9">{{ if and .Device.TotalMemory .Device.FreeMemory }}{{ memoryUsage .Device.TotalMemory .Device.FreeMemory }}%{{ end }}</dd>
+
+      <dt class="col-sm-3">Last Polled</dt>
+      <dd class="col-sm-9">{{ .Device.PolledAt.Format "2006-01-02 15:04:05" }}</dd>
+
+      <dt class="col-sm-3">Address</dt>
+      <dd class="col-sm-9">
+        {{ .Device.Address }}
+        <a href="http://{{ .Device.Address }}" target="_blank"><i class="bi-globe"></i></a>
+        <a href="ssh://{{ .Device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
+      </dd>
+    </dl>
   </div>
+</div>
+<legend class="text-center display-6">Exports: {{ len .Exports }}</legend>
+<hr class="border {{ if eq .Device.PollingSucceeded 0 }}border-danger{{ else }}border-primary{{ end }} border-1 opacity-75">
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Created</th>
+      <th scope="col">Filename</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range $export := .Exports }}
+    <tr id="{{ $export.Id }}">
+      <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
+      <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
+    </tr>
+    {{ end }}
+  </tbody>
 </div>
 {{ end }}
