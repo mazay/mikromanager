@@ -5,7 +5,8 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/">Devices</a></li>
     {{ if ne .Id "" }}
-    <li class="breadcrumb-item active" aria-current="page">{{ .Id }}</li>
+    <li class="breadcrumb-item"><a href="/?id={{ .Id }}">{{ .Id }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit</li>
     {{ else }}
     <li class="breadcrumb-item active" aria-current="page">New</li>
     {{ end }}
@@ -66,7 +67,7 @@
       <div class="col-sm-2">
       </div>
       <div class="col-sm-10">
-        <a class="btn btn-danger" role="button" href="/">Cancel</a>
+        <a class="btn btn-danger" role="button" href="{{ if ne .Id "" }}/details?id={{ .Id }}{{ else }}/{{ end }}">Cancel</a>
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
     </div>
