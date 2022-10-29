@@ -1,9 +1,7 @@
 package http
 
 import (
-	"html/template"
 	"net/http"
-	"path"
 	"strconv"
 
 	"github.com/mazay/mikromanager/utils"
@@ -28,10 +26,9 @@ func (erp *exportRetentionPolicyForm) formFillIn(policy *utils.ExportsRetentionP
 
 func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *http.Request) {
 	var (
-		err     error
-		erpTmpl = path.Join("templates", "erp-form.html")
-		data    = &exportRetentionPolicyForm{}
-		erp     = &utils.ExportsRetentionPolicy{Name: "Default"}
+		err  error
+		data = &exportRetentionPolicyForm{}
+		erp  = &utils.ExportsRetentionPolicy{Name: "Default"}
 	)
 
 	err = erp.GetDefault(dh.db)
@@ -83,17 +80,5 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 	}
 
 	data.formFillIn(erp)
-	// load templates
-	tmpl, err := template.New("").ParseFiles(erpTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	dh.renderTemplate(w, erpTmpl, data)
 }

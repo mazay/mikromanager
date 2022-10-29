@@ -1,9 +1,7 @@
 package http
 
 import (
-	"html/template"
 	"net/http"
-	"path"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -18,7 +16,6 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err     error
 		exports []*utils.Export
-		erpTmpl = path.Join("templates", "exports.html")
 		export  = &utils.Export{}
 		data    = &exportsData{BackupPath: dh.backupPath}
 	)
@@ -43,17 +40,5 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Exports = exports
-	// load templates
-	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(erpTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	dh.renderTemplate(w, exportsTmpl, data)
 }

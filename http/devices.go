@@ -1,9 +1,7 @@
 package http
 
 import (
-	"html/template"
 	"net/http"
-	"path"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -26,10 +24,9 @@ type deviceDetails struct {
 
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 	var (
-		deviceErr  error
-		deviceTmpl = path.Join("templates", "device-form.html")
-		data       = &deviceForm{}
-		creds      = &utils.Credentials{}
+		deviceErr error
+		data      = &deviceForm{}
+		creds     = &utils.Credentials{}
 	)
 
 	credsAll, _ := creds.GetAll(dh.db)
@@ -104,23 +101,10 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// load templates
-	tmpl, err := template.New("").ParseFiles(deviceTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	dh.renderTemplate(w, deviceFormTmpl, data)
 }
 
 func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
-	var indexTmpl = path.Join("templates", "index.html")
 	var d = &utils.Device{}
 
 	// fetch devices
@@ -131,25 +115,12 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// load templates
-	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(indexTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", deviceList); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	dh.renderTemplate(w, indexTmpl, deviceList)
 }
 
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
-	var deviceTmpl = path.Join("templates", "device-details.html")
 	var device = &utils.Device{}
-	var details = &deviceDetails{BackupPath: dh.backupPath}
+	var data = &deviceDetails{BackupPath: dh.backupPath}
 	var export = &utils.Export{}
 	var id = r.URL.Query().Get("id")
 
@@ -165,28 +136,16 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	details.Device = device
+	data.Device = device
 
 	exports, err := export.GetByDeviceId(dh.db, device.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	details.Exports = exports
 
-	// load templates
-	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(deviceTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", details); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	data.Exports = exports
+	dh.renderTemplate(w, deviceDetailsTmpl, data)
 }
 
 func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {

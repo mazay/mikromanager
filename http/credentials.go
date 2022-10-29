@@ -1,9 +1,7 @@
 package http
 
 import (
-	"html/template"
 	"net/http"
-	"path"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -16,7 +14,6 @@ type credentialsForm struct {
 }
 
 func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request) {
-	var credsTmpl = path.Join("templates", "credentials.html")
 	var c = &utils.Credentials{}
 
 	// fetch devices
@@ -27,26 +24,13 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// load templates
-	tmpl, err := template.New("").ParseFiles(credsTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", credList); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	dh.renderTemplate(w, credsTmpl, credList)
 }
 
 func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
-		credsErr  error
-		credsTmpl = path.Join("templates", "credentials-form.html")
-		data      = &credentialsForm{}
+		credsErr error
+		data     = &credentialsForm{}
 	)
 
 	if r.Method == "POST" {
@@ -119,19 +103,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	// load templates
-	tmpl, err := template.New("").ParseFiles(credsTmpl, baseTmpl)
-	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// render the templates
-	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	dh.renderTemplate(w, credsFormTmpl, data)
 }
 
 func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Request) {
