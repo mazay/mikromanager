@@ -1,5 +1,6 @@
 {{ define "nav-inventory" }}{{ end }}
 {{ define "nav-devices" }}{{ end }}
+{{ define "nav-exports" }}{{ end }}
 {{ define "nav-configuration" }}{{ end }}
 {{ define "nav-credentials" }}{{ end }}
 {{ define "nav-erp" }}{{ end }}
@@ -29,6 +30,7 @@
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item {{ template "nav-devices" . }}" href="/devices">Devices</a></li>
+            <li><a class="dropdown-item {{ template "nav-exports" . }}" href="/exports">Exports</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown">

@@ -35,6 +35,14 @@
 
       <dt class="col-sm-3">Updated</dt>
       <dd class="col-sm-9">{{ .Device.Updated.Format "2006-01-02 15:04:05" }}</dd>
+
+      <dt class="col-sm-3">Exports</dt>
+      <dd class="col-sm-9">
+        {{ if gt (len .Exports) 0 }}
+        <a href="/exports?id={{ .Device.Id }}">{{ len .Exports }}</a></dd>
+        {{ else }}
+        {{ len .Exports }}
+        {{ end }}
     </dl>
   </div>
   <div class="col">
@@ -68,23 +76,5 @@
       </dd>
     </dl>
   </div>
-</div>
-<legend class="text-center display-6">Exports: {{ len .Exports }}</legend>
-<hr class="border {{ if eq .Device.PollingSucceeded 0 }}border-danger{{ else }}border-primary{{ end }} border-1 opacity-75">
-<table class="table table-striped table-hover">
-  <thead>
-    <tr>
-      <th scope="col">Created</th>
-      <th scope="col">Filename</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{ range $export := .Exports }}
-    <tr id="{{ $export.Id }}">
-      <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
-      <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
-    </tr>
-    {{ end }}
-  </tbody>
 </div>
 {{ end }}
