@@ -1,0 +1,50 @@
+{{ define "nav-configuration" }}active{{ end }}
+{{ define "nav-erp" }}active{{ end }}
+{{ define "content" }}
+<div class="container">
+  <form method="POST" action="/erp">
+    <legend class="text-center display-6">Exports Retention Policy</legend>
+    <hr class="border border-primary border-3 opacity-75">
+    <div class="row mb-3">
+      <label for="disabledIdInput" class="col-sm-2 col-form-label">ID</label>
+      <div class="col-sm-10">
+        <input name="idInput" type="text" id="disabledIdInput" class="form-control" readonly value="{{ .Id }}">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="disabledIdInput" class="col-sm-2 col-form-label">Name</label>
+      <div class="col-sm-10">
+        <input name="nameInput" type="text" id="disabledIdInput" class="form-control" readonly value="{{ .Name }}">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="inputHourly" class="col-sm-2 col-form-label">Hourly</label>
+      <div class="col-sm-10">
+        <input name="hourly" type="number" class="form-control" id="inputHourly" aria-describedby="hourlyHelp" required value="{{ .Hourly }}">
+        <div id="hourlyHelp" class="form-text">A number of hourly configuration exports to be kept.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="inputDaily" class="col-sm-2 col-form-label">Daily</label>
+      <div class="col-sm-10">
+        <input name="daily" type="number" class="form-control" id="inputDaily" aria-describedby="dailyHelp" required value="{{ .Daily }}">
+        <div id="dailyHelp" class="form-text">A number of daily configuration exports to be kept.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="inputWeekly" class="col-sm-2 col-form-label">Weekly</label>
+      <div class="col-sm-10">
+        <input name="weekly" type="number" class="form-control" id="inputWeekly" aria-describedby="weeklyHelp" required value="{{ .Weekly }}">
+        <div id="weeklyHelp" class="form-text">A number of weekly configuration exports to be kept.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-2">
+      </div>
+      <div class="col-sm-10">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </form>
+</div>
+{{ end }}

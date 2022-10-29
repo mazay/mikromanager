@@ -2,6 +2,7 @@
 {{ define "nav-devices" }}{{ end }}
 {{ define "nav-configuration" }}{{ end }}
 {{ define "nav-credentials" }}{{ end }}
+{{ define "nav-erp" }}{{ end }}
 {{ define "scripts" }}{{ end }}
 {{ define "base" }}
 <!doctype html>
@@ -36,6 +37,7 @@
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item {{ template "nav-credentials" . }}" href="/credentials">Credentials</a></li>
+            <li><a class="dropdown-item {{ template "nav-erp" . }}" href="/erp">Exports Retention Policy</a></li>
           </ul>
         </li>
       </ul>

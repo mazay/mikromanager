@@ -43,6 +43,7 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath str
 	http.HandleFunc("/credentials", handlerWrapper(dh.getCredentials, logger))
 	http.HandleFunc("/credentials/edit", handlerWrapper(dh.editCredentials, logger))
 	http.HandleFunc("/credentials/delete", handlerWrapper(dh.deleteCredentials, logger))
+	http.HandleFunc("/erp", handlerWrapper(dh.editExportRetentionPolicy, logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
 	http.Handle("/backups/", http.StripPrefix("/backups/", backups))
 	logger.Fatal(http.ListenAndServe(":"+httpPort, nil))
