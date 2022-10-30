@@ -31,7 +31,7 @@ type dynamicHandler struct {
 func handlerWrapper(fn http.HandlerFunc, logger *logrus.Entry) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logger.Infof("%s - \"%s %s %s\" %s", req.RemoteAddr, req.Method,
-			req.URL.Path, req.Proto, strconv.FormatInt(req.ContentLength, 10))
+			req.URL.String(), req.Proto, strconv.FormatInt(req.ContentLength, 10))
 
 		res.Header().Set("Server", "mikromanager")
 

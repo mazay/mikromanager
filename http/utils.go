@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/mazay/mikromanager/utils"
 )
 
 var funcMap = template.FuncMap{
@@ -36,4 +38,21 @@ func getExportUrl(root string, path string) string {
 		return path
 	}
 	return filepath.Join("backups", rel)
+}
+
+func chunkSlice(slice []*utils.Export, chunkSize int) [][]*utils.Export {
+	var chunks [][]*utils.Export
+	for i := 0; i < len(slice); i += chunkSize {
+		end := i + chunkSize
+
+		// necessary check to avoid slicing beyond
+		// slice capacity
+		if end > len(slice) {
+			end = len(slice)
+		}
+
+		chunks = append(chunks, slice[i:end])
+	}
+
+	return chunks
 }

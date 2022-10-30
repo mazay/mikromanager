@@ -11,7 +11,7 @@
     {{ end }}
   </ol>
 </nav>
-<legend class="text-center display-6">Exports: {{ len .Exports }}</legend>
+<legend class="text-center display-6">Exports: {{ .Count }}</legend>
 <hr class="border border-primary border-3 opacity-75">
 <div class="table-responsive">
   <table class="table table-striped table-hover">
@@ -40,4 +40,21 @@
     </tbody>
   </table>
 </div>
+<nav aria-label="Pagination">
+  <ul class="pagination justify-content-center">
+    {{ if .Pagination.Previous }}
+    <a class="page-link" href="{{ .Pagination.Previous.Url }}" aria-label="Previous">
+      <span aria-hidden="true">&laquo;</span>
+    </a>
+    {{ end }}
+    {{ range $page := .Pagination.Pages }}
+    <li class="page-item"><a class="page-link{{ if eq $.CurrentPage $page.Number }} active{{ end }}" href="{{ $page.Url }}">{{ $page.Number }}</a></li>
+    {{ end }}
+    {{ if .Pagination.Next }}
+    <a class="page-link" href="{{ .Pagination.Next.Url }}" aria-label="Next">
+      <span aria-hidden="true">&raquo;</span>
+    </a>
+    {{ end }}
+  </ul>
+</nav>
 {{ end }}
