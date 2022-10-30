@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -13,8 +14,30 @@ type credentialsForm struct {
 	Msg      string
 }
 
+type credentialsData struct {
+	Count       int
+	Credentials []*utils.Credentials
+	Pagination  *Pagination
+	CurrentPage int
+}
+
 func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request) {
-	var c = &utils.Credentials{}
+	var (
+		err        error
+		c          = &utils.Credentials{}
+		data       = &credentialsData{}
+		pageId     = r.URL.Query().Get("page_id")
+		intPageID  = 1
+		pagination = &Pagination{}
+	)
+
+	if pageId != "" {
+		intPageID, err = strconv.Atoi(pageId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 
 	// fetch devices
 	credList, err := c.GetAll(dh.db)
@@ -24,7 +47,19 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	dh.renderTemplate(w, credsTmpl, credList)
+	data.Count = len(credList)
+	chunkedCreds := chunkSliceOfObjects(credList, 10)
+	pagination.paginate(*r.URL, intPageID, len(chunkedCreds))
+
+	if intPageID-1 >= len(chunkedCreds) {
+		intPageID = len(chunkedCreds)
+	}
+
+	data.Pagination = pagination
+	data.CurrentPage = intPageID
+	data.Credentials = chunkedCreds[intPageID-1]
+
+	dh.renderTemplate(w, credsTmpl, data)
 }
 
 func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
