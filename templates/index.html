@@ -50,7 +50,7 @@
         </td>
       </tr>
 
-      <!-- Modal -->
+      <!-- Modal start -->
       <div class="modal fade" id="IP{{ replace $device.Address "." "" }}" tabindex="-1" aria-labelledby="{{ replace $device.Address "." "" }}Label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -68,6 +68,7 @@
           </div>
         </div>
       </div>
+      <!-- Modal end -->
     {{ end }}
     </tbody>
   </table>
