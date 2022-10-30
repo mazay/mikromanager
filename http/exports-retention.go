@@ -72,10 +72,10 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 		erp.Weekly = weekly
 
 		err = erp.Update(dh.db)
-
 		if err != nil {
-			// return data with errors if validation failed
-			data.Msg = err.Error()
+			dh.logger.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 
