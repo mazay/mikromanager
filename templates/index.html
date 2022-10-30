@@ -102,6 +102,9 @@
     </li>
     {{ range $page := .Pagination.Pages }}
     <li class="page-item"><a class="page-link{{ if eq $.CurrentPage $page.Number }} active{{ end }}" href="{{ $page.Url }}">{{ $page.Number }}</a></li>
+    {{ if containsInt $.Pagination.Breaks $page.Number }}
+    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+    {{ end }}
     {{ end }}
     <li class="page-item{{ if not .Pagination.Next }} disabled{{ end }}">
       {{ if .Pagination.Next }}

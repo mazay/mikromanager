@@ -15,6 +15,7 @@ var funcMap = template.FuncMap{
 	"timeAgo":      timeAgo,
 	"memoryUsage":  memoryUsage,
 	"getExportUrl": getExportUrl,
+	"containsInt":  containsInt,
 }
 
 func replace(input, from, to string) string {
@@ -38,6 +39,15 @@ func getExportUrl(root string, path string) string {
 		return path
 	}
 	return filepath.Join("backups", rel)
+}
+
+func containsInt(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 // chunkSliceOfObjects accepts slices of Export, Credentials or Device objects and a chunk size

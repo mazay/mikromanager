@@ -141,6 +141,10 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	data.Count = len(deviceList)
 	chunkedDevices := chunkSliceOfObjects(deviceList, 10)
 	pagination.paginate(*r.URL, intPageID, len(chunkedDevices))
+
+	if intPageID-1 >= len(chunkedDevices) {
+		intPageID = len(chunkedDevices)
+	}
 	data.Pagination = pagination
 	data.CurrentPage = intPageID
 	data.Devices = chunkedDevices[intPageID-1]
