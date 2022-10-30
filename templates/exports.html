@@ -40,21 +40,34 @@
     </tbody>
   </table>
 </div>
+
 <nav aria-label="Pagination">
   <ul class="pagination justify-content-center">
-    {{ if .Pagination.Previous }}
-    <a class="page-link" href="{{ .Pagination.Previous.Url }}" aria-label="Previous">
-      <span aria-hidden="true">&laquo;</span>
-    </a>
-    {{ end }}
+    <li class="page-item{{ if not .Pagination.Previous }} disabled{{ end }}">
+      {{ if .Pagination.Previous }}
+      <a class="page-link" href="{{ .Pagination.Previous.Url }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+      {{ else }}
+      <a class="page-link" href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+      {{ end }}
+    </li>
     {{ range $page := .Pagination.Pages }}
     <li class="page-item"><a class="page-link{{ if eq $.CurrentPage $page.Number }} active{{ end }}" href="{{ $page.Url }}">{{ $page.Number }}</a></li>
     {{ end }}
-    {{ if .Pagination.Next }}
-    <a class="page-link" href="{{ .Pagination.Next.Url }}" aria-label="Next">
-      <span aria-hidden="true">&raquo;</span>
-    </a>
-    {{ end }}
+    <li class="page-item{{ if not .Pagination.Next }} disabled{{ end }}">
+      {{ if .Pagination.Next }}
+      <a class="page-link" href="{{ .Pagination.Next.Url }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+      {{ else }}
+      <a class="page-link" href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+      {{ end }}
+    </li>
   </ul>
 </nav>
 {{ end }}
