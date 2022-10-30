@@ -27,7 +27,14 @@
     <tbody>
     {{ range $device := .Devices }}
       <tr id="{{ $device.Id }}">
-        <td>{{ if eq $device.PollingSucceeded 0 }}<abbr title="Last polling attemple failed" class="bi bi-exclamation-triangle text-danger"></abbr>{{ end }}</td>
+        <td>
+          {{ if eq $device.PollingSucceeded 0 }}
+          <abbr title="The last device polling attempt has failed" class="bi bi-exclamation-triangle text-danger"></abbr>
+          {{ end }}
+          {{ if eq $device.PollingSucceeded -1 }}
+          <abbr title="The device polling has not been performed yet" class="bi bi-exclamation-triangle text-success"></abbr>
+          {{ end }}
+        </td>
         <td>{{ $device.Identity }}</td>
         <td>
           {{ $device.Address }}

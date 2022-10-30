@@ -77,6 +77,7 @@ func (d *Device) Create(db *database.DB) error {
 	if exists {
 		return fmt.Errorf("Device with address '%s' already exists", d.Address)
 	}
+	d.PollingSucceeded = -1
 	d.Created = time.Now()
 	d.Updated = time.Now()
 	inrec, err := json.Marshal(d)
