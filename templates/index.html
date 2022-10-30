@@ -46,7 +46,13 @@
         <td>{{ $device.ArchitectureName }}</td>
         <td>{{ $device.Version }}</td>
         <td>{{ $device.Uptime }}</td>
-        <td>{{ $device.PolledAt.Format "2006-01-02 15:04:05" }}</td>
+        <td>
+          {{ if not $device.PolledAt.IsZero }}
+          {{ $device.PolledAt.Format "2006-01-02 15:04:05" }}
+          {{ else }}
+          N/A
+          {{ end }}
+        </td>
         <td>
           <a class="btn btn-primary btn-sm" role="button" href="/exports?id={{ $device.Id }}"><i class="bi-archive"></i></a>
           <a class="btn btn-info btn-sm" role="button" href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
