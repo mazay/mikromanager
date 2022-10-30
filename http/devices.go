@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -20,6 +21,13 @@ type deviceDetails struct {
 	Device     *utils.Device
 	Exports    []*utils.Export
 	BackupPath string
+}
+
+type devicesData struct {
+	Count       int
+	Devices     []*utils.Device
+	Pagination  *Pagination
+	CurrentPage int
 }
 
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +113,22 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
-	var d = &utils.Device{}
+	var (
+		err        error
+		d          = &utils.Device{}
+		data       = &devicesData{}
+		pageId     = r.URL.Query().Get("page_id")
+		intPageID  = 1
+		pagination = &Pagination{}
+	)
+
+	if pageId != "" {
+		intPageID, err = strconv.Atoi(pageId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 
 	// fetch devices
 	deviceList, err := d.GetAll(dh.db)
@@ -115,7 +138,14 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dh.renderTemplate(w, indexTmpl, deviceList)
+	data.Count = len(deviceList)
+	chunkedDevices := chunkSliceOfObjects(deviceList, 10)
+	pagination.paginate(*r.URL, intPageID, len(chunkedDevices))
+	data.Pagination = pagination
+	data.CurrentPage = intPageID
+	data.Devices = chunkedDevices[intPageID-1]
+
+	dh.renderTemplate(w, indexTmpl, data)
 }
 
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
