@@ -8,66 +8,68 @@
 </nav>
 <legend class="text-center display-6">Devices: {{ len . }}</legend>
 <hr class="border border-primary border-3 opacity-75">
-<table class="table table-striped table-hover">
-  <thead>
-    <tr>
-      <th scope="col"></th>
-      <th scope="col">Identity</th>
-      <th scope="col">Address</th>
-      <th scope="col">API Port</th>
-      <th scope="col">SSH Port</th>
-      <th scope="col">Arch</th>
-      <th scope="col">Version</th>
-      <th scope="col">Uptime</th>
-      <th scope="col">Last Polled</th>
-      <th scope="col"><a class="btn btn-success btn-sm" role="button" href="/edit"><i class="bi-plus-square"></i></a></th>
-    </tr>
-  </thead>
-  <tbody>
-  {{ range $device := . }}
-    <tr id="{{ $device.Id }}">
-      <td>{{ if eq $device.PollingSucceeded 0 }}<abbr title="Last polling attemple failed" class="bi bi-exclamation-triangle text-danger"></abbr>{{ end }}</td>
-      <td>{{ $device.Identity }}</td>
-      <td>
-        {{ $device.Address }}
-        <a href="http://{{ $device.Address }}" target="_blank"><i class="bi-globe"></i></a>
-        <a href="ssh://{{ $device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
-      </td>
-      <td>{{ $device.ApiPort }}</td>
-      <td>{{ $device.SshPort }}</td>
-      <td>{{ $device.ArchitectureName }}</td>
-      <td>{{ $device.Version }}</td>
-      <td>{{ $device.Uptime }}</td>
-      <td>{{ timeAgo $device.PolledAt }}</td>
-      <td>
-        <a class="btn btn-primary btn-sm" role="button" href="/exports?id={{ $device.Id }}"><i class="bi-archive"></i></a>
-        <a class="btn btn-info btn-sm" role="button" href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
-        <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
-        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $device.Address "." "" }}">
-          <i class="bi-trash"></i>
-        </button>
-      </td>
-    </tr>
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Identity</th>
+        <th scope="col">Address</th>
+        <th scope="col">API Port</th>
+        <th scope="col">SSH Port</th>
+        <th scope="col">Arch</th>
+        <th scope="col">Version</th>
+        <th scope="col">Uptime</th>
+        <th scope="col">Last Polled</th>
+        <th scope="col"><a class="btn btn-success btn-sm" role="button" href="/edit"><i class="bi-plus-square"></i></a></th>
+      </tr>
+    </thead>
+    <tbody>
+    {{ range $device := . }}
+      <tr id="{{ $device.Id }}">
+        <td>{{ if eq $device.PollingSucceeded 0 }}<abbr title="Last polling attemple failed" class="bi bi-exclamation-triangle text-danger"></abbr>{{ end }}</td>
+        <td>{{ $device.Identity }}</td>
+        <td>
+          {{ $device.Address }}
+          <a href="http://{{ $device.Address }}" target="_blank"><i class="bi-globe"></i></a>
+          <a href="ssh://{{ $device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
+        </td>
+        <td>{{ $device.ApiPort }}</td>
+        <td>{{ $device.SshPort }}</td>
+        <td>{{ $device.ArchitectureName }}</td>
+        <td>{{ $device.Version }}</td>
+        <td>{{ $device.Uptime }}</td>
+        <td>{{ timeAgo $device.PolledAt }}</td>
+        <td>
+          <a class="btn btn-primary btn-sm" role="button" href="/exports?id={{ $device.Id }}"><i class="bi-archive"></i></a>
+          <a class="btn btn-info btn-sm" role="button" href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
+          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $device.Address "." "" }}">
+            <i class="bi-trash"></i>
+          </button>
+        </td>
+      </tr>
 
-    <!-- Modal -->
-    <div class="modal fade" id="IP{{ replace $device.Address "." "" }}" tabindex="-1" aria-labelledby="{{ replace $device.Address "." "" }}Label" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="{{ replace $device.Address "." "" }}Label">Warning</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            You are about to delete device with address "{{ $device.Address }}", this action cannot be undone. Are you sure you want to proceed?
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
-            <a class="btn btn-danger" role="button" href="/delete?id={{ $device.Id }}">Delete</a>
+      <!-- Modal -->
+      <div class="modal fade" id="IP{{ replace $device.Address "." "" }}" tabindex="-1" aria-labelledby="{{ replace $device.Address "." "" }}Label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="{{ replace $device.Address "." "" }}Label">Warning</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              You are about to delete device with address "{{ $device.Address }}", this action cannot be undone. Are you sure you want to proceed?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
+              <a class="btn btn-danger" role="button" href="/delete?id={{ $device.Id }}">Delete</a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  {{ end }}
-  </tbody>
-</table>
+    {{ end }}
+    </tbody>
+  </table>
+</div>
 {{ end }}

@@ -13,30 +13,31 @@
 </nav>
 <legend class="text-center display-6">Exports: {{ len .Exports }}</legend>
 <hr class="border border-primary border-3 opacity-75">
-<table class="table table-striped table-hover">
-  <thead>
-    <tr>
-      <th scope="col"></th>
-      <th scope="col">Device ID</th>
-      <th scope="col">Created</th>
-      <th scope="col">Filename</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{ range $export := .Exports }}
-    <tr id="{{ $export.Id }}">
-      <td>
-        <a href="/details?id={{ $export.DeviceId }}"><i class="bi-clipboard-pulse"></i></a>
-        {{ if eq $.DeviceId "" }}
-        <a href="/exports?id={{ $export.DeviceId }}"><i class="bi-funnel"></i></a>
-        {{ end }}
-      </td>
-      <td>{{ $export.DeviceId }}</td>
-      <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
-      <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
-    </tr>
-    {{ end }}
-  </tbody>
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Device ID</th>
+        <th scope="col">Created</th>
+        <th scope="col">Filename</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ range $export := .Exports }}
+      <tr id="{{ $export.Id }}">
+        <td>
+          <a href="/details?id={{ $export.DeviceId }}"><i class="bi-clipboard-pulse"></i></a>
+          {{ if eq $.DeviceId "" }}
+          <a href="/exports?id={{ $export.DeviceId }}"><i class="bi-funnel"></i></a>
+          {{ end }}
+        </td>
+        <td>{{ $export.DeviceId }}</td>
+        <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
+        <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
+      </tr>
+      {{ end }}
+    </tbody>
+  </table>
 </div>
-</table>
 {{ end }}
