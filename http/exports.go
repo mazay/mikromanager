@@ -52,7 +52,7 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Count = len(exports)
-	chunkedExports := chunkSlice(exports, 10)
+	chunkedExports := chunkSliceOfObjects(exports, 10)
 	pagination.paginate(*r.URL, intPageID, len(chunkedExports))
 	data.Pagination = pagination
 	data.CurrentPage = intPageID

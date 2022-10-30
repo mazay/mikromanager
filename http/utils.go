@@ -40,8 +40,10 @@ func getExportUrl(root string, path string) string {
 	return filepath.Join("backups", rel)
 }
 
-func chunkSlice(slice []*utils.Export, chunkSize int) [][]*utils.Export {
-	var chunks [][]*utils.Export
+// chunkSliceOfObjects accepts slices of Export, Credentials or Device objects and a chunk size
+// and returns chunks of the input objects
+func chunkSliceOfObjects[obj utils.Export | utils.Credentials | utils.Device](slice []*obj, chunkSize int) [][]*obj {
+	var chunks [][]*obj
 	for i := 0; i < len(slice); i += chunkSize {
 		end := i + chunkSize
 
