@@ -1,0 +1,74 @@
+{{ define "pagination" }}
+<div class="container text-center">
+  <div class="row justify-content-md-center">
+    <div class="col-md-auto">
+      <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+          <li class="page-item{{ if not .Pagination.Previous }} disabled{{ end }}">
+            {{ if .Pagination.Previous }}
+            <a class="page-link" href="{{ .Pagination.Previous.Url }}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+            {{ else }}
+            <a class="page-link" href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+            {{ end }}
+          </li>
+          {{ range $page := .Pagination.Pages }}
+          <li class="page-item"><a class="page-link{{ if eq $.CurrentPage $page.Number }} active{{ end }}" href="{{ $page.Url }}">{{ $page.Number }}</a></li>
+          {{ if containsInt $.Pagination.Breaks $page.Number }}
+          <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+          {{ end }}
+          {{ end }}
+          <li class="page-item{{ if not .Pagination.Next }} disabled{{ end }}">
+            {{ if .Pagination.Next }}
+            <a class="page-link" href="{{ .Pagination.Next.Url }}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+            {{ else }}
+            <a class="page-link" href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+            {{ end }}
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="col-md-auto">
+      <div class="input-group mb-3">
+        <label class="input-group-text" for="inputGroupSelectItems">Items</label>
+        <select class="form-select" id="inputGroupSelectItems" onchange="changePerPage()">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="75">75</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+{{ end }}
+{{ define "scripts" }}
+<script>
+  var urlParams = new URLSearchParams(window.location.search);
+  let queryString = urlParams.get('per_page');
+
+  document.getElementById("inputGroupSelectItems").querySelector("option[value='" + queryString + "']").selected = true;
+</script>
+<script>
+function changePerPage(){
+    var url = new URL(window.location.href);
+    var search_params = url.searchParams;
+    var e = document.getElementById("inputGroupSelectItems");
+    var value = e.value;
+
+    search_params.set('per_page', value);
+    url.search = search_params.toString();
+    var new_url = url.toString();
+
+    window.location.assign(new_url);
+}
+</script>
+{{ end }}

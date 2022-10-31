@@ -59,7 +59,7 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 	data.CurrentPage = intPageID
 	data.Credentials = chunkedCreds[intPageID-1]
 
-	dh.renderTemplate(w, credsTmpl, data)
+	dh.renderTemplate(w, []string{credsTmpl, paginationTmpl}, data)
 }
 
 func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +138,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	dh.renderTemplate(w, credsFormTmpl, data)
+	dh.renderTemplate(w, []string{credsFormTmpl}, data)
 }
 
 func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Request) {

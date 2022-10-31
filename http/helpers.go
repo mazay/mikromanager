@@ -12,6 +12,7 @@ import (
 
 var (
 	baseTmpl          = path.Join("templates", "base.html")
+	paginationTmpl    = path.Join("templates", "pagination.html")
 	indexTmpl         = path.Join("templates", "index.html")
 	deviceDetailsTmpl = path.Join("templates", "device-details.html")
 	deviceFormTmpl    = path.Join("templates", "device-form.html")
@@ -39,10 +40,13 @@ func handlerWrapper(fn http.HandlerFunc, logger *logrus.Entry) http.HandlerFunc 
 	}
 }
 
-func (dh *dynamicHandler) renderTemplate(w http.ResponseWriter, tmplName string, data any) {
+func (dh *dynamicHandler) renderTemplate(w http.ResponseWriter, tmplList []string, data any) {
 	var err error
+
+	tmplList = append(tmplList, baseTmpl)
+
 	// load templates
-	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(tmplName, baseTmpl)
+	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(tmplList...)
 	if err != nil {
 		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -80,5 +80,5 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 	}
 
 	data.formFillIn(erp)
-	dh.renderTemplate(w, erpTmpl, data)
+	dh.renderTemplate(w, []string{erpTmpl}, data)
 }

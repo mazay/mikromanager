@@ -109,7 +109,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dh.renderTemplate(w, deviceFormTmpl, data)
+	dh.renderTemplate(w, []string{deviceFormTmpl}, data)
 }
 
 func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +149,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	data.CurrentPage = intPageID
 	data.Devices = chunkedDevices[intPageID-1]
 
-	dh.renderTemplate(w, indexTmpl, data)
+	dh.renderTemplate(w, []string{indexTmpl, paginationTmpl}, data)
 }
 
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
@@ -179,7 +179,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Exports = exports
-	dh.renderTemplate(w, deviceDetailsTmpl, data)
+	dh.renderTemplate(w, []string{deviceDetailsTmpl}, data)
 }
 
 func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
