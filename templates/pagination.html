@@ -39,6 +39,7 @@
       <div class="input-group mb-3">
         <label class="input-group-text" for="inputGroupSelectItems">Items</label>
         <select class="form-select" id="inputGroupSelectItems" onchange="changePerPage()">
+          <option value="5">5</option>
           <option value="10">10</option>
           <option value="25">25</option>
           <option value="50">50</option>
@@ -53,7 +54,11 @@
 {{ define "scripts" }}
 <script>
   var urlParams = new URLSearchParams(window.location.search);
-  let queryString = urlParams.get('per_page');
+  var queryString = urlParams.get('per_page');
+
+  if ( queryString == null ){
+    queryString = 10
+  }
 
   document.getElementById("inputGroupSelectItems").querySelector("option[value='" + queryString + "']").selected = true;
 </script>

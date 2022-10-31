@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -117,17 +116,13 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		err        error
 		d          = &utils.Device{}
 		data       = &devicesData{}
-		pageId     = r.URL.Query().Get("page_id")
-		intPageID  = 1
 		pagination = &Pagination{}
 	)
 
-	if pageId != "" {
-		intPageID, err = strconv.Atoi(pageId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	err, pageId, perPage := getPagionationParams(r.URL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// fetch devices
@@ -139,15 +134,15 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Count = len(deviceList)
-	chunkedDevices := chunkSliceOfObjects(deviceList, 10)
-	pagination.paginate(*r.URL, intPageID, len(chunkedDevices))
+	chunkedDevices := chunkSliceOfObjects(deviceList, perPage)
+	pagination.paginate(*r.URL, pageId, len(chunkedDevices))
 
-	if intPageID-1 >= len(chunkedDevices) {
-		intPageID = len(chunkedDevices)
+	if pageId-1 >= len(chunkedDevices) {
+		pageId = len(chunkedDevices)
 	}
 	data.Pagination = pagination
-	data.CurrentPage = intPageID
-	data.Devices = chunkedDevices[intPageID-1]
+	data.CurrentPage = pageId
+	data.Devices = chunkedDevices[pageId-1]
 
 	dh.renderTemplate(w, []string{indexTmpl, paginationTmpl}, data)
 }

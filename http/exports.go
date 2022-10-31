@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/mazay/mikromanager/utils"
 )
@@ -23,17 +22,13 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		export     = &utils.Export{}
 		data       = &exportsData{BackupPath: dh.backupPath}
 		id         = r.URL.Query().Get("id")
-		pageId     = r.URL.Query().Get("page_id")
-		intPageID  = 1
 		pagination = &Pagination{}
 	)
 
-	if pageId != "" {
-		intPageID, err = strconv.Atoi(pageId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	err, pageId, perPage := getPagionationParams(r.URL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if id != "" {
@@ -51,15 +46,15 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	data.Count = len(exports)
-	chunkedExports := chunkSliceOfObjects(exports, 10)
-	pagination.paginate(*r.URL, intPageID, len(chunkedExports))
+	chunkedExports := chunkSliceOfObjects(exports, perPage)
+	pagination.paginate(*r.URL, pageId, len(chunkedExports))
 
-	if intPageID-1 >= len(chunkedExports) {
-		intPageID = len(chunkedExports)
+	if pageId-1 >= len(chunkedExports) {
+		pageId = len(chunkedExports)
 	}
 
 	data.Pagination = pagination
-	data.CurrentPage = intPageID
-	data.Exports = chunkedExports[intPageID-1]
+	data.CurrentPage = pageId
+	data.Exports = chunkedExports[pageId-1]
 	dh.renderTemplate(w, []string{exportsTmpl, paginationTmpl}, data)
 }

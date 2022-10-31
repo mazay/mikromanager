@@ -38,6 +38,32 @@ func isHidden(num, current, total int) bool {
 	return true
 }
 
+func getPagionationParams(u *url.URL) (error, int, int) {
+	var (
+		err        error
+		pageId     = u.Query().Get("page_id")
+		intPageID  = 1
+		perPage    = u.Query().Get("per_page")
+		intPerPage = 10
+	)
+
+	if pageId != "" {
+		intPageID, err = strconv.Atoi(pageId)
+		if err != nil {
+			return err, intPageID, intPerPage
+		}
+	}
+
+	if perPage != "" {
+		intPerPage, err = strconv.Atoi(perPage)
+		if err != nil {
+			return err, intPageID, intPerPage
+		}
+	}
+
+	return err, intPageID, intPerPage
+}
+
 func (p *Pagination) paginate(u url.URL, current int, total int) {
 	var pages []*Page
 
