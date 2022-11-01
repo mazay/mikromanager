@@ -59,6 +59,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		user.Id = id
 		user.Username = username
 		user.EncryptedPassword = encryptedPw
 
