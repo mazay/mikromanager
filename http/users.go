@@ -67,7 +67,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 			// "id" is unset - create new user
 			formErr = user.Create(dh.db)
 			if formErr != nil {
-				data.Msg = err.Error()
+				data.Msg = formErr.Error()
 			}
 		} else {
 			// "id" is set - update existing user

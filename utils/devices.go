@@ -72,7 +72,7 @@ func (d *Device) GetCredentials(db *database.DB) (*Credentials, error) {
 
 func (d *Device) Create(db *database.DB) error {
 	var inInterface map[string]interface{}
-	// check if credentials with that alias already exist
+	// check if device with given address already exist
 	exists, _ := db.Exists(db.Collections["devices"], "address", d.Address)
 	if exists {
 		return fmt.Errorf("Device with address '%s' already exists", d.Address)

@@ -18,7 +18,8 @@ type User struct {
 
 func (u *User) Create(db *database.DB) error {
 	var inInterface map[string]interface{}
-	exists, _ := db.Exists(db.Collections["devices"], "username", u.Username)
+	// check if username already taken
+	exists, _ := db.Exists(db.Collections["users"], "username", u.Username)
 	if exists {
 		return fmt.Errorf("User '%s' already exists", u.Username)
 	}
