@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"path"
@@ -22,6 +23,8 @@ var (
 	credsFormTmpl     = path.Join("templates", "credentials-form.html")
 	erpTmpl           = path.Join("templates", "erp-form.html")
 	exportsTmpl       = path.Join("templates", "exports.html")
+	userFormTmpl      = path.Join("templates", "user-form.html")
+	usersTmpl         = path.Join("templates", "users.html")
 )
 
 type dynamicHandler struct {
@@ -76,6 +79,10 @@ func (dh *dynamicHandler) checkSession(r *http.Request) (*utils.Session, error) 
 	err = session.GetById(dh.db)
 	if err != nil {
 		return session, err
+	}
+
+	if session.Expired() {
+		return session, fmt.Errorf("Session expired")
 	}
 
 	return session, err

@@ -1,0 +1,65 @@
+{{ define "pagination" }}{{ end }}
+{{ define "nav-configuration" }}active{{ end }}
+{{ define "nav-users" }}active{{ end }}
+{{ define "content" }}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">Users</li>
+  </ol>
+</nav>
+<legend class="text-center display-6">Users: {{ .Count }}</legend>
+<hr class="border border-primary border-3 opacity-75">
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Username</th>
+        <th scope="col">Created</th>
+        <th scope="col">Updated</th>
+        <th scope="col"><a class="btn btn-success btn-sm" role="button" href="/user/edit"><i class="bi-plus-square"></i></a></th>
+      </tr>
+    </thead>
+    <tbody>
+    {{ range $user := .Users }}
+      <tr id="{{ $user.Id }}">
+        <td>{{ $user.Username }}</td>
+        <td>{{ $user.Created.Format "2006-01-02 15:04:05 UTC" }}</td>
+        <td>
+          {{ if $user.Updated.IsZero }}
+          N/A
+          {{ else }}
+          {{ $user.Updated.Format "2006-01-02 15:04:05 UTC" }}</td>
+          {{ end }}
+        <td>
+          <a class="btn btn-warning btn-sm" role="button" href="/user/edit?id={{ $user.Id }}"><i class="bi-pencil"></i></a>
+          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#{{ $user.Username }}">
+            <i class="bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+
+      <!-- Modal -->
+      <div class="modal fade" id="{{ $user.Username }}" tabindex="-1" aria-labelledby="{{ $user.Username }}Label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="{{ $user.Username }}Label">Warning</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              You are about to delete user "{{ $user.Username }}", this action cannot be undone. Are you sure you want to proceed?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
+              <a class="btn btn-danger" role="button" href="/user/delete?id={{ $user.Id }}">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{ end }}
+    </tbody>
+  </table>
+</div>
+
+{{ template "pagination" . }}
+{{ end }}

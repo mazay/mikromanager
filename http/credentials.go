@@ -20,6 +20,12 @@ type credentialsData struct {
 	CurrentPage int
 }
 
+func (cf *credentialsForm) formFillIn(creds *utils.Credentials) {
+	cf.Id = creds.Id
+	cf.Alias = creds.Alias
+	cf.Username = creds.Username
+}
+
 func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
@@ -126,9 +132,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 
 		if credsErr != nil {
 			// return data with errors if validation failed
-			data.Id = id
-			data.Alias = alias
-			data.Username = username
+			data.formFillIn(creds)
 			data.Msg = credsErr.Error()
 		} else {
 			http.Redirect(w, r, "/credentials", 302)
@@ -144,9 +148,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
-				data.Id = c.Id
-				data.Alias = c.Alias
-				data.Username = c.Username
+				data.formFillIn(c)
 			}
 		}
 	}

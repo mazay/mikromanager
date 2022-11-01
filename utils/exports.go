@@ -23,7 +23,7 @@ func (b *Export) Create(db *database.DB) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Insert(db.Collections["exports"], inInterface)
+	b.Id, err = db.Insert(db.Collections["exports"], inInterface)
 	return err
 }
 

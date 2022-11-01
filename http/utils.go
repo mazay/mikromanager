@@ -52,7 +52,7 @@ func containsInt(s []int, e int) bool {
 
 // chunkSliceOfObjects accepts slices of Export, Credentials or Device objects and a chunk size
 // and returns chunks of the input objects
-func chunkSliceOfObjects[obj utils.Export | utils.Credentials | utils.Device](slice []*obj, chunkSize int) [][]*obj {
+func chunkSliceOfObjects[obj utils.Export | utils.Credentials | utils.Device | utils.User](slice []*obj, chunkSize int) [][]*obj {
 	var chunks [][]*obj
 	for i := 0; i < len(slice); i += chunkSize {
 		end := i + chunkSize

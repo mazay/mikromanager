@@ -88,7 +88,7 @@ func (d *Device) Create(db *database.DB) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Insert(db.Collections["devices"], inInterface)
+	d.Id, err = db.Insert(db.Collections["devices"], inInterface)
 	return err
 }
 

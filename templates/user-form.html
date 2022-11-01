@@ -1,9 +1,9 @@
 {{ define "nav-configuration" }}active{{ end }}
-{{ define "nav-credentials" }}active{{ end }}
+{{ define "nav-users" }}active{{ end }}
 {{ define "content" }}
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="/credentials">Credentials</a></li>
+    <li class="breadcrumb-item"><a href="/users">Users</a></li>
     {{ if ne .Id "" }}
     <li class="breadcrumb-item"><a href="/?id={{ .Id }}">{{ .Id }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">Edit</li>
@@ -13,9 +13,9 @@
   </ol>
 </nav>
 <div class="container">
-  <form method="POST" action="/credentials/edit">
+  <form method="POST" action="/user/edit">
     {{ if ne .Id "" }}
-    <legend class="text-center display-6">Edit credentials</legend>
+    <legend class="text-center display-6">Edit user</legend>
     <hr class="border border-primary border-3 opacity-75">
     <div class="row mb-3">
       <label for="disabledIdInput" class="col-sm-2 col-form-label">ID</label>
@@ -24,23 +24,16 @@
       </div>
     </div>
     {{ else }}
-    <legend class="text-center display-6">Create credentials</legend>
+    <legend class="text-center display-6">Create user</legend>
     <hr class="border border-primary border-3 opacity-75">
     {{ end }}
     <div class="row mb-3">
-      <label for="inputAlias" class="col-sm-2 col-form-label">Alias</label>
-      <div class="col-sm-10">
-        <input name="alias" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="inputAlias" aria-describedby="aliasHelp aliasValidationFeedback" required value="{{ .Alias }}">
-        <div id="aliasHelp" class="form-text">A human friendly name for the credentials set, "Default" will be used as default credentials. Make sure the alias is unique.</div>
-        <div id="aliasValidationFeedback" class="invalid-feedback">
-          {{ .Msg }}
-        </div>
-      </div>
-    </div>
-    <div class="row mb-3">
       <label for="inputUsername" class="col-sm-2 col-form-label">Username</label>
       <div class="col-sm-10">
-        <input name="username" type="text" class="form-control" id="inputUsername" required value="{{ .Username }}">
+        <input name="username" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="inputUsername" aria-describedby="usernameValidationFeedback" required value="{{ .Username }}">
+        <div id="usernameValidationFeedback" class="invalid-feedback">
+          {{ .Msg }}
+        </div>
       </div>
     </div>
     <div class="row mb-3">
@@ -54,7 +47,7 @@
       <div class="col-sm-2">
       </div>
       <div class="col-sm-10">
-        <a class="btn btn-danger" role="button" href="/credentials">Cancel</a>
+        <a class="btn btn-danger" role="button" href="/users">Cancel</a>
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
     </div>

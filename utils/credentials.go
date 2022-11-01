@@ -31,7 +31,7 @@ func (c *Credentials) Create(db *database.DB) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Insert(db.Collections["credentials"], inInterface)
+	c.Id, err = db.Insert(db.Collections["credentials"], inInterface)
 	return err
 }
 

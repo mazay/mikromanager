@@ -29,6 +29,14 @@ type devicesData struct {
 	CurrentPage int
 }
 
+func (df *deviceForm) formFillIn(device *utils.Device) {
+	df.Id = device.Id
+	df.Address = device.Address
+	df.ApiPort = device.ApiPort
+	df.SshPort = device.SshPort
+	df.CredentialsId = device.CredentialsId
+}
+
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
@@ -44,7 +52,12 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	credsAll, _ := creds.GetAll(dh.db)
+	credsAll, err := creds.GetAll(dh.db)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	data.Credentials = credsAll
 
 	if r.Method == "POST" {
@@ -88,10 +101,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		if deviceErr != nil {
 			// return data with errors if validation failed
 			data.Id = id
-			data.Address = address
-			data.ApiPort = apiPort
-			data.SshPort = sshPort
-			data.CredentialsId = credentialsId
+			data.formFillIn(device)
 			data.Msg = deviceErr.Error()
 		} else {
 			http.Redirect(w, r, "/", 302)
@@ -107,11 +117,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
-				data.Id = d.Id
-				data.Address = d.Address
-				data.ApiPort = d.ApiPort
-				data.SshPort = d.SshPort
-				data.CredentialsId = d.CredentialsId
+				data.formFillIn(d)
 			}
 		}
 	}
@@ -136,6 +142,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -189,6 +196,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	device.Id = id
 	err = device.GetById(dh.db)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -196,6 +204,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 
 	exports, err := export.GetByDeviceId(dh.db, device.Id)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -208,6 +217,7 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err error
 		d   = &utils.Device{}
+		id  = r.URL.Query().Get("id")
 	)
 
 	_, err = dh.checkSession(r)
@@ -216,7 +226,12 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d.Id = r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Something went wrong, no device ID provided", http.StatusInternalServerError)
+		return
+	}
+
+	d.Id = id
 
 	err = d.Delete(dh.db)
 	if err != nil {

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	database "github.com/mazay/mikromanager/db"
@@ -14,18 +15,22 @@ type Session struct {
 }
 
 func (s *Session) Expired() bool {
+	if s.ValidThrough.IsZero() {
+		return true
+	}
 	return s.ValidThrough.Before(time.Now())
 }
 
 func (s *Session) Create(db *database.DB) error {
 	var inInterface map[string]interface{}
 	s.ValidThrough = time.Now().Add(time.Hour * 24)
+	fmt.Printf("%s", s.ValidThrough)
 	inrec, _ := json.Marshal(s)
 	err := json.Unmarshal(inrec, &inInterface)
 	if err != nil {
 		return err
 	}
-	_, err = db.Insert(db.Collections["sessions"], inInterface)
+	s.Id, err = db.Insert(db.Collections["sessions"], inInterface)
 	return err
 }
 

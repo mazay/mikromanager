@@ -27,7 +27,7 @@ func (rp *ExportsRetentionPolicy) Create(db *database.DB) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Insert(db.Collections["exportsRetentionPolicy"], inInterface)
+	rp.Id, err = db.Insert(db.Collections["exportsRetentionPolicy"], inInterface)
 	return err
 }
 
