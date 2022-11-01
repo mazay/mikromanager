@@ -23,7 +23,15 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		data       = &exportsData{BackupPath: dh.backupPath}
 		id         = r.URL.Query().Get("id")
 		pagination = &Pagination{}
+		templates  = []string{exportsTmpl, paginationTmpl, baseTmpl}
 	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
@@ -46,15 +54,18 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	data.Count = len(exports)
-	chunkedExports := chunkSliceOfObjects(exports, perPage)
-	pagination.paginate(*r.URL, pageId, len(chunkedExports))
+	if data.Count > 0 {
+		chunkedExports := chunkSliceOfObjects(exports, perPage)
+		pagination.paginate(*r.URL, pageId, len(chunkedExports))
 
-	if pageId-1 >= len(chunkedExports) {
-		pageId = len(chunkedExports)
+		if pageId-1 >= len(chunkedExports) {
+			pageId = len(chunkedExports)
+		}
+
+		data.Pagination = pagination
+		data.CurrentPage = pageId
+		data.Exports = chunkedExports[pageId-1]
 	}
 
-	data.Pagination = pagination
-	data.CurrentPage = pageId
-	data.Exports = chunkedExports[pageId-1]
-	dh.renderTemplate(w, []string{exportsTmpl, paginationTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }

@@ -8,6 +8,8 @@ func collectionsMap() map[string]string {
 		"credentials":            "credentials",
 		"exports":                "exports",
 		"exportsRetentionPolicy": "exportsRetentionPolicy",
+		"users":                  "users",
+		"sessions":               "sessions",
 		// "neighbors":   "neighbors",
 	}
 	return collections

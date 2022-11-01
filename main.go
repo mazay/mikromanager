@@ -30,10 +30,12 @@ type BackupCFG struct {
 }
 
 var (
+	err        error
 	configPath string
 	httpPort   string
 
 	policy = &utils.ExportsRetentionPolicy{Name: "Default"}
+	user   = &utils.User{}
 
 	log    = logrus.New()
 	logger = log.WithFields(logrus.Fields{"app": "mikromanager"})
@@ -56,7 +58,7 @@ func main() {
 	wg.Add(1)
 
 	db := &db.DB{Path: config.DbPath}
-	err := db.Init()
+	err = db.Init()
 	if err != nil {
 		logger.Panicf("DB init issue: %s", err)
 		osExit(1)
@@ -64,18 +66,39 @@ func main() {
 	defer db.Close()
 
 	logger.Debug("ensure 'Default' exports retention policy exists")
-	policyErr := policy.GetDefault(db)
-	if policyErr != nil || policy.Id == "" {
-		logger.Error(policyErr)
+	err = policy.GetDefault(db)
+	if err != nil || policy.Id == "" {
+		logger.Error(err)
 	}
 
 	if policy.Id == "" {
 		policy.Hourly = 24
 		policy.Daily = 14
 		policy.Weekly = 26
-		policyErr = policy.Create(db)
-		if policyErr != nil {
-			logger.Fatal(policyErr)
+		err = policy.Create(db)
+		if err != nil {
+			logger.Fatal(err)
+		}
+	}
+
+	logger.Debug("ensure at least one user exists, create 'admin' otherwise")
+	users, err := user.GetAll(db)
+	if err != nil {
+		logger.Error(err)
+	}
+
+	if len(users) == 0 {
+		encryptedPw, err := utils.EncryptString("admin", config.EncryptionKey)
+		if err != nil {
+			logger.Error(err)
+			osExit(3)
+		}
+		user.Username = "admin"
+		user.EncryptedPassword = encryptedPw
+		err = user.Create(db)
+		if err != nil {
+			logger.Error(err)
+			osExit(3)
 		}
 	}
 

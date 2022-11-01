@@ -31,17 +31,26 @@ type devicesData struct {
 
 func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 	var (
+		err       error
 		deviceErr error
 		data      = &deviceForm{}
 		creds     = &utils.Credentials{}
+		templates = []string{deviceFormTmpl, baseTmpl}
 	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	credsAll, _ := creds.GetAll(dh.db)
 	data.Credentials = credsAll
 
 	if r.Method == "POST" {
 		// parse the form
-		err := r.ParseForm()
+		err = r.ParseForm()
 		if err != nil {
 			dh.logger.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -95,7 +104,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		if id != "" {
 			d := &utils.Device{}
 			d.Id = id
-			err := d.GetById(dh.db)
+			err = d.GetById(dh.db)
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
@@ -108,7 +117,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dh.renderTemplate(w, []string{deviceFormTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }
 
 func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +126,15 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		d          = &utils.Device{}
 		data       = &devicesData{}
 		pagination = &Pagination{}
+		templates  = []string{indexTmpl, paginationTmpl, baseTmpl}
 	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
@@ -134,24 +151,37 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Count = len(deviceList)
-	chunkedDevices := chunkSliceOfObjects(deviceList, perPage)
-	pagination.paginate(*r.URL, pageId, len(chunkedDevices))
+	if data.Count > 0 {
+		chunkedDevices := chunkSliceOfObjects(deviceList, perPage)
+		pagination.paginate(*r.URL, pageId, len(chunkedDevices))
 
-	if pageId-1 >= len(chunkedDevices) {
-		pageId = len(chunkedDevices)
+		if pageId-1 >= len(chunkedDevices) {
+			pageId = len(chunkedDevices)
+		}
+		data.Pagination = pagination
+		data.CurrentPage = pageId
+		data.Devices = chunkedDevices[pageId-1]
 	}
-	data.Pagination = pagination
-	data.CurrentPage = pageId
-	data.Devices = chunkedDevices[pageId-1]
 
-	dh.renderTemplate(w, []string{indexTmpl, paginationTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }
 
 func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
-	var device = &utils.Device{}
-	var data = &deviceDetails{BackupPath: dh.backupPath}
-	var export = &utils.Export{}
-	var id = r.URL.Query().Get("id")
+	var (
+		err       error
+		device    = &utils.Device{}
+		data      = &deviceDetails{BackupPath: dh.backupPath}
+		export    = &utils.Export{}
+		id        = r.URL.Query().Get("id")
+		templates = []string{deviceDetailsTmpl, baseTmpl}
+	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if id == "" {
 		http.Error(w, "Something went wrong, no device ID provided", http.StatusInternalServerError)
@@ -160,7 +190,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 
 	// fetch device from the DB
 	device.Id = id
-	err := device.GetById(dh.db)
+	err = device.GetById(dh.db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -174,15 +204,25 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Exports = exports
-	dh.renderTemplate(w, []string{deviceDetailsTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }
 
 func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
-	var d = &utils.Device{}
+	var (
+		err error
+		d   = &utils.Device{}
+	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	d.Id = r.URL.Query().Get("id")
 
-	err := d.Delete(dh.db)
+	err = d.Delete(dh.db)
 	if err != nil {
 		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

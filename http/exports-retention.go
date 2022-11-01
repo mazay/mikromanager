@@ -26,10 +26,18 @@ func (erp *exportRetentionPolicyForm) formFillIn(policy *utils.ExportsRetentionP
 
 func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *http.Request) {
 	var (
-		err  error
-		data = &exportRetentionPolicyForm{}
-		erp  = &utils.ExportsRetentionPolicy{Name: "Default"}
+		err       error
+		data      = &exportRetentionPolicyForm{}
+		erp       = &utils.ExportsRetentionPolicy{Name: "Default"}
+		templates = []string{erpTmpl, baseTmpl}
 	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = erp.GetDefault(dh.db)
 	if err != nil {
@@ -80,5 +88,5 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 	}
 
 	data.formFillIn(erp)
-	dh.renderTemplate(w, []string{erpTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }

@@ -13,6 +13,8 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath str
 	static := http.FileServer(http.Dir("./static"))
 	backups := http.FileServer(http.Dir(backupPath))
 	http.HandleFunc("/healthz", handlerWrapper(dh.healthz, logger))
+	http.HandleFunc("/login", handlerWrapper(dh.login, logger))
+	http.HandleFunc("/logout", handlerWrapper(dh.logout, logger))
 	http.HandleFunc("/", handlerWrapper(dh.getDevices, logger))
 	http.HandleFunc("/details", handlerWrapper(dh.getDevice, logger))
 	http.HandleFunc("/edit", handlerWrapper(dh.editDevice, logger))

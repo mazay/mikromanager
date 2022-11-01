@@ -26,10 +26,19 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 		c          = &utils.Credentials{}
 		data       = &credentialsData{}
 		pagination = &Pagination{}
+		templates  = []string{credsTmpl, paginationTmpl, baseTmpl}
 	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
+		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -43,29 +52,40 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 	}
 
 	data.Count = len(credList)
-	chunkedCreds := chunkSliceOfObjects(credList, perPage)
-	pagination.paginate(*r.URL, pageId, len(chunkedCreds))
+	if data.Count > 0 {
+		chunkedCreds := chunkSliceOfObjects(credList, perPage)
+		pagination.paginate(*r.URL, pageId, len(chunkedCreds))
 
-	if pageId-1 >= len(chunkedCreds) {
-		pageId = len(chunkedCreds)
+		if pageId-1 >= len(chunkedCreds) {
+			pageId = len(chunkedCreds)
+		}
+
+		data.Pagination = pagination
+		data.CurrentPage = pageId
+		data.Credentials = chunkedCreds[pageId-1]
 	}
 
-	data.Pagination = pagination
-	data.CurrentPage = pageId
-	data.Credentials = chunkedCreds[pageId-1]
-
-	dh.renderTemplate(w, []string{credsTmpl, paginationTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }
 
 func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
-		credsErr error
-		data     = &credentialsForm{}
+		err       error
+		credsErr  error
+		data      = &credentialsForm{}
+		templates = []string{credsFormTmpl, baseTmpl}
 	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if r.Method == "POST" {
 		// parse the form
-		err := r.ParseForm()
+		err = r.ParseForm()
 		if err != nil {
 			dh.logger.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -133,15 +153,25 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	dh.renderTemplate(w, []string{credsFormTmpl}, data)
+	dh.renderTemplate(w, templates, data)
 }
 
 func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Request) {
-	var c = &utils.Credentials{}
+	var (
+		err error
+		c   = &utils.Credentials{}
+	)
+
+	_, err = dh.checkSession(r)
+	if err != nil {
+		dh.logger.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	c.Id = r.URL.Query().Get("id")
 
-	err := c.Delete(dh.db)
+	err = c.Delete(dh.db)
 	if err != nil {
 		dh.logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
