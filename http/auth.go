@@ -56,7 +56,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if decryptedPw != data.Password {
-			data.PasswordMsg = fmt.Sprint("Incorrect password")
+			data.PasswordMsg = "Incorrect password"
 			dh.renderTemplate(w, []string{loginTmpl}, data)
 			return
 		}
