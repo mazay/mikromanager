@@ -124,7 +124,7 @@ func main() {
 		logger.Errorf("Job: %v, Error: %v", exportRetentionJob, exportRetentionErr)
 	}
 	logger.Info("session cleanup job interval is 24 hours")
-	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(rotateExports, db)
+	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(cleanupSessions, db)
 	if sessionCleanupErr != nil {
 		logger.Errorf("Job: %v, Error: %v", sessionCleanupJob, sessionCleanupErr)
 	}
