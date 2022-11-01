@@ -31,8 +31,7 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
@@ -78,8 +77,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
@@ -164,8 +162,7 @@ func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Reque
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 

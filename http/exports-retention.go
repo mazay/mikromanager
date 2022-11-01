@@ -34,8 +34,7 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 

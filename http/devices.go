@@ -40,8 +40,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
@@ -131,8 +130,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
@@ -178,8 +176,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
@@ -215,8 +212,7 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		dh.logger.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
