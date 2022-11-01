@@ -108,20 +108,25 @@ func main() {
 	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger)
 
 	scheduler := gocron.NewScheduler(time.Local)
-	logger.Debugf("devicePollerInterval is %s", config.DevicePollerInterval)
+	logger.Infof("devicePollerInterval is %s", config.DevicePollerInterval)
 	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, db, pollerCH)
 	if pollerErr != nil {
 		logger.Errorf("Job: %v, Error: %v", pollerJob, pollerErr)
 	}
-	logger.Debugf("deviceExportInterval is %s", config.DeviceExportInterval)
+	logger.Infof("deviceExportInterval is %s", config.DeviceExportInterval)
 	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, db, exportCH)
 	if exportErr != nil {
 		logger.Errorf("Job: %v, Error: %v", exportJob, exportErr)
 	}
-	logger.Debug("export retention job interval is 90 minutes")
+	logger.Info("export retention job interval is 90 minutes")
 	exportRetentionJob, exportRetentionErr := scheduler.Every("90m").Do(rotateExports, db)
 	if exportRetentionErr != nil {
 		logger.Errorf("Job: %v, Error: %v", exportRetentionJob, exportRetentionErr)
+	}
+	logger.Info("session cleanup job interval is 24 hours")
+	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(rotateExports, db)
+	if sessionCleanupErr != nil {
+		logger.Errorf("Job: %v, Error: %v", sessionCleanupJob, sessionCleanupErr)
 	}
 	scheduler.StartAsync()
 
@@ -302,6 +307,28 @@ func rotateExports(db *db.DB) {
 						logger.Error(err)
 					}
 				}
+			}
+		}
+	}
+}
+
+func cleanupSessions(db *db.DB) {
+	var err error
+	var session *utils.Session
+
+	logger.Info("starting session cleanup task")
+	sessions, err := session.GetAll(db)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	for _, s := range sessions {
+		if s.ValidThrough.Before(time.Now()) {
+			logger.Debugf("session '%s' has expired, deleting", s.Id)
+			err = s.Delete(db)
+			if err != nil {
+				logger.Error(err)
 			}
 		}
 	}

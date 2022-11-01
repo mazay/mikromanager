@@ -66,22 +66,22 @@ func (s *Session) Update(db *database.DB) error {
 	return db.Update(db.Collections["sessions"], "_id", s.Id, inInterface)
 }
 
-func (s *Session) GetAll(db *database.DB) ([]*User, error) {
-	var userList []*User
+func (s *Session) GetAll(db *database.DB) ([]*Session, error) {
+	var sessionList []*Session
 
 	docs, err := db.FindAll(db.Collections["sessions"])
 	if err != nil {
-		return userList, err
+		return sessionList, err
 	}
 
 	for _, doc := range docs {
-		um := &User{}
-		uj, _ := json.Marshal(doc)
-		_ = json.Unmarshal(uj, um)
-		userList = append(userList, um)
+		sm := &Session{}
+		sj, _ := json.Marshal(doc)
+		_ = json.Unmarshal(sj, sm)
+		sessionList = append(sessionList, sm)
 	}
 
-	return userList, nil
+	return sessionList, nil
 }
 
 func (s *Session) GetByUserId(db *database.DB, userId string) ([]*Session, error) {
