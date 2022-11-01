@@ -28,6 +28,6 @@ Alternatively, you can build the binary, it's recommended to use go `1.19`:
 go mod download && go build .
 ```
 
-**The app has no authentication at the moment so be careful with exposing it both internally and externally.**
+**Default username and password is `admin` make sure to change it.**
 
 Would appreciate any [feedback](https://github.com/mazay/mikromanager/issues/new).
