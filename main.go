@@ -248,7 +248,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 			for cfg := range exportCH {
 				logger.Infof("creating backup for device with IP address %s", cfg.Client.Host)
 
-				export, sshErr := cfg.Client.Run("/export")
+				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
 					creationTime := time.Now()
 					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Client.Host, creationTime.Unix())
