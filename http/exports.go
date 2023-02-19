@@ -11,6 +11,7 @@ type exportsData struct {
 	DeviceId    string
 	Count       int
 	Exports     []*utils.Export
+	Devices     []*utils.Device
 	Pagination  *Pagination
 	CurrentPage int
 }
@@ -20,11 +21,18 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		err        error
 		exports    []*utils.Export
 		export     = &utils.Export{}
+		device     = &utils.Device{}
 		data       = &exportsData{BackupPath: dh.backupPath}
 		id         = r.URL.Query().Get("id")
 		pagination = &Pagination{}
 		templates  = []string{exportsTmpl, paginationTmpl, baseTmpl}
 	)
+
+	data.Devices, err = device.GetAll(dh.db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	_, err = dh.checkSession(r)
 	if err != nil {

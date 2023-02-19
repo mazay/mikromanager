@@ -19,7 +19,7 @@
     <thead>
       <tr>
         <th scope="col"></th>
-        <th scope="col">Device ID</th>
+        <th scope="col">Device Identity</th>
         <th scope="col">Created</th>
         <th scope="col">Filename</th>
       </tr>
@@ -33,7 +33,11 @@
           <a href="/exports?id={{ $export.DeviceId }}"><i class="bi-funnel"></i></a>
           {{ end }}
         </td>
-        <td>{{ $export.DeviceId }}</td>
+        {{ range $device := $.Devices }}
+          {{ if eq $device.Id $export.DeviceId }}
+            <td>{{ $device.Identity }}</td>
+          {{ end }}
+        {{ end }}
         <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
         <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
       </tr>
