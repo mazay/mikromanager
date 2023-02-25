@@ -5,15 +5,19 @@ ARG TARGETARCH
 ENV GOOS=${TARGETOS}
 ENV GOARCH=${TARGETARCH}
 WORKDIR /go/src/github.com/mazay/mikromanager
-RUN apk add git curl
+# hadolint ignore=DL3018
+RUN apk --no-cache add git curl
 COPY ./ ./
 RUN go mod download
+# hadolint ignore=DL3059
 RUN go build
 
 FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.16.2
 ARG TARGETPLATFORM
 LABEL maintainer="Yevgeniy Valeyev <z.mazay@gmail.com>"
+# hadolint ignore=DL3018
 RUN apk --no-cache add ca-certificates
+# hadolint ignore=DL3059
 RUN adduser \
     --disabled-password \
     --no-create-home \
