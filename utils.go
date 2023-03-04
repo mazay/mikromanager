@@ -39,7 +39,7 @@ func fetchManagementIp(cfg *PollerCFG) error {
 	}
 	if len(ipaddr) > 0 {
 		addr := strings.Split(ipaddr[0].Map["address"], "/")[0]
-		logger.Debugf("management address for device ID %s will be set to %s", cfg.Device.Id, addr)
+		logger.Infof("management address for device ID %s will be set to %s", cfg.Device.Id, addr)
 		cfg.Device.Address = addr
 		return nil
 	}
