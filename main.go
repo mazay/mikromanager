@@ -188,6 +188,11 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 					logger.Error(fetchErr)
 				}
 
+				fetchErr = fetchManagementIp(cfg)
+				if fetchErr != nil {
+					logger.Error(fetchErr)
+				}
+
 				if fetchErr != nil {
 					cfg.Device.PollingSucceeded = 0
 				} else {

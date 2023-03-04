@@ -31,3 +31,7 @@ go mod download && go build .
 **Default username and password is `admin` make sure to change it.**
 
 Would appreciate any [feedback](https://github.com/mazay/mikromanager/issues/new).
+
+**Notes**
+
+The `mikromanager` will try to find a management IP using comment filter `MGMT`, if found device IP will be updated. This should help with subnet migrations, just make sure you have only one address with that comment, `mikromanager` will use the first found.

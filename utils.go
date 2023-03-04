@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -29,6 +30,20 @@ func fetchIdentity(cfg *PollerCFG) error {
 		return nil
 	}
 	return fmt.Errorf("got an empty identity data")
+}
+
+func fetchManagementIp(cfg *PollerCFG) error {
+	ipaddr, err := cfg.Client.Run("/ip/address/print ?comment=MGMT")
+	if err != nil {
+		return err
+	}
+	if len(ipaddr) > 0 {
+		addr := strings.Split(ipaddr[0].Map["address"], "/")[0]
+		logger.Debugf("management address for device ID %s will be set to %s", cfg.Device.Id, addr)
+		cfg.Device.Address = addr
+		return nil
+	}
+	return fmt.Errorf("couldn't find management IP-address")
 }
 
 func writeBackupFile(filename string, data []byte) error {
