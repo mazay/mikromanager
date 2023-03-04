@@ -251,7 +251,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
 					creationTime := time.Now()
-					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Client.Host, creationTime.Unix())
+					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Device.Id, creationTime.Unix())
 					err := writeBackupFile(filename, export)
 					if err != nil {
 						logger.Error(err)
