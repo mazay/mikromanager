@@ -14,7 +14,7 @@ type Device struct {
 	ApiPort              string            `json:"apiPort"`
 	ArchitectureName     string            `json:"architecture-name"`
 	BadBlocks            int64             `json:"bad-blocks,string"`
-	BoardName            string            `json:"board-name"`
+	BoardName            DeviceBoardName   `json:"board-name"`
 	BuildTime            FirmwareBuildTime `json:"build-time"`
 	CPU                  string            `json:"cpu"`
 	CpuCount             int64             `json:"cpu-count,string"`
@@ -37,6 +37,9 @@ type Device struct {
 	Version              string            `json:"version"`
 	WriteSectSinceReboot int64             `json:"write-sect-since-reboot,string"`
 	WriteSectTotal       int64             `json:"write-sect-total,string"`
+	Model                string            `json:"model"`
+	SerialNumber         string            `json:"serial-number"`
+	FirmwareType         string            `json:"firmware-type"`
 }
 
 func (d *Device) GetAll(db *database.DB) ([]*Device, error) {

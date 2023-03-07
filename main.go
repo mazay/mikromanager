@@ -183,6 +183,11 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 					logger.Error(fetchErr)
 				}
 
+				fetchErr = fetchRbDetails(cfg)
+				if fetchErr != nil {
+					logger.Error(fetchErr)
+				}
+
 				fetchErr = fetchIdentity(cfg)
 				if fetchErr != nil {
 					logger.Error(fetchErr)

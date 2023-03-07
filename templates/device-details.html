@@ -18,31 +18,45 @@
       <dt class="col-sm-3">Arch</dt>
       <dd class="col-sm-9">{{ .Device.ArchitectureName }}</dd>
 
-      <dt class="col-sm-3">BoardName</dt>
-      <dd class="col-sm-9"><a href="{{ if eq .Device.BoardName "CHR" }}https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234{{ else }}https://mikrotik.com/products?filter&s=c&search={{ .Device.BoardName }}{{ end }}" target="_blank">{{ .Device.BoardName }}</a></dd>
+      <dt class="col-sm-3">Model</dt>
+      <dd class="col-sm-9">
+        {{ if eq .Device.BoardName "CHR" }}
+        <a href="https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234" target="_blank">
+          {{ .Device.BoardName }}
+        </a>
+        {{ else }}
+        <a href="https://mikrotik.com/products?filter&s=c&search={{ .Device.Model }}" target="_blank">
+          {{ .Device.Model }}
+        </a>
+        {{ end }}
+      </dd>
 
-      <dt class="col-sm-3">Version</dt>
+      <dt class="col-sm-3">Serial Number</dt>
+      <dd class="col-sm-9">{{ .Device.SerialNumber }}</dd>
+
+      <dt class="col-sm-3">Board Name</dt>
+      <dd class="col-sm-9">{{ .Device.BoardName }}</dd>
+
+      <dt class="col-sm-3">Firmware Version</dt>
       <dd class="col-sm-9">{{ .Device.Version }}</dd>
+
+      <dt class="col-sm-3">Factory Firmware</dt>
+      <dd class="col-sm-9">{{ .Device.FactorySoftware }}</dd>
+
+      <dt class="col-sm-3">Firmware Type</dt>
+      <dd class="col-sm-9">{{ .Device.FirmwareType }}</dd>
 
       <dt class="col-sm-3">BuildTime</dt>
       <dd class="col-sm-9">{{ .Device.BuildTime }}</dd>
 
-      <dt class="col-sm-3">Factory Software</dt>
-      <dd class="col-sm-9">{{ .Device.FactorySoftware }}</dd>
-
-      <dt class="col-sm-3">Created</dt>
-      <dd class="col-sm-9">{{ .Device.Created.Format "2006-01-02 15:04:05" }}</dd>
-
-      <dt class="col-sm-3">Updated</dt>
-      <dd class="col-sm-9">{{ .Device.Updated.Format "2006-01-02 15:04:05" }}</dd>
-
       <dt class="col-sm-3">Exports</dt>
       <dd class="col-sm-9">
         {{ if gt (len .Exports) 0 }}
-        <a href="/exports?id={{ .Device.Id }}">{{ len .Exports }}</a></dd>
+        <a href="/exports?id={{ .Device.Id }}">{{ len .Exports }}</a>
         {{ else }}
         {{ len .Exports }}
         {{ end }}
+      </dd>
     </dl>
   </div>
   <div class="col">
@@ -74,6 +88,12 @@
         <a href="http://{{ .Device.Address }}" target="_blank"><i class="bi-globe"></i></a>
         <a href="ssh://{{ .Device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
       </dd>
+
+      <dt class="col-sm-3">Created</dt>
+      <dd class="col-sm-9">{{ .Device.Created.Format "2006-01-02 15:04:05" }}</dd>
+
+      <dt class="col-sm-3">Updated</dt>
+      <dd class="col-sm-9">{{ .Device.Updated.Format "2006-01-02 15:04:05" }}</dd>
     </dl>
   </div>
 </div>

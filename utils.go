@@ -19,6 +19,16 @@ func fetchResources(cfg *PollerCFG) error {
 	return json.Unmarshal(inrec, &cfg.Device)
 }
 
+func fetchRbDetails(cfg *PollerCFG) error {
+	resource, err := cfg.Client.Run("/system/routerboard/print")
+	if err != nil {
+		return err
+	}
+	logger.Debugf("fetched rouerboard data for %s", cfg.Client.Address)
+	inrec, _ := json.Marshal(resource[0].Map)
+	return json.Unmarshal(inrec, &cfg.Device)
+}
+
 func fetchIdentity(cfg *PollerCFG) error {
 	identity, err := cfg.Client.Run("/system/identity/print")
 	if err != nil {
