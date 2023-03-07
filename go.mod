@@ -3,7 +3,7 @@ module github.com/mazay/mikromanager
 go 1.19
 
 require (
-	github.com/go-co-op/gocron v1.17.1
+	github.com/go-co-op/gocron v1.18.1
 	github.com/ostafen/clover v1.2.0
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.7.0
@@ -29,7 +29,7 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
