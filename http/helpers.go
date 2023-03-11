@@ -23,6 +23,7 @@ var (
 	credsFormTmpl     = path.Join("templates", "credentials-form.html")
 	erpTmpl           = path.Join("templates", "erp-form.html")
 	exportsTmpl       = path.Join("templates", "exports.html")
+	exportTmpl        = path.Join("templates", "export.html")
 	userFormTmpl      = path.Join("templates", "user-form.html")
 	usersTmpl         = path.Join("templates", "users.html")
 )

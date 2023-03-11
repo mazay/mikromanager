@@ -11,7 +11,6 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath str
 	logger.Infof("starting http server on port %s", httpPort)
 	dh := &dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger, backupPath: backupPath}
 	static := http.FileServer(http.Dir("./static"))
-	backups := http.FileServer(http.Dir(backupPath))
 	http.HandleFunc("/healthz", handlerWrapper(dh.healthz, logger))
 	http.HandleFunc("/login", handlerWrapper(dh.login, logger))
 	http.HandleFunc("/logout", handlerWrapper(dh.logout, logger))
@@ -27,7 +26,8 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath str
 	http.HandleFunc("/credentials/delete", handlerWrapper(dh.deleteCredentials, logger))
 	http.HandleFunc("/erp", handlerWrapper(dh.editExportRetentionPolicy, logger))
 	http.HandleFunc("/exports", handlerWrapper(dh.getExports, logger))
+	http.HandleFunc("/export", handlerWrapper(dh.getExport, logger))
+	http.HandleFunc("/export/download", handlerWrapper(dh.downloadExport, logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
-	http.Handle("/backups/", http.StripPrefix("/backups/", backups))
 	logger.Fatal(http.ListenAndServe(":"+httpPort, nil))
 }

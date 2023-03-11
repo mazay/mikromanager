@@ -21,7 +21,7 @@
         <th scope="col"></th>
         <th scope="col">Device Identity</th>
         <th scope="col">Created</th>
-        <th scope="col">Filename</th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -35,11 +35,14 @@
         </td>
         {{ range $device := $.Devices }}
           {{ if eq $device.Id $export.DeviceId }}
-            <td>{{ $device.Identity }}</td>
+            <td>{{ $device.Identity }} ({{ $device.Id }})</td>
           {{ end }}
         {{ end }}
         <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
-        <td><a href="{{ getExportUrl $.BackupPath $export.Filename }}" target="_blank">{{ getExportUrl $.BackupPath $export.Filename }}</a></td>
+        <td>
+          <a class="btn btn-info btn-sm" role="button" href="/export?id={{ $export.Id }}"><i class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-success btn-sm" role="button" href="/export/download?id={{ $export.Id }}" target="_blank"><i class="bi-download"></i></a>
+        </td>
       </tr>
       {{ end }}
     </tbody>
