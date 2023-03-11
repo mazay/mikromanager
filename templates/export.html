@@ -1,0 +1,43 @@
+{{ define "pagination" }}{{ end }}
+{{ define "nav-inventory" }}active{{ end }}
+{{ define "nav-exports" }}active{{ end }}
+{{ define "content" }}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/exports">Exports</a></li>
+    <li class="breadcrumb-item"><a href="/exports?id={{ .Export.DeviceId }}">{{ .Export.DeviceId }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ .Export.Id }}</li>
+  </ol>
+</nav>
+<legend class="text-center display-6">Export details <a class="btn btn-success btn-sm" role="button" href="/export/download?id={{ .Export.Id }}" target="_blank"><i class="bi-download"></i></a></legend>
+<hr class="border border-primary border-3 opacity-75">
+<div class="row align-items-start">
+  <div class="col">
+    <dl class="row">
+      <dt class="col-sm-3">Device</dt>
+      <dd class="col-sm-9"><a href="/details?id={{ .Device.Id }}">{{ .Device.Identity }}</a> ({{ .Device.Id }})</dd>
+
+      <dt class="col-sm-3">Created</dt>
+      <dd class="col-sm-9">{{ .Export.Created.Format "2006-01-02 15:04:05" }}</dd>
+    </dl>
+  </div>
+</div>
+<div class="accordion" id="accordionExport">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Contents
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExport">
+      <div class="accordion-body">
+        <pre><code>
+{{ .ExportData }}
+        </code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ template "pagination" . }}
+{{ end }}
