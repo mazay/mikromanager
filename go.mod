@@ -3,6 +3,7 @@ module github.com/mazay/mikromanager
 go 1.19
 
 require (
+	github.com/dustin/go-humanize v1.0.0
 	github.com/go-co-op/gocron v1.18.1
 	github.com/ostafen/clover v1.2.0
 	github.com/sirupsen/logrus v1.9.0
@@ -16,7 +17,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgraph-io/badger/v3 v3.2103.2 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
