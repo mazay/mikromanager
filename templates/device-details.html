@@ -31,6 +31,13 @@
         {{ end }}
       </dd>
 
+      <dt class="col-sm-3">Address</dt>
+      <dd class="col-sm-9">
+        {{ .Device.Address }}
+        <a href="http://{{ .Device.Address }}" target="_blank"><i class="bi-globe"></i></a>
+        <a href="ssh://{{ .Device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
+      </dd>
+
       <dt class="col-sm-3">Serial Number</dt>
       <dd class="col-sm-9">{{ .Device.SerialNumber }}</dd>
 
@@ -76,18 +83,14 @@
       <dt class="col-sm-3">CPU Load</dt>
       <dd class="col-sm-9">{{ .Device.CpuLoad }}%</dd>
 
+      <dt class="col-sm-3">Memory Capacity</dt>
+      <dd class="col-sm-9">{{ humahizeBytes .Device.TotalMemory }}</dd>
+
       <dt class="col-sm-3">Memory Usage</dt>
       <dd class="col-sm-9">{{ if and .Device.TotalMemory .Device.FreeMemory }}{{ memoryUsage .Device.TotalMemory .Device.FreeMemory }}%{{ end }}</dd>
 
       <dt class="col-sm-3">Last Polled</dt>
       <dd class="col-sm-9">{{ .Device.PolledAt.Format "2006-01-02 15:04:05" }}</dd>
-
-      <dt class="col-sm-3">Address</dt>
-      <dd class="col-sm-9">
-        {{ .Device.Address }}
-        <a href="http://{{ .Device.Address }}" target="_blank"><i class="bi-globe"></i></a>
-        <a href="ssh://{{ .Device.Address }}" target="_blank"><i class="bi-terminal"></i></a>
-      </dd>
 
       <dt class="col-sm-3">Created</dt>
       <dd class="col-sm-9">{{ .Device.Created.Format "2006-01-02 15:04:05" }}</dd>

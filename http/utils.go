@@ -6,18 +6,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/mazay/mikromanager/utils"
 )
 
 var funcMap = template.FuncMap{
-	"replace":     replace,
-	"timeAgo":     timeAgo,
-	"memoryUsage": memoryUsage,
-	"containsInt": containsInt,
+	"replace":       replace,
+	"timeAgo":       timeAgo,
+	"memoryUsage":   memoryUsage,
+	"containsInt":   containsInt,
+	"humahizeBytes": humahizeBytes,
 }
 
 func replace(input, from, to string) string {
 	return strings.Replace(input, from, to, -1)
+}
+
+func humahizeBytes(bytes int64) string {
+	return humanize.Bytes(uint64(bytes))
 }
 
 func timeAgo(t time.Time) string {
