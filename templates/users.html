@@ -16,7 +16,7 @@
         <th scope="col">Username</th>
         <th scope="col">Created</th>
         <th scope="col">Updated</th>
-        <th scope="col"><a class="btn btn-success btn-sm" role="button" href="/user/edit"><i class="bi-plus-square"></i></a></th>
+        <th scope="col"><a class="btn btn-outline-success btn-sm" role="button" href="/user/edit"><i class="bi-plus-square"></i></a></th>
       </tr>
     </thead>
     <tbody>
@@ -31,8 +31,8 @@
           {{ $user.Updated.Format "2006-01-02 15:04:05 UTC" }}</td>
           {{ end }}
         <td>
-          <a class="btn btn-warning btn-sm" role="button" href="/user/edit?id={{ $user.Id }}"><i class="bi-pencil"></i></a>
-          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#{{ $user.Username }}">
+          <a class="btn btn-outline-warning btn-sm" role="button" href="/user/edit?id={{ $user.Id }}"><i class="bi-pencil"></i></a>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#{{ $user.Username }}">
             <i class="bi-trash"></i>
           </button>
         </td>
