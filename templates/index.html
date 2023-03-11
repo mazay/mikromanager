@@ -22,7 +22,7 @@
         <th scope="col">Version</th>
         <th scope="col">Uptime</th>
         <th scope="col">Last Polled</th>
-        <th scope="col"><a class="btn btn-success btn-sm" role="button" href="/edit"><i class="bi-plus-square"></i></a></th>
+        <th scope="col"><a class="btn btn-outline-success btn-sm" role="button" href="/edit"><i class="bi-plus-square"></i></a></th>
       </tr>
     </thead>
     <tbody>
@@ -55,10 +55,10 @@
           {{ end }}
         </td>
         <td>
-          <a class="btn btn-primary btn-sm" role="button" href="/exports?id={{ $device.Id }}"><i class="bi-archive"></i></a>
-          <a class="btn btn-info btn-sm" role="button" href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
-          <a class="btn btn-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
-          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $device.Address "." "" }}">
+          <a class="btn btn-outline-primary btn-sm" role="button" href="/exports?id={{ $device.Id }}"><i class="bi-archive"></i></a>
+          <a class="btn btn-outline-info btn-sm" role="button" href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-outline-warning btn-sm" role="button" href="/edit?id={{ $device.Id }}"><i class="bi-pencil"></i></a>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $device.Address "." "" }}">
             <i class="bi-trash"></i>
           </button>
         </td>
