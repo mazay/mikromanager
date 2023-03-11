@@ -9,6 +9,7 @@
 - [cloverDB](https://github.com/ostafen/clover)
 - [Logrus](https://github.com/sirupsen/logrus)
 - [go-routeros](https://github.com/go-routeros/routeros/tree/v2)
+- [highlight.js](https://highlightjs.org/)
 
 ## Getting started
 
