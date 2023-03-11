@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -125,7 +124,7 @@ func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Device = device
 
-	exportBody, err := ioutil.ReadFile(data.Export.Filename)
+	exportBody, err := os.ReadFile(data.Export.Filename)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -190,5 +189,8 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Length", fmt.Sprint(fileInfo.Size()))
 
 	// stream the body to the client
-	io.Copy(w, fileReader)
+	_, err = io.Copy(w, fileReader)
+	if err != nil {
+		dh.logger.Error(err)
+	}
 }
