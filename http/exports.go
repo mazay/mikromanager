@@ -56,6 +56,7 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dh.db.Sort("created", -1)
 	if id != "" {
 		data.DeviceId = id
 		exports, err = export.GetByDeviceId(dh.db, id)
