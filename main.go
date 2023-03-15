@@ -176,6 +176,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 		go func() {
 			for cfg := range pollerCH {
 				var fetchErr error
+				var minorErr error
 				var dbErr error
 				logger.Infof("polling device '%s'", cfg.Client.Address)
 				fetchErr = fetchResources(cfg)
@@ -193,9 +194,10 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 					logger.Error(fetchErr)
 				}
 
-				fetchErr = fetchManagementIp(cfg)
-				if fetchErr != nil {
-					logger.Error(fetchErr)
+				// do not consider fetchManagementIp errors as a failure, just log them
+				minorErr = fetchManagementIp(cfg)
+				if minorErr != nil {
+					logger.Error(minorErr)
 				}
 
 				if fetchErr != nil {
