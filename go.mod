@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/go-co-op/gocron v1.20.1
+	github.com/go-co-op/gocron v1.21.1
 	github.com/ostafen/clover v1.2.0
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.8.0
