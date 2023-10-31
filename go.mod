@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/go-co-op/gocron v1.35.2
+	github.com/go-co-op/gocron v1.35.3
 	github.com/ostafen/clover v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.14.0
@@ -23,7 +23,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v2.0.6+incompatible // indirect
-	github.com/google/uuid v1.3.1 // indirect
+	github.com/google/uuid v1.4.0 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
