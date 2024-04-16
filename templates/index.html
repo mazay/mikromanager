@@ -45,7 +45,8 @@
         <td>{{ $device.ApiPort }}</td>
         <td>{{ $device.SshPort }}</td>
         <td>{{ $device.ArchitectureName }}</td>
-        <td>{{ $device.Version }}</td>
+        {{/* support both pre 7.14 and 7.14+ */}}
+        <td>{{ if $device.CurrentFirmware }}{{ $device.CurrentFirmware }}{{ else }}{{ $device.Version }}{{ end }}</td>
         <td>{{ $device.Uptime }}</td>
         <td>
           {{ if not $device.PolledAt.IsZero }}
