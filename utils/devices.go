@@ -40,6 +40,9 @@ type Device struct {
 	Model                string            `json:"model"`
 	SerialNumber         string            `json:"serial-number"`
 	FirmwareType         string            `json:"firmware-type"`
+	FactoryFirmware      string            `json:"factory-firmware"`
+	CurrentFirmware      string            `json:"current-firmware"`
+	UpgradeFirmware      string            `json:"upgrade-firmware"`
 }
 
 func (d *Device) GetAll(db *database.DB) ([]*Device, error) {

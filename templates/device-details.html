@@ -44,11 +44,16 @@
       <dt class="col-sm-3">Board Name</dt>
       <dd class="col-sm-9">{{ .Device.BoardName }}</dd>
 
-      <dt class="col-sm-3">Firmware Version</dt>
-      <dd class="col-sm-9">{{ .Device.Version }}</dd>
+      <dt class="col-sm-3">Current Firmware</dt>
+      {{/* support both pre 7.14 and 7.14+ */}}
+      <dd class="col-sm-9">{{ if .Device.CurrentFirmware }}{{ .Device.CurrentFirmware }}{{ else }}{{ .Device.Version }}{{ end }}</dd>
 
       <dt class="col-sm-3">Factory Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.FactorySoftware }}</dd>
+      {{/* support both pre 7.14 and 7.14+ */}}
+      <dd class="col-sm-9">{{ if .Device.FactoryFirmware }}{{ .Device.FactoryFirmware }}{{ else }}{{ .Device.FactorySoftware }}{{ end }}</dd>
+
+      <dt class="col-sm-3">Upgrade Firmware</dt>
+      <dd class="col-sm-9">{{ .Device.UpgradeFirmware }}</dd>
 
       <dt class="col-sm-3">Firmware Type</dt>
       <dd class="col-sm-9">{{ .Device.FirmwareType }}</dd>
