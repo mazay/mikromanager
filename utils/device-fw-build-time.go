@@ -14,7 +14,7 @@ func (bt *FirmwareBuildTime) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	t, err := time.Parse("Jan/02/2006 15:04:05", value)
+	t, err := time.Parse("2006-01-02 15:04:05", value)
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func (bt *FirmwareBuildTime) UnmarshalJSON(b []byte) error {
 }
 
 func (bt FirmwareBuildTime) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + time.Time(bt).Format("Jan/02/2006 15:04:05") + `"`), nil
+	return []byte(`"` + time.Time(bt).Format("2006-01-02 15:04:05") + `"`), nil
 }
 
 func (bt FirmwareBuildTime) Format(f fmt.State, c rune) {
