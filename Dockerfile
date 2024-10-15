@@ -12,7 +12,7 @@ RUN go mod download
 # hadolint ignore=DL3059
 RUN go build
 
-FROM alpine:3.20.2
+FROM alpine:3.20.3
 ARG TARGETPLATFORM
 LABEL maintainer="Yevgeniy Valeyev <z.mazay@gmail.com>"
 # hadolint ignore=DL3018
