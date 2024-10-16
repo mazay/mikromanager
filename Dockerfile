@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.20.4-alpine3.16 AS builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} public.ecr.aws/docker/library/golang:1.20.4-alpine3.16 AS builder
 ARG RELEASE_VERSION=devel
 ARG TARGETOS
 ARG TARGETARCH
@@ -12,7 +12,7 @@ RUN go mod download
 # hadolint ignore=DL3059
 RUN go build
 
-FROM alpine:3.20.3
+FROM public.ecr.aws/docker/library/alpine:3.20.3
 ARG TARGETPLATFORM
 LABEL maintainer="Yevgeniy Valeyev <z.mazay@gmail.com>"
 # hadolint ignore=DL3018
