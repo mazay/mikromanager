@@ -50,7 +50,7 @@ func main() {
 
 	config := readConfigFile(configPath)
 	logger = initLogger(config.LogLevel)
-	defer logger.Sync()
+	defer logger.Sync() //nolint:golint,errcheck
 
 	pollerCH := make(chan *PollerCFG)
 	exportCH := make(chan *BackupCFG)
