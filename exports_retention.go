@@ -59,7 +59,7 @@ func rotateHourlyExports(db *db.DB, exports []*utils.Export, number int64) []*ut
 
 	timeWindow, err := time.ParseDuration("59m59s")
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 		return exportsList
 	}
 	exportsList = exportsToKeep(exports, slice, timeWindow)
@@ -78,7 +78,7 @@ func rotateDailyExports(db *db.DB, exports []*utils.Export, number int64) []*uti
 
 	timeWindow, err := time.ParseDuration("23h59m59s")
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 		return exportsList
 	}
 	exportsList = exportsToKeep(exports, slice, timeWindow)
@@ -99,7 +99,7 @@ func rotateWeeklyExports(db *db.DB, exports []*utils.Export, number int64) []*ut
 	// 6 days 23 hours 59 minutes 59 seconds
 	timeWindow, err := time.ParseDuration("167h59m59s")
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 		return exportsList
 	}
 	exportsList = exportsToKeep(exports, slice, timeWindow)

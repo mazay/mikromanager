@@ -45,7 +45,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -54,7 +54,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		username := r.PostForm.Get("username")
 		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), dh.encryptionKey)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -125,14 +125,14 @@ func (dh *dynamicHandler) getUsers(w http.ResponseWriter, r *http.Request) {
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	userList, err := u.GetAll(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -175,7 +175,7 @@ func (dh *dynamicHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	err = u.Delete(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

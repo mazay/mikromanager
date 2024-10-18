@@ -54,7 +54,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 
 	credsAll, err := creds.GetAll(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -64,7 +64,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -142,7 +142,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -150,7 +150,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 	// fetch devices
 	deviceList, err := d.GetAll(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -196,7 +196,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	device.Id = id
 	err = device.GetById(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -204,7 +204,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 
 	exports, err := export.GetByDeviceId(dh.db, device.Id)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -235,7 +235,7 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	err = d.Delete(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -27,7 +27,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -37,7 +37,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		user.Username = data.Username
 		err = user.GetByUsername(dh.db)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -50,7 +50,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 
 		decryptedPw, err := utils.DecryptString(user.EncryptedPassword, dh.encryptionKey)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -64,7 +64,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		session.UserId = user.Id
 		err = session.Create(dh.db)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -90,7 +90,7 @@ func (dh *dynamicHandler) logout(w http.ResponseWriter, r *http.Request) {
 
 	c, err := r.Cookie("session_token")
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -98,14 +98,14 @@ func (dh *dynamicHandler) logout(w http.ResponseWriter, r *http.Request) {
 	session.Id = c.Value
 	err = session.GetById(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = session.Delete(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

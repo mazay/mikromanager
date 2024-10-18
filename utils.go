@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func fetchResources(cfg *PollerCFG) error {
@@ -14,7 +16,7 @@ func fetchResources(cfg *PollerCFG) error {
 	if err != nil {
 		return err
 	}
-	logger.Debugf("fetched resource data for %s", cfg.Client.Address)
+	logger.Debug("fetched resource data", zap.String("address", cfg.Client.Address))
 	inrec, _ := json.Marshal(resource[0].Map)
 	return json.Unmarshal(inrec, &cfg.Device)
 }
@@ -24,7 +26,7 @@ func fetchRbDetails(cfg *PollerCFG) error {
 	if err != nil {
 		return err
 	}
-	logger.Debugf("fetched rouerboard data for %s", cfg.Client.Address)
+	logger.Debug("fetched rouerboard data", zap.String("address", cfg.Client.Address))
 	inrec, _ := json.Marshal(resource[0].Map)
 	return json.Unmarshal(inrec, &cfg.Device)
 }
@@ -35,7 +37,7 @@ func fetchIdentity(cfg *PollerCFG) error {
 		return err
 	}
 	if len(identity) > 0 {
-		logger.Debugf("identity for %s is %s", cfg.Client.Address, identity[0].Map["name"])
+		logger.Debug("identity", zap.String("address", cfg.Client.Address), zap.String("name", identity[0].Map["name"]))
 		cfg.Device.Identity = string(identity[0].Map["name"])
 		return nil
 	}
@@ -49,7 +51,7 @@ func fetchManagementIp(cfg *PollerCFG) error {
 	}
 	if len(ipaddr) > 0 {
 		addr := strings.Split(ipaddr[0].Map["address"], "/")[0]
-		logger.Infof("management address for device ID %s will be set to %s", cfg.Device.Id, addr)
+		logger.Info("management address discovered", zap.String("device", cfg.Device.Id), zap.String("address", addr))
 		cfg.Device.Address = addr
 		return nil
 	}
@@ -58,20 +60,20 @@ func fetchManagementIp(cfg *PollerCFG) error {
 
 func writeBackupFile(filename string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(filename), 0770); err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 		return err
 	}
 
 	f, err := os.Create(filename)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 		return err
 	}
 	defer f.Close()
 
 	_, err = f.Write(data)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 		return err
 	}
 	return nil

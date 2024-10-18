@@ -2,13 +2,13 @@ package db
 
 import (
 	"github.com/ostafen/clover"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type DB struct {
 	Path        string
 	api         *clover.DB
-	Logger      *logrus.Entry
+	Logger      *zap.Logger
 	Collections map[string]string
 	SortBy      *clover.SortOption
 }
@@ -44,7 +44,7 @@ func (db *DB) ListCollections() ([]string, error) {
 func (db *DB) HasCollection(collection string) bool {
 	exists, err := db.api.HasCollection(collection)
 	if err != nil {
-		db.Logger.Error(err)
+		db.Logger.Error(err.Error())
 	}
 	return exists
 }

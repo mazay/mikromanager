@@ -20,7 +20,7 @@ type Config struct {
 }
 
 func configProcessError(err error) {
-	logger.Error(err)
+	logger.Error(err.Error())
 	osExit(2)
 }
 

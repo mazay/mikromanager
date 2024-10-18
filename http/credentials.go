@@ -43,7 +43,7 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 
 	err, pageId, perPage := getPagionationParams(r.URL)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -51,7 +51,7 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 	// fetch devices
 	credList, err := c.GetAll(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -91,7 +91,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -101,7 +101,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), dh.encryptionKey)
 
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -120,7 +120,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 			// "id" is set - update existing credentials
 			err = creds.GetById(dh.db)
 			if err != nil {
-				dh.logger.Error(err)
+				dh.logger.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -172,7 +172,7 @@ func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Reque
 
 	err = c.Delete(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

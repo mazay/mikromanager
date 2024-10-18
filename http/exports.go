@@ -192,6 +192,6 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 	// stream the body to the client
 	_, err = io.Copy(w, fileReader)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 	}
 }

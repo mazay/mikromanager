@@ -27,6 +27,6 @@ func (dh *dynamicHandler) healthz(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(js)
 	if err != nil {
-		dh.logger.Errorln(err)
+		dh.logger.Error(err.Error())
 	}
 }
