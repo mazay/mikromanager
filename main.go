@@ -14,7 +14,7 @@ import (
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/ssh"
 	"github.com/mazay/mikromanager/utils"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type PollerCFG struct {
@@ -37,8 +37,7 @@ var (
 	policy = &utils.ExportsRetentionPolicy{Name: "Default"}
 	user   = &utils.User{}
 
-	log    = logrus.New()
-	logger = log.WithFields(logrus.Fields{"app": "mikromanager"})
+	logger = &zap.Logger{}
 	wg     = sync.WaitGroup{}
 	osExit = os.Exit
 )
@@ -50,7 +49,8 @@ func main() {
 	flag.Parse()
 
 	config := readConfigFile(configPath)
-	initLogger(config)
+	logger = initLogger(config.LogLevel)
+	defer logger.Sync()
 
 	pollerCH := make(chan *PollerCFG)
 	exportCH := make(chan *BackupCFG)
@@ -60,7 +60,7 @@ func main() {
 	db := &db.DB{Path: config.DbPath}
 	err = db.Init()
 	if err != nil {
-		logger.Panicf("DB init issue: %s", err)
+		logger.Panic("DB init issue", zap.String("error", err.Error()))
 		osExit(1)
 	}
 	defer db.Close()
@@ -68,7 +68,7 @@ func main() {
 	logger.Debug("ensure 'Default' exports retention policy exists")
 	err = policy.GetDefault(db)
 	if err != nil || policy.Id == "" {
-		logger.Error(err)
+		logger.Error(err.Error())
 	}
 
 	if policy.Id == "" {
@@ -77,56 +77,56 @@ func main() {
 		policy.Weekly = 26
 		err = policy.Create(db)
 		if err != nil {
-			logger.Fatal(err)
+			logger.Fatal(err.Error())
 		}
 	}
 
 	logger.Debug("ensure at least one user exists, create 'admin' otherwise")
 	users, err := user.GetAll(db)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 	}
 
 	if len(users) == 0 {
 		encryptedPw, err := utils.EncryptString("admin", config.EncryptionKey)
 		if err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 			osExit(3)
 		}
 		user.Username = "admin"
 		user.EncryptedPassword = encryptedPw
 		err = user.Create(db)
 		if err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 			osExit(3)
 		}
 	}
 
 	collections, _ := db.ListCollections()
-	logger.Debugf("DB has the following collections: %s", strings.Join(collections, ", "))
+	logger.Debug("DB collections", zap.String("list", strings.Join(collections, ", ")))
 
 	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger)
 
 	scheduler := gocron.NewScheduler(time.Local)
-	logger.Infof("devicePollerInterval is %s", config.DevicePollerInterval)
+	logger.Info("devicePollerInterval", zap.Duration("interval", config.DevicePollerInterval))
 	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, db, pollerCH)
 	if pollerErr != nil {
-		logger.Errorf("Job: %v, Error: %v", pollerJob, pollerErr)
+		logger.Error("poller", zap.Any("Job", pollerJob), zap.Any("error", pollerErr))
 	}
-	logger.Infof("deviceExportInterval is %s", config.DeviceExportInterval)
+	logger.Info("deviceExportInterval", zap.Duration("interval", config.DeviceExportInterval))
 	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, db, exportCH)
 	if exportErr != nil {
-		logger.Errorf("Job: %v, Error: %v", exportJob, exportErr)
+		logger.Error("export", zap.Any("Job", exportJob), zap.Any("error", exportErr))
 	}
 	logger.Info("export retention job interval is 90 minutes")
 	exportRetentionJob, exportRetentionErr := scheduler.Every("90m").Do(rotateExports, db)
 	if exportRetentionErr != nil {
-		logger.Errorf("Job: %v, Error: %v", exportRetentionJob, exportRetentionErr)
+		logger.Error("export", zap.Any("Job", exportRetentionJob), zap.Any("error", exportRetentionErr))
 	}
 	logger.Info("session cleanup job interval is 24 hours")
 	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(cleanupSessions, db)
 	if sessionCleanupErr != nil {
-		logger.Errorf("Job: %v, Error: %v", sessionCleanupJob, sessionCleanupErr)
+		logger.Error("session", zap.Any("Job", sessionCleanupJob), zap.Any("error", sessionCleanupErr))
 	}
 	scheduler.StartAsync()
 
@@ -142,19 +142,19 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 	logger.Info("starting device polling task")
 	devices, err := d.GetAll(db)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 		return err
 	}
 	for _, device := range devices {
 		creds, err := device.GetCredentials(db)
 		if err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 			return err
 		}
-		logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+		logger.Debug("authentication", zap.String("credentials", creds.Alias), zap.String("device", device.Address))
 		decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
 		if encryptionErr != nil {
-			logger.Error(encryptionErr)
+			logger.Error(encryptionErr.Error())
 			return err
 		}
 		client := &api.API{
@@ -171,33 +171,33 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 }
 
 func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
-	logger.Infof("starting %d MikroTik API pollers", cfg.ApiPollers)
+	logger.Info("starting MikroTik API pollers", zap.Int("count", cfg.ApiPollers))
 	for x := 0; x < cfg.ApiPollers; x++ {
 		go func() {
 			for cfg := range pollerCH {
 				var fetchErr error
 				var minorErr error
 				var dbErr error
-				logger.Infof("polling device '%s'", cfg.Client.Address)
+				logger.Info("polling device", zap.String("address", cfg.Client.Address))
 				fetchErr = fetchResources(cfg)
 				if fetchErr != nil {
-					logger.Error(fetchErr)
+					logger.Error(fetchErr.Error())
 				}
 
 				fetchErr = fetchRbDetails(cfg)
 				if fetchErr != nil {
-					logger.Error(fetchErr)
+					logger.Error(fetchErr.Error())
 				}
 
 				fetchErr = fetchIdentity(cfg)
 				if fetchErr != nil {
-					logger.Error(fetchErr)
+					logger.Error(fetchErr.Error())
 				}
 
 				// do not consider fetchManagementIp errors as a failure, just log them
 				minorErr = fetchManagementIp(cfg)
 				if minorErr != nil {
-					logger.Error(minorErr)
+					logger.Error(minorErr.Error())
 				}
 
 				if fetchErr != nil {
@@ -214,7 +214,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 				}
 
 				if dbErr != nil {
-					logger.Error(dbErr)
+					logger.Error(dbErr.Error())
 				}
 			}
 		}()
@@ -227,19 +227,19 @@ func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
 	logger.Info("starting backup task")
 	devices, err := d.GetAll(db)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 		return
 	}
 	for _, device := range devices {
 		creds, err := device.GetCredentials(db)
 		if err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 			return
 		}
-		logger.Debugf("using credentials '%s' for device '%s'", creds.Alias, device.Address)
+		logger.Debug("authentication", zap.String("credentials", creds.Alias), zap.String("device", device.Address))
 		decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
 		if encryptionErr != nil {
-			logger.Error(encryptionErr)
+			logger.Error(encryptionErr.Error())
 			return
 		}
 		client := &ssh.SshClient{
@@ -253,12 +253,12 @@ func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
 }
 
 func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
-	logger.Infof("starting %d MikroManager export workers", config.ExportWorkers)
+	logger.Info("starting MikroManager export workers", zap.Int("count", config.ExportWorkers))
 	for x := 0; x < config.ExportWorkers; x++ {
 		wg.Add(1)
 		go func() {
 			for cfg := range exportCH {
-				logger.Infof("creating backup for device with IP address %s", cfg.Client.Host)
+				logger.Info("creating backup", zap.String("address", cfg.Client.Host))
 
 				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
@@ -266,7 +266,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Device.Id, creationTime.Unix())
 					err := writeBackupFile(filename, export)
 					if err != nil {
-						logger.Error(err)
+						logger.Error(err.Error())
 					} else {
 						export := &utils.Export{
 							DeviceId: cfg.Device.Id,
@@ -274,11 +274,11 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 						}
 						err := export.Create(cfg.Db)
 						if err != nil {
-							logger.Fatal(err)
+							logger.Fatal(err.Error())
 						}
 					}
 				} else {
-					logger.Error(sshErr)
+					logger.Error(sshErr.Error())
 				}
 			}
 		}()
@@ -293,19 +293,19 @@ func rotateExports(db *db.DB) {
 	logger.Info("starting exports retention task")
 	err = policy.GetDefault(db)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 		return
 	}
 	devices, err := device.GetAll(db)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 		return
 	}
 	for _, device := range devices {
 		var export *utils.Export
 		exports, err := export.GetByDeviceId(db, device.Id)
 		if err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 		} else {
 			exportsList = append(exportsList, rotateHourlyExports(db, exports, policy.Hourly)...)
 			exportsList = append(exportsList, rotateDailyExports(db, exports, policy.Daily)...)
@@ -313,10 +313,10 @@ func rotateExports(db *db.DB) {
 
 			for _, export := range exports {
 				if !exportInSlice(export, exportsList) {
-					logger.Debugf("deleting export '%s' according to the retention policy", export.Filename)
+					logger.Debug("deleting export", zap.String("filename", export.Filename))
 					err := export.Delete(db)
 					if err != nil {
-						logger.Error(err)
+						logger.Error(err.Error())
 					}
 				}
 			}
@@ -331,16 +331,16 @@ func cleanupSessions(db *db.DB) {
 	logger.Info("starting session cleanup task")
 	sessions, err := session.GetAll(db)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 		return
 	}
 
 	for _, s := range sessions {
 		if s.ValidThrough.Before(time.Now()) {
-			logger.Debugf("session '%s' has expired, deleting", s.Id)
+			logger.Debug("session expired", zap.String("id", s.Id))
 			err = s.Delete(db)
 			if err != nil {
-				logger.Error(err)
+				logger.Error(err.Error())
 			}
 		}
 	}

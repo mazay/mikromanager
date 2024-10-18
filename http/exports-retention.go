@@ -40,7 +40,7 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 	err = erp.GetDefault(dh.db)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -49,14 +49,14 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		hourly, err := strconv.ParseInt(r.PostForm.Get("hourly"), 10, 64)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -64,7 +64,7 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 		daily, err := strconv.ParseInt(r.PostForm.Get("daily"), 10, 64)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -72,7 +72,7 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 		weekly, err := strconv.ParseInt(r.PostForm.Get("weekly"), 10, 64)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -80,7 +80,7 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 		err = erp.Update(dh.db)
 		if err != nil {
-			dh.logger.Error(err)
+			dh.logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -1,52 +1,44 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func LoggerInitError(err error) {
-	logger.Error(err)
-	osExit(3)
-}
-
-func setLogLevel(level string) {
-	logLevels := map[string]logrus.Level{
-		"trace": logrus.TraceLevel,
-		"debug": logrus.DebugLevel,
-		"info":  logrus.InfoLevel,
-		"warn":  logrus.WarnLevel,
-		"error": logrus.ErrorLevel,
-		"fatal": logrus.FatalLevel,
-		"panic": logrus.PanicLevel,
+func initLogger(level string) *zap.Logger {
+	logLevels := map[string]zapcore.Level{
+		"debug": zap.DebugLevel,
+		"info":  zap.InfoLevel,
+		"warn":  zap.WarnLevel,
+		"error": zap.ErrorLevel,
+		"fatal": zap.FatalLevel,
+		"panic": zap.PanicLevel,
 	}
 
-	if level == "" {
-		level = "info"
-	}
+	encoderCfg := zap.NewProductionEncoderConfig()
+	encoderCfg.TimeKey = "timestamp"
+	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	if LogLevel, ok := logLevels[level]; ok {
-		log.SetLevel(LogLevel)
-
-		if level == "trace" || level == "debug" {
-			log.SetReportCaller(true)
-		}
-	} else {
-		LoggerInitError(fmt.Errorf("Log level definition not found for '%s'", level))
-	}
-}
-
-func initLogger(config *Config) {
-	log.SetFormatter(&logrus.JSONFormatter{
-		FieldMap: logrus.FieldMap{
-			logrus.FieldKeyTime: "@timestamp",
-			logrus.FieldKeyMsg:  "message",
+	config := zap.Config{
+		Level:             zap.NewAtomicLevelAt(logLevels[level]),
+		Development:       false,
+		DisableCaller:     false,
+		DisableStacktrace: false,
+		Sampling:          nil,
+		Encoding:          "json",
+		EncoderConfig:     encoderCfg,
+		OutputPaths: []string{
+			"stderr",
 		},
-	})
+		ErrorOutputPaths: []string{
+			"stderr",
+		},
+		InitialFields: map[string]interface{}{
+			"pid": os.Getpid(),
+		},
+	}
 
-	log.SetOutput(os.Stdout)
-
-	setLogLevel(config.LogLevel)
+	return zap.Must(config.Build()).With(zap.String("app", "mikromanager"))
 }

@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/mazay/mikromanager/db"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
-func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath string, logger *logrus.Entry) {
-	logger.Infof("starting http server on port %s", httpPort)
+func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath string, logger *zap.Logger) {
+	logger.Info("starting http server", zap.String("port", httpPort))
 	dh := &dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger, backupPath: backupPath}
 	static := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/healthz", handlerWrapper(dh.healthz, logger))
@@ -29,5 +29,5 @@ func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath str
 	http.HandleFunc("/export", handlerWrapper(dh.getExport, logger))
 	http.HandleFunc("/export/download", handlerWrapper(dh.downloadExport, logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
-	logger.Fatal(http.ListenAndServe(":"+httpPort, nil))
+	logger.Fatal(http.ListenAndServe(":"+httpPort, nil).Error())
 }
