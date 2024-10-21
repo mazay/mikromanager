@@ -26,6 +26,7 @@ func (bt FirmwareBuildTime) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + time.Time(bt).Format("2006-01-02 15:04:05") + `"`), nil
 }
 
+//nolint:golint,errcheck
 func (bt FirmwareBuildTime) Format(f fmt.State, c rune) {
 	f.Write([]byte(time.Time(bt).Format("2006-01-02 15:04:05")))
 }

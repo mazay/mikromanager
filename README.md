@@ -7,7 +7,7 @@
 - [Bootstrap](https://getbootstrap.com/)
 - [gocron](https://github.com/go-co-op/gocron)
 - [cloverDB](https://github.com/ostafen/clover)
-- [Logrus](https://github.com/sirupsen/logrus)
+- [zap](https://github.com/uber-go/zap)
 - [go-routeros](https://github.com/go-routeros/routeros/tree/v2)
 - [highlight.js](https://highlightjs.org/)
 

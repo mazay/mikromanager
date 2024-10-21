@@ -5,11 +5,10 @@ import (
 	"html/template"
 	"net/http"
 	"path"
-	"strconv"
 
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/utils"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 var (
@@ -31,14 +30,19 @@ var (
 type dynamicHandler struct {
 	db            *db.DB
 	encryptionKey string
-	logger        *logrus.Entry
+	logger        *zap.Logger
 	backupPath    string
 }
 
-func handlerWrapper(fn http.HandlerFunc, logger *logrus.Entry) http.HandlerFunc {
+func handlerWrapper(fn http.HandlerFunc, logger *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		logger.Infof("%s - \"%s %s %s\" %s", req.RemoteAddr, req.Method,
-			req.URL.String(), req.Proto, strconv.FormatInt(req.ContentLength, 10))
+		logger.Info(
+			req.URL.String(),
+			zap.String("address", req.RemoteAddr),
+			zap.String("method", req.Method),
+			zap.String("protocol", req.Proto),
+			zap.Int64("size", req.ContentLength),
+		)
 
 		res.Header().Set("Server", "mikromanager")
 
@@ -52,7 +56,7 @@ func (dh *dynamicHandler) renderTemplate(w http.ResponseWriter, tmplList []strin
 	// load templates
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(tmplList...)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -60,7 +64,7 @@ func (dh *dynamicHandler) renderTemplate(w http.ResponseWriter, tmplList []strin
 	// render the templates
 	err = tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
-		dh.logger.Error(err)
+		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -83,7 +87,7 @@ func (dh *dynamicHandler) checkSession(r *http.Request) (*utils.Session, error) 
 	}
 
 	if session.Expired() {
-		return session, fmt.Errorf("Session expired")
+		return session, fmt.Errorf("session expired")
 	}
 
 	return session, err
