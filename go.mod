@@ -1,14 +1,16 @@
 module github.com/mazay/mikromanager
 
-go 1.19
+go 1.21
+
+toolchain go1.23.6
 
 require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-co-op/gocron v1.37.0
+	github.com/go-routeros/routeros/v3 v3.0.0
 	github.com/ostafen/clover v1.2.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.32.0
-	gopkg.in/routeros.v2 v2.0.0-20190905230420-1bbf141cdd91
 	gopkg.in/yaml.v3 v3.0.1
 )
 
