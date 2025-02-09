@@ -20,7 +20,7 @@ docker run -d \
     -p 8000:8000 \ # port mapping
     -v /database:/app/database.clover \ # DB persistence, optional
     -v /backups:/app/backups \ # MikroTik exports/backups persistence, optional
-    ghcr.io/mikromanager:main
+    ghcr.io/mazay/mikromanager:main
 ```
 
 Alternatively, you can build the binary, it's recommended to use go `1.19`:
