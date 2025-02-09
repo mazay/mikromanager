@@ -28,9 +28,12 @@ jobs:
             zmazay/mikromanager
             ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
             type=ref,event=branch
             type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -56,7 +59,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/386,linux/ppc64le
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
