@@ -8,7 +8,7 @@ on:
   pull_request:
 
 env:
-  GO_VERSION: "1.20"
+  GO_VERSION: "1.23"
 
 jobs:
   golangci:
@@ -25,6 +25,4 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
-          version: v1.51
           args: --timeout=15m
