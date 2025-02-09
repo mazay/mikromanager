@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"gopkg.in/routeros.v2"
-	"gopkg.in/routeros.v2/proto"
+	"github.com/go-routeros/routeros/v3"
+	"github.com/go-routeros/routeros/v3/proto"
 )
 
 type API struct {
