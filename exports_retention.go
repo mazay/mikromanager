@@ -3,7 +3,6 @@ package main
 import (
 	"time"
 
-	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/utils"
 )
 
@@ -49,7 +48,7 @@ func exportsToKeep(exports []*utils.Export, timeSlice []time.Time, timeWindow ti
 }
 
 // rotateHourlyExports return a list of hourly exports that should be kept
-func rotateHourlyExports(db *db.DB, exports []*utils.Export, number int64) []*utils.Export {
+func rotateHourlyExports(exports []*utils.Export, number int64) []*utils.Export {
 	var exportsList []*utils.Export
 
 	now := time.Now()
@@ -68,7 +67,7 @@ func rotateHourlyExports(db *db.DB, exports []*utils.Export, number int64) []*ut
 }
 
 // rotateDailyExports return a list of daily exports that should be kept
-func rotateDailyExports(db *db.DB, exports []*utils.Export, number int64) []*utils.Export {
+func rotateDailyExports(exports []*utils.Export, number int64) []*utils.Export {
 	var exportsList []*utils.Export
 
 	now := time.Now()
@@ -87,7 +86,7 @@ func rotateDailyExports(db *db.DB, exports []*utils.Export, number int64) []*uti
 }
 
 // rotateWeeklyExports return a list of weekly exports that should be kept
-func rotateWeeklyExports(db *db.DB, exports []*utils.Export, number int64) []*utils.Export {
+func rotateWeeklyExports(exports []*utils.Export, number int64) []*utils.Export {
 	var exportsList []*utils.Export
 
 	now := time.Now()
