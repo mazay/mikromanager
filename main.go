@@ -307,9 +307,9 @@ func rotateExports(db *db.DB) {
 		if err != nil {
 			logger.Error(err.Error())
 		} else {
-			exportsList = append(exportsList, rotateHourlyExports(db, exports, policy.Hourly)...)
-			exportsList = append(exportsList, rotateDailyExports(db, exports, policy.Daily)...)
-			exportsList = append(exportsList, rotateWeeklyExports(db, exports, policy.Weekly)...)
+			exportsList = append(exportsList, rotateHourlyExports(exports, policy.Hourly)...)
+			exportsList = append(exportsList, rotateDailyExports(exports, policy.Daily)...)
+			exportsList = append(exportsList, rotateWeeklyExports(exports, policy.Weekly)...)
 
 			for _, export := range exports {
 				if !exportInSlice(export, exportsList) {
