@@ -30,7 +30,10 @@ func (b *Export) Create(db *database.DB) error {
 func (b *Export) Delete(db *database.DB) error {
 	err := os.Remove(b.Filename)
 	if err != nil {
-		return err
+		// ignore file does not exist error
+		if !os.IsNotExist(err) {
+			return err
+		}
 	}
 	return db.DeleteById(db.Collections["exports"], b.Id)
 }
