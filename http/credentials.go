@@ -37,7 +37,7 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 			data.formFillIn(creds)
 			data.Msg = credsErr.Error()
 		} else {
-			http.Redirect(w, r, "/credentials", 302)
+			http.Redirect(w, r, "/credentials", http.StatusFound)
 			return
 		}
 	} else {
@@ -164,7 +164,7 @@ func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Reque
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -177,5 +177,5 @@ func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	http.Redirect(w, r, "/credentials", 302)
+	http.Redirect(w, r, "/credentials", http.StatusFound)
 }

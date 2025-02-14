@@ -37,7 +37,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 			data.Id = id
 			data.formFillIn(user)
 		} else {
-			http.Redirect(w, r, "/users", 302)
+			http.Redirect(w, r, "/users", http.StatusFound)
 			return
 		}
 	} else {
@@ -119,7 +119,7 @@ func (dh *dynamicHandler) getUsers(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -162,7 +162,7 @@ func (dh *dynamicHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -180,5 +180,5 @@ func (dh *dynamicHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/users", 302)
+	http.Redirect(w, r, "/users", http.StatusFound)
 }

@@ -40,7 +40,7 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 
 	_, err = dh.checkSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 

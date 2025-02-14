@@ -75,7 +75,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 			Expires: session.ValidThrough,
 		})
 
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
@@ -116,5 +116,5 @@ func (dh *dynamicHandler) logout(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now(),
 	})
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
