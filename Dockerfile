@@ -12,7 +12,7 @@ RUN go mod download
 # hadolint ignore=DL3059
 RUN go build
 
-FROM public.ecr.aws/docker/library/alpine:3.21.2
+FROM public.ecr.aws/docker/library/alpine:3.21.3
 ARG TARGETPLATFORM
 LABEL maintainer="Yevgeniy Valeyev <z.mazay@gmail.com>"
 # hadolint ignore=DL3018
