@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -12,6 +11,7 @@ import (
 	"github.com/mazay/mikromanager/api"
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
+	"github.com/mazay/mikromanager/internal"
 	"github.com/mazay/mikromanager/ssh"
 	"github.com/mazay/mikromanager/utils"
 	"go.uber.org/zap"
@@ -34,6 +34,8 @@ var (
 	configPath string
 	httpPort   string
 
+	s3 *internal.S3
+
 	policy = &utils.ExportsRetentionPolicy{Name: "Default"}
 	user   = &utils.User{}
 
@@ -54,6 +56,23 @@ func main() {
 
 	pollerCH := make(chan *PollerCFG)
 	exportCH := make(chan *BackupCFG)
+
+	// init S3 client
+	s3 = &internal.S3{
+		Bucket:          config.S3Bucket,
+		BucketPath:      config.S3BucketPath,
+		Endpoint:        config.S3Endpoint,
+		Region:          config.S3Region,
+		StorageClass:    config.S3StorageClass,
+		AccessKey:       config.S3AccessKey,
+		SecretAccessKey: config.S3SecretAccessKey,
+		OpsRetries:      config.S3OpsRetries,
+	}
+	err = s3.GetS3Session()
+	if err != nil {
+		logger.Panic("S3 client init issue", zap.String("error", err.Error()))
+		osExit(1)
+	}
 
 	wg.Add(1)
 
@@ -262,20 +281,9 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 
 				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
-					creationTime := time.Now()
-					filename := fmt.Sprintf("%s/exports/%s/%d.rsc", config.BackupPath, cfg.Device.Id, creationTime.Unix())
-					err := writeBackupFile(filename, export)
+					err := s3.UploadFile(cfg.Device.Id, []byte(export))
 					if err != nil {
 						logger.Error(err.Error())
-					} else {
-						export := &utils.Export{
-							DeviceId: cfg.Device.Id,
-							Filename: filename,
-						}
-						err := export.Create(cfg.Db)
-						if err != nil {
-							logger.Fatal(err.Error())
-						}
 					}
 				} else {
 					logger.Error(sshErr.Error())
