@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -56,27 +54,6 @@ func fetchManagementIp(cfg *PollerCFG) error {
 		return nil
 	}
 	return fmt.Errorf("couldn't find management IP-address")
-}
-
-func writeBackupFile(filename string, data []byte) error {
-	if err := os.MkdirAll(filepath.Dir(filename), 0770); err != nil {
-		logger.Fatal(err.Error())
-		return err
-	}
-
-	f, err := os.Create(filename)
-	if err != nil {
-		logger.Fatal(err.Error())
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Write(data)
-	if err != nil {
-		logger.Fatal(err.Error())
-		return err
-	}
-	return nil
 }
 
 func timeSliceBy(start time.Time, end time.Time, multiplier time.Duration) []time.Time {
