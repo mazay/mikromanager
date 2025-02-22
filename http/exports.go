@@ -108,7 +108,7 @@ func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	export, err := dh.s3.GetExport(id)
+	export, err := dh.s3.GetExportAttributes(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -152,7 +152,7 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	export, err := dh.s3.GetExport(id)
+	export, err := dh.s3.GetExportAttributes(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

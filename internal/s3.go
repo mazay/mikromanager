@@ -81,15 +81,18 @@ func (b *S3) GetS3Session() error {
 	return err
 }
 
-func (b *S3) GetExports(deviceId string) ([]*Export, error) {
+// GetObjects retrieves a list of objects from the S3 bucket with the specified
+// prefix. It paginates through the results and returns a slice of S3 objects
+// found under the given prefix. If the operation fails, it returns an error.
+func (b *S3) GetObjects(prefix string) ([]types.Object, error) {
 	var (
 		err   error
-		items = []*Export{}
+		items = []types.Object{}
 	)
 
 	params := &s3.ListObjectsV2Input{
 		Bucket: aws.String(b.Bucket),
-		Prefix: aws.String(s3BasePath(b.BucketPath, deviceId)),
+		Prefix: aws.String(prefix),
 	}
 
 	p := s3.NewListObjectsV2Paginator(b.client, params)
@@ -100,58 +103,93 @@ func (b *S3) GetExports(deviceId string) ([]*Export, error) {
 			return items, err
 		}
 
-		// add objects to map
-		for _, s3obj := range page.Contents {
-			items = append(items, &Export{
-				Key:          *s3obj.Key,
-				DeviceId:     deviceId,
-				LastModified: s3obj.LastModified,
-				ETag:         *s3obj.ETag,
-				Size:         s3obj.Size,
-			})
-		}
+		// add page contents to the list
+		items = append(items, page.Contents...)
 	}
 
 	return items, err
 }
 
-func (b *S3) GetExport(key string) (*Export, error) {
+// GetExports returns a list of all exports for a given device ID in the S3
+// bucket. It returns an error if the listing fails.
+func (b *S3) GetExports(deviceId string) ([]*Export, error) {
+	var (
+		err   error
+		items = []*Export{}
+	)
+
+	prefix := s3BasePath(b.BucketPath, deviceId)
+	objects, err := b.GetObjects(prefix)
+	if err != nil {
+		return items, err
+	}
+
+	// convert objects to Export
+	for _, s3obj := range objects {
+		items = append(items, &Export{
+			Key:          *s3obj.Key,
+			DeviceId:     deviceId,
+			LastModified: s3obj.LastModified,
+			ETag:         *s3obj.ETag,
+			Size:         s3obj.Size,
+		})
+	}
+
+	return items, err
+}
+
+// GetObjectAttributes returns the attributes of the specified S3 object.
+// The object is identified by its key. The returned object contains the ETag,
+// Checksum, ObjectParts, StorageClass, and ObjectSize of the object.
+// It returns an error if the retrieval fails.
+func (b *S3) GetObjectAttributes(key string) (*s3.GetObjectAttributesOutput, error) {
+	params := &s3.GetObjectAttributesInput{
+		Bucket: aws.String(b.Bucket),
+		Key:    aws.String(key),
+		ObjectAttributes: []types.ObjectAttributes{
+			types.ObjectAttributesEtag,
+			types.ObjectAttributesChecksum,
+			types.ObjectAttributesObjectParts,
+			types.ObjectAttributesStorageClass,
+			types.ObjectAttributesObjectSize,
+		},
+	}
+
+	return b.client.GetObjectAttributes(context.TODO(), params)
+}
+
+// GetExportAttributes retrieves the attributes of an export object from the S3
+// bucket and returns them as an Export object. The object is identified by its
+// key. The returned object contains the ETag, LastModified, and Size of the
+// object. It returns an error if the retrieval fails.
+func (b *S3) GetExportAttributes(key string) (*Export, error) {
 	var (
 		err    error
 		export = &Export{}
 	)
 
-	params := &s3.GetObjectInput{
-		Bucket: aws.String(b.Bucket),
-		Key:    aws.String(key),
-	}
-
-	resp, err := b.client.GetObject(context.TODO(), params)
-	if err != nil {
-		return export, err
-	}
+	resp, err := b.GetObjectAttributes(key)
 
 	export.Key = key
 	export.LastModified = resp.LastModified
 	export.ETag = *resp.ETag
-	export.Size = resp.ContentLength
+	export.Size = resp.ObjectSize
 
 	return export, err
 }
 
-// UploadFile uploads the given data to an S3 bucket. The S3 key is determined by the given
-// device ID and the current time in Unix milliseconds. The storage class for the uploaded
-// object is determined by the StorageClass field of the S3 struct.
-func (b *S3) UploadFile(deviceId string, data []byte) error {
-	var err error
-
-	s3Key := path.Join(s3BasePath(b.BucketPath, deviceId), fmt.Sprintf("%d.rsc", time.Now().Unix()))
+// UploadFile uploads a file to the S3 bucket using the provided S3 key.
+// The file data is split into parts of 5 MB each for upload, and the
+// upload is performed concurrently with a concurrency level of 5.
+// The StorageClass specified in the S3 struct is used for the upload.
+// It returns an error if the upload fails.
+func (b *S3) UploadFile(s3Key string, data []byte) error {
 	uploader := manager.NewUploader(b.client, func(u *manager.Uploader) {
 		u.PartSize = 5 * 1024 * 1024 // 5 MB per part
 		u.Concurrency = 5
 	})
 
-	_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
+	_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket:       aws.String(b.Bucket),
 		Key:          aws.String(s3Key),
 		Body:         bytes.NewReader(data),
@@ -161,6 +199,20 @@ func (b *S3) UploadFile(deviceId string, data []byte) error {
 	return err
 }
 
+// UploadExport uploads an export for a given device ID to the S3 bucket.
+// The export data is stored in a file with a name like <unix-timestamp>.rsc in
+// a directory like <bucketPath>/exports/<deviceId>. The StorageClass specified
+// in the S3 struct is used for the upload. It returns an error if the upload
+// fails.
+func (b *S3) UploadExport(deviceId string, data []byte) error {
+	s3Key := path.Join(s3BasePath(b.BucketPath, deviceId), fmt.Sprintf("%d.rsc", time.Now().Unix()))
+	return b.UploadFile(s3Key, data)
+}
+
+// GetFile downloads a file from the S3 bucket using the provided S3 key and size.
+// It splits the download into parts of 5 MB each and performs the download concurrently
+// with a concurrency level of 5. The function returns the downloaded file contents as a
+// byte slice and an error if the download fails.
 func (b *S3) GetFile(s3Key string, size int64) ([]byte, error) {
 	downloader := manager.NewDownloader(b.client, func(d *manager.Downloader) {
 		d.PartSize = 5 * 1024 * 1024 // 5 MB per part
@@ -192,6 +244,9 @@ func (b *S3) DeleteFile(s3Key string) error {
 	return err
 }
 
+// DeleteExports removes a list of exports from the S3 bucket specified by the S3 keys
+// in the list of Export objects. If the list is empty, the function simply returns nil.
+// It returns an error if the deletion fails for any of the objects.
 func (b *S3) DeleteExports(exports []*Export) error {
 	if len(exports) == 0 {
 		return nil
