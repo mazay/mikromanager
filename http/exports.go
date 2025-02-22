@@ -27,7 +27,6 @@ type exportData struct {
 func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		exports    = []*internal.Export{}
 		device     = &utils.Device{}
 		data       = &exportsData{BackupPath: dh.backupPath}
 		id         = r.URL.Query().Get("id")
@@ -54,18 +53,10 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dh.db.Sort("created", -1)
-	if id != "" {
-		exports, err = dh.s3.GetExports(id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else {
-		exports, err = dh.s3.GetExports("")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	exports, err := dh.s3.GetExports(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	data.Count = len(exports)
 	if data.Count > 0 {
