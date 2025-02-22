@@ -281,14 +281,16 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 		wg.Add(1)
 		go func() {
 			for cfg := range exportCH {
-				logger.Info("creating backup", zap.String("address", cfg.Client.Host))
+				logger.Debug("creating backup", zap.String("address", cfg.Client.Host))
 
 				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
-					err := s3.UploadFile(cfg.Device.Id, []byte(export))
+					output, err := s3.UploadExport(cfg.Device.Id, []byte(export))
 					if err != nil {
 						logger.Error(err.Error())
 					}
+
+					logger.Info("created a new backup", zap.String("device", cfg.Device.Address), zap.String("s3 key", *output.Key))
 				} else {
 					logger.Error(sshErr.Error())
 				}
@@ -393,10 +395,11 @@ func s3Migrate(db *db.DB, s3 *internal.S3) {
 		file.Close() // close file after reading so it can be deleted
 
 		// upload to s3
-		err = s3.UploadExport(e.DeviceId, ba)
+		output, err := s3.UploadExport(e.DeviceId, ba)
 		if err != nil {
 			logger.Error(err.Error())
 		} else {
+			logger.Info("migrated export to s3", zap.String("s3 key", *output.Key))
 			// delete local file
 			err = e.Delete(db)
 			if err != nil {

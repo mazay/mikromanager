@@ -183,20 +183,18 @@ func (b *S3) GetExportAttributes(key string) (*Export, error) {
 // upload is performed concurrently with a concurrency level of 5.
 // The StorageClass specified in the S3 struct is used for the upload.
 // It returns an error if the upload fails.
-func (b *S3) UploadFile(s3Key string, data []byte) error {
+func (b *S3) UploadFile(s3Key string, data []byte) (*manager.UploadOutput, error) {
 	uploader := manager.NewUploader(b.client, func(u *manager.Uploader) {
 		u.PartSize = 5 * 1024 * 1024 // 5 MB per part
 		u.Concurrency = 5
 	})
 
-	_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+	return uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket:       aws.String(b.Bucket),
 		Key:          aws.String(s3Key),
 		Body:         bytes.NewReader(data),
 		StorageClass: types.StorageClass(b.StorageClass),
 	})
-
-	return err
 }
 
 // UploadExport uploads an export for a given device ID to the S3 bucket.
@@ -204,7 +202,7 @@ func (b *S3) UploadFile(s3Key string, data []byte) error {
 // a directory like <bucketPath>/exports/<deviceId>. The StorageClass specified
 // in the S3 struct is used for the upload. It returns an error if the upload
 // fails.
-func (b *S3) UploadExport(deviceId string, data []byte) error {
+func (b *S3) UploadExport(deviceId string, data []byte) (*manager.UploadOutput, error) {
 	s3Key := path.Join(s3BasePath(b.BucketPath, deviceId), fmt.Sprintf("%d.rsc", time.Now().Unix()))
 	return b.UploadFile(s3Key, data)
 }
