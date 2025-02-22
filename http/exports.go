@@ -29,11 +29,11 @@ type exportData struct {
 // getExports handles the GET request for /exports and displays a paginated list of exports
 // for the specified device ID. It retrieves all devices and exports, applies pagination based
 // on query parameters, and renders the exports template with the gathered data.
-func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
 		device     = &utils.Device{}
-		data       = &exportsData{BackupPath: dh.backupPath}
+		data       = &exportsData{BackupPath: c.BackupPath}
 		id         = r.URL.Query().Get("id")
 		pagination = &Pagination{}
 		templates  = []string{exportsTmpl, paginationTmpl, baseTmpl}
@@ -41,13 +41,13 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 
 	data.DeviceId = id
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	data.Devices, err = device.GetAll(dh.db)
+	data.Devices, err = device.GetAll(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -59,7 +59,7 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exports, err := dh.s3.GetExports(id)
+	exports, err := c.S3.GetExports(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -84,20 +84,20 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		data.Exports = chunkedExports[pageId-1]
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
 // getExport responds to GET /exports?id=<id> and displays the export by <id>
-func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		device    = &utils.Device{}
-		data      = &exportData{BackupPath: dh.backupPath}
+		data      = &exportData{BackupPath: c.BackupPath}
 		id        = r.URL.Query().Get("id")
 		templates = []string{exportTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -108,7 +108,7 @@ func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	export, err := dh.s3.GetExportAttributes(id)
+	export, err := c.S3.GetExportAttributes(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -116,32 +116,32 @@ func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 	data.Export = export
 
 	device.Id = export.GetDeviceId()
-	err = device.GetById(dh.db)
+	err = device.GetById(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data.Device = device
 
-	exportBody, err := export.GetBody(dh.s3)
+	exportBody, err := export.GetBody(c.S3)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data.ExportData = string(exportBody)
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
 // downloadExport responds to GET /exports/download?id=<id> and downloads the export by <id>
-func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) downloadExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err    error
 		device = &utils.Device{}
 		id     = r.URL.Query().Get("id")
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -152,20 +152,20 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	export, err := dh.s3.GetExportAttributes(id)
+	export, err := c.S3.GetExportAttributes(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	device.Id = export.GetDeviceId()
-	err = device.GetById(dh.db)
+	err = device.GetById(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	exportBody, err := export.GetBody(dh.s3)
+	exportBody, err := export.GetBody(c.S3)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -178,6 +178,6 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "text/plain")
 	_, err = w.Write(exportBody)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 	}
 }

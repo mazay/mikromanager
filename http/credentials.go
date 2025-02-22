@@ -26,16 +26,16 @@ func (cf *credentialsForm) formFillIn(creds *utils.Credentials) {
 	cf.Username = creds.Username
 }
 
-func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) getCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		c          = &utils.Credentials{}
+		creds      = &utils.Credentials{}
 		data       = &credentialsData{}
 		pagination = &Pagination{}
 		templates  = []string{credsTmpl, paginationTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -43,15 +43,15 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 
 	pageId, perPage, err := getPagionationParams(r.URL)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// fetch devices
-	credList, err := c.GetAll(dh.db)
+	credList, err := creds.GetAll(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -70,10 +70,10 @@ func (dh *dynamicHandler) getCredentials(w http.ResponseWriter, r *http.Request)
 		data.Credentials = chunkedCreds[pageId-1]
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		credsErr  error
@@ -81,7 +81,7 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		templates = []string{credsFormTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -91,17 +91,17 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		id := r.PostForm.Get("idInput")
 		alias := r.PostForm.Get("alias")
 		username := r.PostForm.Get("username")
-		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), dh.encryptionKey)
+		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), c.EncryptionKey)
 
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -115,19 +115,19 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 
 		if id == "" {
 			// "id" is unset - create new credentials
-			credsErr = creds.Create(dh.db)
+			credsErr = creds.Create(c.Db)
 		} else {
 			// "id" is set - update existing credentials
-			err = creds.GetById(dh.db)
+			err = creds.GetById(c.Db)
 			if err != nil {
-				dh.logger.Error(err.Error())
+				c.Logger.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			creds.Alias = alias
 			creds.Username = username
 			creds.EncryptedPassword = encryptedPw
-			credsErr = creds.Update(dh.db)
+			credsErr = creds.Update(c.Db)
 		}
 
 		if credsErr != nil {
@@ -142,37 +142,37 @@ func (dh *dynamicHandler) editCredentials(w http.ResponseWriter, r *http.Request
 		// fill in the form if "id" GET parameter set
 		id := r.URL.Query().Get("id")
 		if id != "" {
-			c := &utils.Credentials{}
-			c.Id = id
-			err := c.GetById(dh.db)
+			creds := &utils.Credentials{}
+			creds.Id = id
+			err := creds.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
-				data.formFillIn(c)
+				data.formFillIn(creds)
 			}
 		}
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) deleteCredentials(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) deleteCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
-		err error
-		c   = &utils.Credentials{}
+		err   error
+		creds = &utils.Credentials{}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	c.Id = r.URL.Query().Get("id")
+	creds.Id = r.URL.Query().Get("id")
 
-	err = c.Delete(dh.db)
+	err = creds.Delete(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

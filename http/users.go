@@ -26,7 +26,7 @@ func (uf *userForm) formFillIn(user *utils.User) {
 	uf.EncryptedPassword = user.EncryptedPassword
 }
 
-func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		formErr   error
@@ -35,7 +35,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		templates = []string{userFormTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -45,16 +45,16 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		id := r.PostForm.Get("idInput")
 		username := r.PostForm.Get("username")
-		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), dh.encryptionKey)
+		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), c.EncryptionKey)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -65,19 +65,19 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 
 		if id == "" {
 			// "id" is unset - create new user
-			formErr = user.Create(dh.db)
+			formErr = user.Create(c.Db)
 			if formErr != nil {
 				data.Msg = formErr.Error()
 			}
 		} else {
 			// "id" is set - update existing user
-			formErr = user.GetById(dh.db)
+			formErr = user.GetById(c.Db)
 			if formErr != nil {
 				data.Msg = formErr.Error()
 			}
 			user.Username = username
 			user.EncryptedPassword = encryptedPw
-			formErr = user.Update(dh.db)
+			formErr = user.Update(c.Db)
 			if formErr != nil {
 				data.Msg = formErr.Error()
 			}
@@ -96,7 +96,7 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		if id != "" {
 			u := &utils.User{Id: id}
-			err = u.GetById(dh.db)
+			err = u.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
@@ -105,10 +105,10 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) getUsers(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) getUsers(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
 		u          = &utils.User{}
@@ -117,7 +117,7 @@ func (dh *dynamicHandler) getUsers(w http.ResponseWriter, r *http.Request) {
 		templates  = []string{usersTmpl, paginationTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -125,14 +125,14 @@ func (dh *dynamicHandler) getUsers(w http.ResponseWriter, r *http.Request) {
 
 	pageId, perPage, err := getPagionationParams(r.URL)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	userList, err := u.GetAll(dh.db)
+	userList, err := u.GetAll(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -150,17 +150,17 @@ func (dh *dynamicHandler) getUsers(w http.ResponseWriter, r *http.Request) {
 		data.Users = chunkedUsers[pageId-1]
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) deleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		err error
 		u   = &utils.User{}
 		id  = r.URL.Query().Get("id")
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -173,9 +173,9 @@ func (dh *dynamicHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	u.Id = id
 
-	err = u.Delete(dh.db)
+	err = u.Delete(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

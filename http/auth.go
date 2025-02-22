@@ -15,7 +15,7 @@ type loginForm struct {
 	PasswordMsg string
 }
 
-func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 	var (
 		err     error
 		user    = &utils.User{}
@@ -27,7 +27,7 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -35,36 +35,36 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		data.Password = r.PostForm.Get("password")
 
 		user.Username = data.Username
-		err = user.GetByUsername(dh.db)
+		err = user.GetByUsername(c.Db)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if user.Id == "" {
 			data.UsernameMsg = fmt.Sprintf("User '%s' not found", data.Username)
-			dh.renderTemplate(w, []string{loginTmpl}, data)
+			c.renderTemplate(w, []string{loginTmpl}, data)
 			return
 		}
 
-		decryptedPw, err := utils.DecryptString(user.EncryptedPassword, dh.encryptionKey)
+		decryptedPw, err := utils.DecryptString(user.EncryptedPassword, c.EncryptionKey)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if decryptedPw != data.Password {
 			data.PasswordMsg = "Incorrect password"
-			dh.renderTemplate(w, []string{loginTmpl}, data)
+			c.renderTemplate(w, []string{loginTmpl}, data)
 			return
 		}
 
 		session.UserId = user.Id
-		err = session.Create(dh.db)
+		err = session.Create(c.Db)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -79,33 +79,33 @@ func (dh *dynamicHandler) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dh.renderTemplate(w, []string{loginTmpl}, data)
+	c.renderTemplate(w, []string{loginTmpl}, data)
 }
 
-func (dh *dynamicHandler) logout(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) logout(w http.ResponseWriter, r *http.Request) {
 	var (
 		err     error
 		session = &utils.Session{}
 	)
 
-	c, err := r.Cookie("session_token")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	session.Id = c.Value
-	err = session.GetById(dh.db)
+	session.Id = cookie.Value
+	err = session.GetById(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = session.Delete(dh.db)
+	err = session.Delete(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

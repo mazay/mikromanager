@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/mazay/mikromanager/db"
-	"github.com/mazay/mikromanager/internal"
 	"github.com/mazay/mikromanager/utils"
 	"go.uber.org/zap"
 )
@@ -28,14 +26,6 @@ var (
 	usersTmpl         = path.Join("templates", "users.html")
 )
 
-type dynamicHandler struct {
-	db            *db.DB
-	encryptionKey string
-	logger        *zap.Logger
-	backupPath    string
-	s3            *internal.S3
-}
-
 func handlerWrapper(fn http.HandlerFunc, logger *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logger.Info(
@@ -52,13 +42,13 @@ func handlerWrapper(fn http.HandlerFunc, logger *zap.Logger) http.HandlerFunc {
 	}
 }
 
-func (dh *dynamicHandler) renderTemplate(w http.ResponseWriter, tmplList []string, data any) {
+func (c *HttpConfig) renderTemplate(w http.ResponseWriter, tmplList []string, data any) {
 	var err error
 
 	// load templates
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(tmplList...)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -66,24 +56,24 @@ func (dh *dynamicHandler) renderTemplate(w http.ResponseWriter, tmplList []strin
 	// render the templates
 	err = tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (dh *dynamicHandler) checkSession(r *http.Request) (*utils.Session, error) {
+func (c *HttpConfig) checkSession(r *http.Request) (*utils.Session, error) {
 	var (
 		err     error
 		session = &utils.Session{}
 	)
 
-	c, err := r.Cookie("session_token")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		return session, err
 	}
 
-	session.Id = c.Value
-	err = session.GetById(dh.db)
+	session.Id = cookie.Value
+	err = session.GetById(c.Db)
 	if err != nil {
 		return session, err
 	}
