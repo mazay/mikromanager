@@ -1,4 +1,4 @@
-package api
+package internal
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/go-routeros/routeros/v3/proto"
 )
 
-type API struct {
+type Api struct {
 	Address  string
 	Port     string
 	Username string
@@ -17,7 +17,7 @@ type API struct {
 	Async    bool
 }
 
-func (api *API) getEndpoint() string {
+func (api *Api) getEndpoint() string {
 	if api.Port == "" {
 		return fmt.Sprintf("%s:8728", api.Address)
 	} else {
@@ -25,7 +25,7 @@ func (api *API) getEndpoint() string {
 	}
 }
 
-func (api *API) dial() (*routeros.Client, error) {
+func (api *Api) dial() (*routeros.Client, error) {
 	endpoint := api.getEndpoint()
 	if api.UseTLS {
 		return routeros.DialTLS(endpoint, api.Username, api.Password, nil)
@@ -34,7 +34,7 @@ func (api *API) dial() (*routeros.Client, error) {
 	}
 }
 
-func (api *API) Run(command string) ([]*proto.Sentence, error) {
+func (api *Api) Run(command string) ([]*proto.Sentence, error) {
 	client, err := api.dial()
 	if err != nil {
 		return []*proto.Sentence{}, err
