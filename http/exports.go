@@ -53,7 +53,7 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err, pageId, perPage := getPagionationParams(r.URL)
+	pageId, perPage, err := getPagionationParams(r.URL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

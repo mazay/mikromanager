@@ -141,7 +141,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err, pageId, perPage := getPagionationParams(r.URL)
+	pageId, perPage, err := getPagionationParams(r.URL)
 	if err != nil {
 		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
