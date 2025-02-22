@@ -35,7 +35,7 @@
           {{ end }}
         </td>
         {{ range $device := $.Devices }}
-          {{ if eq $device.Id $export.DeviceId }}
+          {{ if eq $device.Id $export.GetDeviceId }}
             <td>{{ $device.Identity }} ({{ $device.Id }})</td>
           {{ end }}
         {{ end }}
