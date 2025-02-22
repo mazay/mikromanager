@@ -29,9 +29,9 @@
       {{ range $export := .Exports }}
       <tr id="{{ $export.Key }}">
         <td>
-          <a href="/details?id={{ $export.DeviceId }}"><i class="bi-clipboard-pulse"></i></a>
+          <a href="/details?id={{ $export.GetDeviceId }}"><i class="bi-clipboard-pulse"></i></a>
           {{ if eq $.DeviceId "" }}
-          <a href="/exports?id={{ $export.DeviceId }}"><i class="bi-funnel"></i></a>
+          <a href="/exports?id={{ $export.GetDeviceId }}"><i class="bi-funnel"></i></a>
           {{ end }}
         </td>
         {{ range $device := $.Devices }}

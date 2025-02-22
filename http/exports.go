@@ -34,6 +34,8 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		templates  = []string{exportsTmpl, paginationTmpl, baseTmpl}
 	)
 
+	data.DeviceId = id
+
 	_, err = dh.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
