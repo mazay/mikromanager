@@ -28,13 +28,15 @@ var (
 
 func handlerWrapper(fn http.HandlerFunc, logger *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		logger.Info(
-			req.URL.String(),
-			zap.String("address", req.RemoteAddr),
-			zap.String("method", req.Method),
-			zap.String("protocol", req.Proto),
-			zap.Int64("size", req.ContentLength),
-		)
+		if req.URL.Path != "/healthz" {
+			logger.Info(
+				req.URL.String(),
+				zap.String("address", req.RemoteAddr),
+				zap.String("method", req.Method),
+				zap.String("protocol", req.Proto),
+				zap.Int64("size", req.ContentLength),
+			)
+		}
 
 		res.Header().Set("Server", "mikromanager")
 
