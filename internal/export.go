@@ -20,10 +20,8 @@ func (e *Export) GetDeviceId() string {
 	return filepath.Base(dir)
 }
 
+// GetBody downloads the export from the S3 bucket and returns its contents as a byte slice.
+// It returns an error if the download fails.
 func (e *Export) GetBody(s3 *S3) ([]byte, error) {
 	return s3.GetFile(e.Key, *e.Size)
-}
-
-func (e *Export) GetFilename() string {
-	return filepath.Base(e.Key)
 }
