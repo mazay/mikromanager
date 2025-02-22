@@ -69,7 +69,7 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 
 		data.Pagination = pagination
 		data.CurrentPage = pageId
-		data.Exports = exports
+		data.Exports = chunkedExports[pageId-1]
 	}
 
 	dh.renderTemplate(w, templates, data)
