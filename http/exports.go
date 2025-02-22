@@ -176,5 +176,8 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 	// stream the export file
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write(exportBody)
+	_, err = w.Write(exportBody)
+	if err != nil {
+		dh.logger.Error(err.Error())
+	}
 }
