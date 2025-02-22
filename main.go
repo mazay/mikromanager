@@ -128,7 +128,7 @@ func main() {
 	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger, s3)
 
 	// run S3 migration
-	go s3Migrate(db)
+	go s3Migrate(db, s3)
 
 	scheduler := gocron.NewScheduler(time.Local)
 	logger.Info("devicePollerInterval", zap.Duration("interval", config.DevicePollerInterval))
@@ -357,7 +357,7 @@ func cleanupSessions(db *db.DB) {
 	}
 }
 
-func s3Migrate(db *db.DB) {
+func s3Migrate(db *db.DB, s3 *internal.S3) {
 	var (
 		err       error
 		exportOld *utils.Export
