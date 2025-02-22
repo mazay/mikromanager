@@ -202,7 +202,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Device = device
 
-	exports, err := dh.s3.GetExportsFromS3(device.Id)
+	exports, err := dh.s3.GetExports(device.Id)
 	if err != nil {
 		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

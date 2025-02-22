@@ -310,7 +310,7 @@ func rotateExports(db *db.DB) {
 		return
 	}
 	for _, device := range devices {
-		exports, err := s3.GetExportsFromS3(device.Id)
+		exports, err := s3.GetExports(device.Id)
 		if err != nil {
 			logger.Error(err.Error())
 		} else {
