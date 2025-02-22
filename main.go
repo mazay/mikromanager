@@ -85,9 +85,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// run S3 migration
-	go s3Migrate(db)
-
 	logger.Debug("ensure 'Default' exports retention policy exists")
 	err = policy.GetDefault(db)
 	if err != nil || policy.Id == "" {
@@ -129,6 +126,9 @@ func main() {
 	logger.Debug("DB collections", zap.String("list", strings.Join(collections, ", ")))
 
 	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger, s3)
+
+	// run S3 migration
+	go s3Migrate(db)
 
 	scheduler := gocron.NewScheduler(time.Local)
 	logger.Info("devicePollerInterval", zap.Duration("interval", config.DevicePollerInterval))
