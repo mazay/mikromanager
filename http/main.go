@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/mazay/mikromanager/db"
+	"github.com/mazay/mikromanager/internal"
 	"go.uber.org/zap"
 )
 
-func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath string, logger *zap.Logger) {
+func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath string, logger *zap.Logger, s3 *internal.S3) {
 	logger.Info("starting http server", zap.String("port", httpPort))
-	dh := &dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger, backupPath: backupPath}
+	dh := &dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger, backupPath: backupPath, s3: s3}
 	static := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/healthz", handlerWrapper(dh.healthz, logger))
 	http.HandleFunc("/login", handlerWrapper(dh.login, logger))

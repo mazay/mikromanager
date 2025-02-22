@@ -39,3 +39,12 @@ backupPath: backups
 
 # MikroManager export workers, can be ommited or set to 0 if backups are not created
 exportWorkers: 10
+
+s3Bucket: mikromanager-backups
+s3BucketPath: devel
+# s3Endpoint: https://s3.amazonaws.com
+s3Region: us-east-1
+s3StorageClass: STANDARD
+s3AccessKey: AKIAIOSFODNN7EXAMPLE
+s3SecretAccessKey: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+s3OpsRetries: 5

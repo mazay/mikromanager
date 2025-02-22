@@ -21,7 +21,6 @@ type Config struct {
 	S3BucketPath         string        `yaml:"s3BucketPath"`
 	S3Endpoint           string        `yaml:"s3Endpoint"`
 	S3Region             string        `yaml:"s3Region"`
-	S3BucketRegion       string        `yaml:"s3BucketRegion"`
 	S3StorageClass       string        `yaml:"s3StorageClass"`
 	S3AccessKey          string        `yaml:"s3AccessKey"`
 	S3SecretAccessKey    string        `yaml:"s3SecretAccessKey"`
@@ -54,8 +53,8 @@ func (cfg *Config) setDefaults() {
 		cfg.LogLevel = "info"
 	}
 	// S3 sdefaults
-	if cfg.S3BucketRegion == "" {
-		cfg.S3BucketRegion = "us-east-1"
+	if cfg.S3Region == "" {
+		cfg.S3Region = "us-east-1"
 	}
 	if cfg.S3StorageClass == "" {
 		cfg.S3StorageClass = "STANDARD"

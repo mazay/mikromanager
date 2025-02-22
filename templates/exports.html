@@ -21,12 +21,13 @@
         <th scope="col"></th>
         <th scope="col">Device Identity</th>
         <th scope="col">Created</th>
+        <th scope="col">Size</th>
         <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
       {{ range $export := .Exports }}
-      <tr id="{{ $export.Id }}">
+      <tr id="{{ $export.Key }}">
         <td>
           <a href="/details?id={{ $export.DeviceId }}"><i class="bi-clipboard-pulse"></i></a>
           {{ if eq $.DeviceId "" }}
@@ -38,10 +39,12 @@
             <td>{{ $device.Identity }} ({{ $device.Id }})</td>
           {{ end }}
         {{ end }}
-        <td>{{ $export.Created.Format "2006-01-02 15:04:05" }}</td>
+        <td>{{ $export.LastModified.Format "2006-01-02 15:04:05" }}</td>
+        {{/* TODO: convert to human readable */}}
+        <td>{{ $export.Size }} bytes</td>
         <td>
-          <a class="btn btn-outline-info btn-sm" role="button" href="/export?id={{ $export.Id }}"><i class="bi-clipboard-pulse"></i></a>
-          <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ $export.Id }}" target="_blank"><i class="bi-download"></i></a>
+          <a class="btn btn-outline-info btn-sm" role="button" href="/export?id={{ $export.Key }}"><i class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ $export.Key }}" target="_blank"><i class="bi-download"></i></a>
         </td>
       </tr>
       {{ end }}

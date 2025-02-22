@@ -124,7 +124,7 @@ func main() {
 	collections, _ := db.ListCollections()
 	logger.Debug("DB collections", zap.String("list", strings.Join(collections, ", ")))
 
-	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger)
+	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger, s3)
 
 	scheduler := gocron.NewScheduler(time.Local)
 	logger.Info("devicePollerInterval", zap.Duration("interval", config.DevicePollerInterval))
@@ -295,7 +295,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 
 func rotateExports(db *db.DB) {
 	var err error
-	var exportsList []*utils.Export
+	var exportsList []*internal.Export
 	var device *utils.Device
 
 	logger.Info("starting exports retention task")
@@ -310,8 +310,7 @@ func rotateExports(db *db.DB) {
 		return
 	}
 	for _, device := range devices {
-		var export *utils.Export
-		exports, err := export.GetByDeviceId(db, device.Id)
+		exports, err := s3.GetAwsS3ItemMap(device.Id)
 		if err != nil {
 			logger.Error(err.Error())
 		} else {
@@ -321,8 +320,8 @@ func rotateExports(db *db.DB) {
 
 			for _, export := range exports {
 				if !exportInSlice(export, exportsList) {
-					logger.Debug("deleting export", zap.String("filename", export.Filename))
-					err := export.Delete(db)
+					logger.Debug("deleting export", zap.String("filename", export.Key))
+					err := s3.DeleteFile(export.Key)
 					if err != nil {
 						logger.Error(err.Error())
 					}

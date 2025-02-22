@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -73,11 +72,10 @@ func (b *S3) GetS3Session() error {
 	return err
 }
 
-func (b *S3) GetAwsS3ItemMap(deviceId string) (map[string]string, error) {
+func (b *S3) GetAwsS3ItemMap(deviceId string) ([]*Export, error) {
 	var (
 		err   error
-		iter  int
-		items = make(map[string]string)
+		items = []*Export{}
 	)
 
 	params := &s3.ListObjectsV2Input{
@@ -88,21 +86,20 @@ func (b *S3) GetAwsS3ItemMap(deviceId string) (map[string]string, error) {
 	p := s3.NewListObjectsV2Paginator(b.client, params)
 
 	for p.HasMorePages() {
-		iter++
-
 		page, err := p.NextPage(context.TODO())
 		if err != nil {
-			return nil, err
+			return items, err
 		}
 
-		// Log the objects found
+		// add objects to map
 		for _, s3obj := range page.Contents {
-			if string(s3obj.StorageClass) != b.StorageClass {
-				items[*aws.String(*s3obj.Key)] = "none"
-			} else {
-				// Update metrics
-				items[*aws.String(*s3obj.Key)] = strings.Trim(*(s3obj.ETag), "\"")
-			}
+			items = append(items, &Export{
+				Key:          *s3obj.Key,
+				DeviceId:     deviceId,
+				LastModified: s3obj.LastModified,
+				ETag:         *s3obj.ETag,
+				Size:         s3obj.Size,
+			})
 		}
 	}
 

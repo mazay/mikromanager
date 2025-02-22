@@ -1,5 +1,8 @@
-# Created by https://www.toptal.com/developers/gitignore/api/macos,linux,visualstudiocode,go
-# Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,visualstudiocode,go
+# Created by https://www.toptal.com/developers/gitignore/api/go,linux,macos,visualstudiocode,dotenv
+# Edit at https://www.toptal.com/developers/gitignore?templates=go,linux,macos,visualstudiocode,dotenv
+
+### dotenv ###
+.env
 
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
@@ -23,10 +26,6 @@
 
 # Go workspace file
 go.work
-
-### Go Patch ###
-/vendor/
-/Godeps/
 
 ### Linux ###
 *~
@@ -95,17 +94,4 @@ Temporary Items
 .history
 .ionide
 
-# Support for Project snippet scope
-.vscode/*.code-snippets
-
-# Ignore code-workspaces
-*.code-workspace
-
-# End of https://www.toptal.com/developers/gitignore/api/macos,linux,visualstudiocode,go
-
-# clover
-database.clover
-*_export.json
-
-# backups
-backups
+# End of https://www.toptal.com/developers/gitignore/api/go,linux,macos,visualstudiocode,dotenv
