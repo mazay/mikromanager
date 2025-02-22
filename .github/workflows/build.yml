@@ -43,6 +43,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Chechout
         uses: actions/checkout@v4
