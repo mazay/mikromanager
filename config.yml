@@ -33,18 +33,31 @@ apiPollers: 2
 # the path will be created and new DB initialised if missing
 dbPath: database.clover
 
-# full or relative path to the backups
-# the path will be created
-backupPath: backups
-
 # MikroManager export workers, can be ommited or set to 0 if backups are not created
 exportWorkers: 10
 
+# S3 bucket for storing the backups
 s3Bucket: mikromanager-backups
-s3BucketPath: devel
+
+# S3 bucket path if you want to store the backups in a specific path
+# s3BucketPath: devel
+
+# S3 endpoint useful for non-AWS S3 providers
 # s3Endpoint: https://s3.amazonaws.com
+
+# S3 region
 s3Region: us-east-1
+
+# S3 storage class
 s3StorageClass: STANDARD
+
+# S3 credentials, can also be pulled from the environment variables or temporary credentials
+# the order of precedence is as follows
+# 1. environment variables
+# 2. config file
+# 3. temporary credentials
 s3AccessKey: AKIAIOSFODNN7EXAMPLE
 s3SecretAccessKey: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+# S3 retries for upload/download
 s3OpsRetries: 5
