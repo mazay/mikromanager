@@ -55,13 +55,13 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 
 	dh.db.Sort("created", -1)
 	if id != "" {
-		exports, err = dh.s3.GetAwsS3ItemMap(id)
+		exports, err = dh.s3.GetExportsFromS3(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
-		exports, err = dh.s3.GetAwsS3ItemMap("")
+		exports, err = dh.s3.GetExportsFromS3("")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

@@ -72,7 +72,7 @@ func (b *S3) GetS3Session() error {
 	return err
 }
 
-func (b *S3) GetAwsS3ItemMap(deviceId string) ([]*Export, error) {
+func (b *S3) GetExportsFromS3(deviceId string) ([]*Export, error) {
 	var (
 		err   error
 		items = []*Export{}
