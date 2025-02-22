@@ -12,7 +12,6 @@ import (
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/internal"
-	"github.com/mazay/mikromanager/ssh"
 	"github.com/mazay/mikromanager/utils"
 	"go.uber.org/zap"
 )
@@ -24,7 +23,7 @@ type PollerCFG struct {
 }
 
 type BackupCFG struct {
-	Client *ssh.SshClient
+	Client *internal.SshClient
 	Db     *db.DB
 	Device *utils.Device
 }
@@ -264,7 +263,7 @@ func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
 			logger.Error(encryptionErr.Error())
 			return
 		}
-		client := &ssh.SshClient{
+		client := &internal.SshClient{
 			Host:     device.Address,
 			Port:     device.SshPort,
 			User:     creds.Username,
