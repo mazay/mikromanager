@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/mazay/mikromanager/internal"
 	"github.com/mazay/mikromanager/utils"
@@ -58,12 +59,17 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dh.db.Sort("created", -1)
 	exports, err := dh.s3.GetExports(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// sort exports by last modified date in descending order
+	sort.Slice(exports, func(i, j int) bool {
+		return exports[i].LastModified.After(*exports[j].LastModified)
+	})
+
 	data.Count = len(exports)
 	if data.Count > 0 {
 		chunkedExports := chunkSliceOfObjects(exports, perPage)

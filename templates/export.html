@@ -21,7 +21,7 @@
       <dd class="col-sm-9">{{ .Export.LastModified.Format "2006-01-02 15:04:05" }}</dd>
 
       <dt class="col-sm-3">Size</dt>
-      <dd class="col-sm-9">{{ .Export.GetSize }}</dd>
+      <dd class="col-sm-9">{{ humahizeBytes .Export.Size }}</dd>
     </dl>
   </div>
 </div>
