@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/mazay/mikromanager/db"
+	"github.com/mazay/mikromanager/internal"
 	"github.com/mazay/mikromanager/utils"
 	"go.uber.org/zap"
 )
@@ -32,6 +33,7 @@ type dynamicHandler struct {
 	encryptionKey string
 	logger        *zap.Logger
 	backupPath    string
+	s3            *internal.S3
 }
 
 func handlerWrapper(fn http.HandlerFunc, logger *zap.Logger) http.HandlerFunc {

@@ -131,22 +131,5 @@ func (d *Device) GetById(db *database.DB) error {
 }
 
 func (d *Device) Delete(db *database.DB) error {
-	var err error
-
-	// delete exports first
-	e := &Export{}
-	exports, err := e.GetByDeviceId(db, d.Id)
-	if err != nil {
-		return err
-	}
-
-	for _, export := range exports {
-		err = export.Delete(db)
-		if err != nil {
-			return err
-		}
-	}
-
-	// finally delete the device
 	return db.DeleteById(db.Collections["devices"], d.Id)
 }

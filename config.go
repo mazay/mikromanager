@@ -17,6 +17,14 @@ type Config struct {
 	DbPath               string        `yaml:"dbPath"`
 	EncryptionKey        string        `yaml:"encryptionKey"`
 	LogLevel             string        `yaml:"logLevel"`
+	S3Bucket             string        `yaml:"s3Bucket"`
+	S3BucketPath         string        `yaml:"s3BucketPath"`
+	S3Endpoint           string        `yaml:"s3Endpoint"`
+	S3Region             string        `yaml:"s3Region"`
+	S3StorageClass       string        `yaml:"s3StorageClass"`
+	S3AccessKey          string        `yaml:"s3AccessKey"`
+	S3SecretAccessKey    string        `yaml:"s3SecretAccessKey"`
+	S3OpsRetries         int           `yaml:"s3OpsRetries"`
 }
 
 func configProcessError(err error) {
@@ -43,6 +51,25 @@ func (cfg *Config) setDefaults() {
 	}
 	if cfg.LogLevel == "" {
 		cfg.LogLevel = "info"
+	}
+	// S3 sdefaults
+	if cfg.S3Region == "" {
+		cfg.S3Region = "us-east-1"
+	}
+	if cfg.S3StorageClass == "" {
+		cfg.S3StorageClass = "STANDARD"
+	}
+	if cfg.S3OpsRetries == 0 {
+		cfg.S3OpsRetries = 5
+	}
+	// check if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set
+	envAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	if envAccessKey != "" {
+		cfg.S3AccessKey = envAccessKey
+	}
+	envSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	if envSecretAccessKey != "" {
+		cfg.S3SecretAccessKey = envSecretAccessKey
 	}
 }
 

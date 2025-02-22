@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 
+	"github.com/mazay/mikromanager/internal"
 	"github.com/mazay/mikromanager/utils"
 )
 
@@ -18,7 +19,7 @@ type deviceForm struct {
 
 type deviceDetails struct {
 	Device     *utils.Device
-	Exports    []*utils.Export
+	Exports    []*internal.Export
 	BackupPath string
 }
 
@@ -140,7 +141,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err, pageId, perPage := getPagionationParams(r.URL)
+	pageId, perPage, err := getPagionationParams(r.URL)
 	if err != nil {
 		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -176,7 +177,6 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 		err       error
 		device    = &utils.Device{}
 		data      = &deviceDetails{BackupPath: dh.backupPath}
-		export    = &utils.Export{}
 		id        = r.URL.Query().Get("id")
 		templates = []string{deviceDetailsTmpl, baseTmpl}
 	)
@@ -202,7 +202,7 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Device = device
 
-	exports, err := export.GetByDeviceId(dh.db, device.Id)
+	exports, err := dh.s3.GetExports(device.Id)
 	if err != nil {
 		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -233,7 +233,22 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	d.Id = id
 
+	// delete device
 	err = d.Delete(dh.db)
+	if err != nil {
+		dh.logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// delete exports
+	exports, err := dh.s3.GetExports(d.Id)
+	if err != nil {
+		dh.logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = dh.s3.DeleteExports(exports)
 	if err != nil {
 		dh.logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

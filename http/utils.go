@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dustin/go-humanize"
+	"github.com/mazay/mikromanager/internal"
 	"github.com/mazay/mikromanager/utils"
 )
 
@@ -22,8 +22,18 @@ func replace(input, from, to string) string {
 	return strings.Replace(input, from, to, -1)
 }
 
-func humahizeBytes(bytes int64) string {
-	return humanize.Bytes(uint64(bytes))
+func humahizeBytes(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 func timeAgo(t time.Time) string {
@@ -48,7 +58,7 @@ func containsInt(s []int, e int) bool {
 
 // chunkSliceOfObjects accepts slices of Export, Credentials or Device objects and a chunk size
 // and returns chunks of the input objects
-func chunkSliceOfObjects[obj utils.Export | utils.Credentials | utils.Device | utils.User](slice []*obj, chunkSize int) [][]*obj {
+func chunkSliceOfObjects[obj internal.Export | utils.Credentials | utils.Device | utils.User](slice []*obj, chunkSize int) [][]*obj {
 	var chunks [][]*obj
 	for i := 0; i < len(slice); i += chunkSize {
 		end := i + chunkSize
