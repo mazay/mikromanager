@@ -233,6 +233,21 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	d.Id = id
 
+	// delete exports
+	exports, err := dh.s3.GetExports(d.Id)
+	if err != nil {
+		dh.logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = dh.s3.DeleteExports(exports)
+	if err != nil {
+		dh.logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// delete device
 	err = d.Delete(dh.db)
 	if err != nil {
 		dh.logger.Error(err.Error())

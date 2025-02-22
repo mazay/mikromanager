@@ -3,7 +3,9 @@ package internal
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"path"
 	"time"
@@ -186,6 +188,49 @@ func (b *S3) DeleteFile(s3Key string) error {
 
 	// Delete the object
 	_, err := b.client.DeleteObject(context.TODO(), input)
+
+	return err
+}
+
+func (b *S3) DeleteExports(exports []*Export) error {
+	if len(exports) == 0 {
+		return nil
+	}
+
+	// gererate a set of ObjectIdentifiers
+	objects := make([]types.ObjectIdentifier, len(exports))
+	for i, e := range exports {
+		objects[i] = types.ObjectIdentifier{
+			Key: aws.String(e.Key),
+		}
+	}
+
+	input := s3.DeleteObjectsInput{
+		Bucket: aws.String(b.Bucket),
+		Delete: &types.Delete{
+			Objects: objects,
+			Quiet:   aws.Bool(true),
+		},
+	}
+	delOut, err := b.client.DeleteObjects(context.TODO(), &input)
+	if err != nil || len(delOut.Errors) > 0 {
+		if err != nil {
+			var noBucket *types.NoSuchBucket
+			if errors.As(err, &noBucket) {
+				err = noBucket
+			}
+		} else if len(delOut.Errors) > 0 {
+			for _, outErr := range delOut.Errors {
+				log.Printf("%s: %s\n", *outErr.Key, *outErr.Message)
+			}
+			err = fmt.Errorf("%s", *delOut.Errors[0].Message)
+		}
+	} else {
+		for _, delObjs := range delOut.Deleted {
+			err = s3.NewObjectNotExistsWaiter(b.client).Wait(
+				context.TODO(), &s3.HeadObjectInput{Bucket: aws.String(b.Bucket), Key: delObjs.Key}, time.Minute)
+		}
+	}
 
 	return err
 }
