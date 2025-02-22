@@ -137,8 +137,8 @@ func main() {
 	if exportErr != nil {
 		logger.Error("export", zap.Any("Job", exportJob), zap.Any("error", exportErr))
 	}
-	logger.Info("export retention job interval is 90 minutes")
-	exportRetentionJob, exportRetentionErr := scheduler.Every("90m").Do(rotateExports, db)
+	logger.Info("export retention job interval is 24 hours")
+	exportRetentionJob, exportRetentionErr := scheduler.Every("24h").Do(rotateExports, db)
 	if exportRetentionErr != nil {
 		logger.Error("export", zap.Any("Job", exportRetentionJob), zap.Any("error", exportRetentionErr))
 	}
