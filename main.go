@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
-	"github.com/mazay/mikromanager/api"
 	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/internal"
@@ -19,7 +18,7 @@ import (
 )
 
 type PollerCFG struct {
-	Client *api.API
+	Client *internal.Api
 	Db     *db.DB
 	Device *utils.Device
 }
@@ -180,7 +179,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 			logger.Error(encryptionErr.Error())
 			return err
 		}
-		client := &api.API{
+		client := &internal.Api{
 			Address:  device.Address,
 			Port:     device.ApiPort,
 			Username: creds.Username,
