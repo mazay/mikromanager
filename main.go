@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"os"
 	"strings"
@@ -83,6 +84,9 @@ func main() {
 		osExit(1)
 	}
 	defer db.Close()
+
+	// run S3 migration
+	go s3Migrate(db)
 
 	logger.Debug("ensure 'Default' exports retention policy exists")
 	err = policy.GetDefault(db)
@@ -346,6 +350,55 @@ func cleanupSessions(db *db.DB) {
 		if s.ValidThrough.Before(time.Now()) {
 			logger.Debug("session expired", zap.String("id", s.Id))
 			err = s.Delete(db)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+		}
+	}
+}
+
+func s3Migrate(db *db.DB) {
+	var (
+		err       error
+		exportOld *utils.Export
+	)
+
+	logger.Info("starting S3 migration task")
+	exports, err := exportOld.GetAll(db)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	for _, e := range exports {
+		logger.Debug("migrating export to s3", zap.String("filename", e.Filename))
+		// open file
+		file, err := os.Open(e.Filename)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+
+		// Get the file size
+		stat, err := file.Stat()
+		if err != nil {
+			logger.Error(err.Error())
+		}
+
+		// read file contents into a byte array
+		ba := make([]byte, stat.Size())
+		_, err = bufio.NewReader(file).Read(ba)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		file.Close() // close file after reading so it can be deleted
+
+		// upload to s3
+		err = s3.UploadExport(e.DeviceId, ba)
+		if err != nil {
+			logger.Error(err.Error())
+		} else {
+			// delete local file
+			err = e.Delete(db)
 			if err != nil {
 				logger.Error(err.Error())
 			}

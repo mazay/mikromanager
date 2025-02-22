@@ -33,6 +33,11 @@ apiPollers: 2
 # the path will be created and new DB initialised if missing
 dbPath: database.clover
 
+# DEPRECATED - latest version uses S3 for storing the backups
+# full or relative path to the backups
+# the path will be created
+backupPath: backups
+
 # MikroManager export workers, can be ommited or set to 0 if backups are not created
 exportWorkers: 10
 
