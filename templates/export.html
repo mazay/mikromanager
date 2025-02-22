@@ -5,11 +5,11 @@
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/exports">Exports</a></li>
-    <li class="breadcrumb-item"><a href="/exports?id={{ .Export.DeviceId }}">{{ .Export.DeviceId }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ .Export.Id }}</li>
+    <li class="breadcrumb-item"><a href="/exports?id={{ .Export.GetDeviceId }}">{{ .Export.GetDeviceId }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ .Export.Key }}</li>
   </ol>
 </nav>
-<legend class="text-center display-6">Export details <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ .Export.Id }}" target="_blank"><i class="bi-download"></i></a></legend>
+<legend class="text-center display-6">Export details <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ .Export.Key }}" target="_blank"><i class="bi-download"></i></a></legend>
 <hr class="border border-primary border-3 opacity-75">
 <div class="row align-items-start">
   <div class="col">
@@ -18,7 +18,10 @@
       <dd class="col-sm-9"><a href="/details?id={{ .Device.Id }}">{{ .Device.Identity }}</a> ({{ .Device.Id }})</dd>
 
       <dt class="col-sm-3">Created</dt>
-      <dd class="col-sm-9">{{ .Export.Created.Format "2006-01-02 15:04:05" }}</dd>
+      <dd class="col-sm-9">{{ .Export.LastModified.Format "2006-01-02 15:04:05" }}</dd>
+
+      <dt class="col-sm-3">Size</dt>
+      <dd class="col-sm-9">{{ .Export.GetSize }}</dd>
     </dl>
   </div>
 </div>

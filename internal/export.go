@@ -19,3 +19,15 @@ func (e *Export) GetDeviceId() string {
 	dir := filepath.Dir(e.Key)
 	return filepath.Base(dir)
 }
+
+func (e *Export) GetBody(s3 *S3) ([]byte, error) {
+	return s3.GetFile(e.Key, *e.Size)
+}
+
+func (e *Export) GetSize() string {
+	return ByteCountIEC(*e.Size)
+}
+
+func (e *Export) GetFilename() string {
+	return filepath.Base(e.Key)
+}

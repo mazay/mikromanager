@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/mazay/mikromanager/internal"
@@ -24,6 +25,9 @@ type exportData struct {
 	ExportData string
 }
 
+// getExports handles the GET request for /exports and displays a paginated list of exports
+// for the specified device ID. It retrieves all devices and exports, applies pagination based
+// on query parameters, and renders the exports template with the gathered data.
 func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
@@ -77,11 +81,11 @@ func (dh *dynamicHandler) getExports(w http.ResponseWriter, r *http.Request) {
 	dh.renderTemplate(w, templates, data)
 }
 
+// getExport responds to GET /exports?id=<id> and displays the export by <id>
 func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 	var (
-		err    error
-		export = &internal.Export{}
-		// device    = &utils.Device{}
+		err       error
+		device    = &utils.Device{}
 		data      = &exportData{BackupPath: dh.backupPath}
 		id        = r.URL.Query().Get("id")
 		templates = []string{exportTmpl, baseTmpl}
@@ -98,38 +102,37 @@ func (dh *dynamicHandler) getExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	export.Key = id
-	// err = export.GetById(dh.db)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// data.Export = export
+	export, err := dh.s3.GetExport(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data.Export = export
 
-	// device.Id = export.DeviceId
-	// err = device.GetById(dh.db)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// data.Device = device
+	device.Id = export.GetDeviceId()
+	err = device.GetById(dh.db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data.Device = device
 
-	// exportBody, err := os.ReadFile(data.Export.Filename)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// data.ExportData = string(exportBody)
+	exportBody, err := export.GetBody(dh.s3)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data.ExportData = string(exportBody)
 
 	dh.renderTemplate(w, templates, data)
 }
 
+// downloadExport responds to GET /exports/download?id=<id> and downloads the export by <id>
 func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err    error
-		export = &internal.Export{}
-		// device = &utils.Device{}
-		id = r.URL.Query().Get("id")
+		device = &utils.Device{}
+		id     = r.URL.Query().Get("id")
 	)
 
 	_, err = dh.checkSession(r)
@@ -143,44 +146,29 @@ func (dh *dynamicHandler) downloadExport(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	export.Key = id
-	// err = export.GetById(dh.db)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	export, err := dh.s3.GetExport(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// device.Id = export.DeviceId
-	// err = device.GetById(dh.db)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	device.Id = export.GetDeviceId()
+	err = device.GetById(dh.db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// // generate human friendly filename
-	// filename := fmt.Sprintf("%s %s.rsc", device.Identity, export.Created.Format("2006-01-02 15:04:05"))
+	exportBody, err := export.GetBody(dh.s3)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// // get file info
-	// fileInfo, err := os.Stat(export.Filename)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	filename := fmt.Sprintf("%s %s.rsc", device.Identity, export.LastModified.Format("2006-01-02 15:04:05"))
 
-	// fileReader, err := os.Open(export.Filename)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// set headers
-	// w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	// w.Header().Set("Content-Type", "text/plain")
-	// w.Header().Set("Content-Length", fmt.Sprint(fileInfo.Size()))
-
-	// // stream the body to the client
-	// _, err = io.Copy(w, fileReader)
-	// if err != nil {
-	// 	dh.logger.Error(err.Error())
-	// }
+	// stream the export file
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write(exportBody)
 }

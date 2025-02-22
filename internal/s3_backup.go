@@ -28,10 +28,17 @@ type S3 struct {
 	client          *s3.Client
 }
 
+// s3BasePath returns the base path for a device's exports in the S3 bucket.
+// The returned path is <bucketPath>/exports/<deviceId>.
 func s3BasePath(bucketPath string, deviceId string) string {
 	return path.Join(bucketPath, "exports", deviceId)
 }
 
+// GetS3Session configures the AWS S3 client and returns an error if something fails.
+// If the region is not set, it will be determined from the environment. If the
+// endpoint is not set, AWS will use the default endpoint for the region. If the
+// access key and secret access key are not set, temporary credentials will be
+// used.
 func (b *S3) GetS3Session() error {
 	var (
 		err      error
@@ -106,12 +113,39 @@ func (b *S3) GetExports(deviceId string) ([]*Export, error) {
 	return items, err
 }
 
+func (b *S3) GetExport(key string) (*Export, error) {
+	var (
+		err    error
+		export = &Export{}
+	)
+
+	params := &s3.GetObjectInput{
+		Bucket: aws.String(b.Bucket),
+		Key:    aws.String(key),
+	}
+
+	resp, err := b.client.GetObject(context.TODO(), params)
+	if err != nil {
+		return export, err
+	}
+
+	export.Key = key
+	export.LastModified = resp.LastModified
+	export.ETag = *resp.ETag
+	export.Size = resp.ContentLength
+
+	return export, err
+}
+
+// UploadFile uploads the given data to an S3 bucket. The S3 key is determined by the given
+// device ID and the current time in Unix milliseconds. The storage class for the uploaded
+// object is determined by the StorageClass field of the S3 struct.
 func (b *S3) UploadFile(deviceId string, data []byte) error {
 	var err error
 
 	s3Key := path.Join(s3BasePath(b.BucketPath, deviceId), fmt.Sprintf("%d.rsc", time.Now().Unix()))
 	uploader := manager.NewUploader(b.client, func(u *manager.Uploader) {
-		u.PartSize = 5 * 1024 * 1024
+		u.PartSize = 5 * 1024 * 1024 // 5 MB per part
 		u.Concurrency = 5
 	})
 
@@ -125,6 +159,25 @@ func (b *S3) UploadFile(deviceId string, data []byte) error {
 	return err
 }
 
+func (b *S3) GetFile(s3Key string, size int64) ([]byte, error) {
+	downloader := manager.NewDownloader(b.client, func(d *manager.Downloader) {
+		d.PartSize = 5 * 1024 * 1024 // 5 MB per part
+		d.Concurrency = 5
+	})
+
+	buf := make([]byte, int(size))
+	w := manager.NewWriteAtBuffer(buf)
+	_, err := downloader.Download(context.TODO(), w, &s3.GetObjectInput{
+		Bucket: aws.String(b.Bucket),
+		Key:    aws.String(s3Key),
+	})
+
+	return buf, err
+}
+
+// DeleteFile removes an object from the S3 bucket specified by the S3 key.
+// It returns an error if the deletion fails. The S3 key should be a valid
+// path to the object within the bucket.
 func (b *S3) DeleteFile(s3Key string) error {
 	input := &s3.DeleteObjectInput{
 		Bucket: aws.String(b.Bucket),

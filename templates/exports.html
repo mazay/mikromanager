@@ -40,8 +40,7 @@
           {{ end }}
         {{ end }}
         <td>{{ $export.LastModified.Format "2006-01-02 15:04:05" }}</td>
-        {{/* TODO: convert to human readable */}}
-        <td>{{ $export.Size }} bytes</td>
+        <td>{{ $export.GetSize }}</td>
         <td>
           <a class="btn btn-outline-info btn-sm" role="button" href="/export?id={{ $export.Key }}"><i class="bi-clipboard-pulse"></i></a>
           <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ $export.Key }}" target="_blank"><i class="bi-download"></i></a>
