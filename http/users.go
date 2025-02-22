@@ -73,13 +73,13 @@ func (dh *dynamicHandler) editUser(w http.ResponseWriter, r *http.Request) {
 			// "id" is set - update existing user
 			formErr = user.GetById(dh.db)
 			if formErr != nil {
-				data.Msg = err.Error()
+				data.Msg = formErr.Error()
 			}
 			user.Username = username
 			user.EncryptedPassword = encryptedPw
 			formErr = user.Update(dh.db)
 			if formErr != nil {
-				data.Msg = err.Error()
+				data.Msg = formErr.Error()
 			}
 		}
 
