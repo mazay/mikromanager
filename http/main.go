@@ -8,27 +8,35 @@ import (
 	"go.uber.org/zap"
 )
 
-func HttpServer(httpPort string, db *db.DB, encryptionKey string, backupPath string, logger *zap.Logger, s3 *internal.S3) {
-	logger.Info("starting http server", zap.String("port", httpPort))
-	dh := &dynamicHandler{db: db, encryptionKey: encryptionKey, logger: logger, backupPath: backupPath, s3: s3}
+type HttpConfig struct {
+	Port          string
+	Db            *db.DB
+	EncryptionKey string
+	Logger        *zap.Logger
+	BackupPath    string
+	S3            *internal.S3
+}
+
+func (c *HttpConfig) HttpServer() {
+	c.Logger.Info("starting http server", zap.String("port", c.Port))
 	static := http.FileServer(http.Dir("./static"))
-	http.HandleFunc("/healthz", handlerWrapper(dh.healthz, logger))
-	http.HandleFunc("/login", handlerWrapper(dh.login, logger))
-	http.HandleFunc("/logout", handlerWrapper(dh.logout, logger))
-	http.HandleFunc("/users", handlerWrapper(dh.getUsers, logger))
-	http.HandleFunc("/user/edit", handlerWrapper(dh.editUser, logger))
-	http.HandleFunc("/user/delete", handlerWrapper(dh.deleteUser, logger))
-	http.HandleFunc("/", handlerWrapper(dh.getDevices, logger))
-	http.HandleFunc("/details", handlerWrapper(dh.getDevice, logger))
-	http.HandleFunc("/edit", handlerWrapper(dh.editDevice, logger))
-	http.HandleFunc("/delete", handlerWrapper(dh.deleteDevice, logger))
-	http.HandleFunc("/credentials", handlerWrapper(dh.getCredentials, logger))
-	http.HandleFunc("/credentials/edit", handlerWrapper(dh.editCredentials, logger))
-	http.HandleFunc("/credentials/delete", handlerWrapper(dh.deleteCredentials, logger))
-	http.HandleFunc("/erp", handlerWrapper(dh.editExportRetentionPolicy, logger))
-	http.HandleFunc("/exports", handlerWrapper(dh.getExports, logger))
-	http.HandleFunc("/export", handlerWrapper(dh.getExport, logger))
-	http.HandleFunc("/export/download", handlerWrapper(dh.downloadExport, logger))
+	http.HandleFunc("/healthz", handlerWrapper(c.healthz, c.Logger))
+	http.HandleFunc("/login", handlerWrapper(c.login, c.Logger))
+	http.HandleFunc("/logout", handlerWrapper(c.logout, c.Logger))
+	http.HandleFunc("/users", handlerWrapper(c.getUsers, c.Logger))
+	http.HandleFunc("/user/edit", handlerWrapper(c.editUser, c.Logger))
+	http.HandleFunc("/user/delete", handlerWrapper(c.deleteUser, c.Logger))
+	http.HandleFunc("/", handlerWrapper(c.getDevices, c.Logger))
+	http.HandleFunc("/details", handlerWrapper(c.getDevice, c.Logger))
+	http.HandleFunc("/edit", handlerWrapper(c.editDevice, c.Logger))
+	http.HandleFunc("/delete", handlerWrapper(c.deleteDevice, c.Logger))
+	http.HandleFunc("/credentials", handlerWrapper(c.getCredentials, c.Logger))
+	http.HandleFunc("/credentials/edit", handlerWrapper(c.editCredentials, c.Logger))
+	http.HandleFunc("/credentials/delete", handlerWrapper(c.deleteCredentials, c.Logger))
+	http.HandleFunc("/erp", handlerWrapper(c.editExportRetentionPolicy, c.Logger))
+	http.HandleFunc("/exports", handlerWrapper(c.getExports, c.Logger))
+	http.HandleFunc("/export", handlerWrapper(c.getExport, c.Logger))
+	http.HandleFunc("/export/download", handlerWrapper(c.downloadExport, c.Logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
-	logger.Fatal(http.ListenAndServe(":"+httpPort, nil).Error())
+	c.Logger.Fatal(http.ListenAndServe(":"+c.Port, nil).Error())
 }

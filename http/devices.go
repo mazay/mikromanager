@@ -38,7 +38,7 @@ func (df *deviceForm) formFillIn(device *utils.Device) {
 	df.CredentialsId = device.CredentialsId
 }
 
-func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		deviceErr error
@@ -47,15 +47,15 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		templates = []string{deviceFormTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	credsAll, err := creds.GetAll(dh.db)
+	credsAll, err := creds.GetAll(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -65,7 +65,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -85,10 +85,10 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 
 		if id == "" {
 			// "id" is unset - create new credentials
-			deviceErr = device.Create(dh.db)
+			deviceErr = device.Create(c.Db)
 		} else {
 			// "id" is set - update existing credentials
-			err := device.GetById(dh.db)
+			err := device.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
 			}
@@ -96,7 +96,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 			device.ApiPort = apiPort
 			device.SshPort = sshPort
 			device.CredentialsId = credentialsId
-			deviceErr = device.Update(dh.db)
+			deviceErr = device.Update(c.Db)
 		}
 
 		if deviceErr != nil {
@@ -114,7 +114,7 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		if id != "" {
 			d := &utils.Device{}
 			d.Id = id
-			err = d.GetById(dh.db)
+			err = d.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
@@ -123,10 +123,10 @@ func (dh *dynamicHandler) editDevice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) getDevices(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
 		d          = &utils.Device{}
@@ -135,7 +135,7 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		templates  = []string{indexTmpl, paginationTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -143,15 +143,15 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 
 	pageId, perPage, err := getPagionationParams(r.URL)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// fetch devices
-	deviceList, err := d.GetAll(dh.db)
+	deviceList, err := d.GetAll(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -169,19 +169,19 @@ func (dh *dynamicHandler) getDevices(w http.ResponseWriter, r *http.Request) {
 		data.Devices = chunkedDevices[pageId-1]
 	}
 
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		device    = &utils.Device{}
-		data      = &deviceDetails{BackupPath: dh.backupPath}
+		data      = &deviceDetails{BackupPath: c.BackupPath}
 		id        = r.URL.Query().Get("id")
 		templates = []string{deviceDetailsTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -194,33 +194,33 @@ func (dh *dynamicHandler) getDevice(w http.ResponseWriter, r *http.Request) {
 
 	// fetch device from the DB
 	device.Id = id
-	err = device.GetById(dh.db)
+	err = device.GetById(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data.Device = device
 
-	exports, err := dh.s3.GetExports(device.Id)
+	exports, err := c.S3.GetExports(device.Id)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	data.Exports = exports
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
 
-func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err error
 		d   = &utils.Device{}
 		id  = r.URL.Query().Get("id")
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -234,23 +234,23 @@ func (dh *dynamicHandler) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	d.Id = id
 
 	// delete device
-	err = d.Delete(dh.db)
+	err = d.Delete(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// delete exports
-	exports, err := dh.s3.GetExports(d.Id)
+	exports, err := c.S3.GetExports(d.Id)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = dh.s3.DeleteExports(exports)
+	err = c.S3.DeleteExports(exports)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -123,7 +123,16 @@ func main() {
 	collections, _ := db.ListCollections()
 	logger.Debug("DB collections", zap.String("list", strings.Join(collections, ", ")))
 
-	go http.HttpServer("8000", db, config.EncryptionKey, config.BackupPath, logger, s3)
+	// run HTTP server
+	server := http.HttpConfig{
+		Port:          "8000",
+		Db:            db,
+		EncryptionKey: config.EncryptionKey,
+		Logger:        logger,
+		BackupPath:    config.BackupPath,
+		S3:            s3,
+	}
+	go server.HttpServer()
 
 	// run S3 migration
 	go s3Migrate(db, s3)

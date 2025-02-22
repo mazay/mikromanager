@@ -24,7 +24,7 @@ func (erp *exportRetentionPolicyForm) formFillIn(policy *utils.ExportsRetentionP
 	erp.Weekly = policy.Weekly
 }
 
-func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *http.Request) {
+func (c *HttpConfig) editExportRetentionPolicy(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		data      = &exportRetentionPolicyForm{}
@@ -32,15 +32,15 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 		templates = []string{erpTmpl, baseTmpl}
 	)
 
-	_, err = dh.checkSession(r)
+	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	err = erp.GetDefault(dh.db)
+	err = erp.GetDefault(c.Db)
 	if err != nil {
-		dh.logger.Error(err.Error())
+		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -49,14 +49,14 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 		// parse the form
 		err = r.ParseForm()
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		hourly, err := strconv.ParseInt(r.PostForm.Get("hourly"), 10, 64)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -64,7 +64,7 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 		daily, err := strconv.ParseInt(r.PostForm.Get("daily"), 10, 64)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -72,20 +72,20 @@ func (dh *dynamicHandler) editExportRetentionPolicy(w http.ResponseWriter, r *ht
 
 		weekly, err := strconv.ParseInt(r.PostForm.Get("weekly"), 10, 64)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		erp.Weekly = weekly
 
-		err = erp.Update(dh.db)
+		err = erp.Update(c.Db)
 		if err != nil {
-			dh.logger.Error(err.Error())
+			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	data.formFillIn(erp)
-	dh.renderTemplate(w, templates, data)
+	c.renderTemplate(w, templates, data)
 }
