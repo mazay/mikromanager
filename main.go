@@ -1,31 +1,29 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-co-op/gocron"
 	"github.com/mazay/mikromanager/db"
+	database "github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/internal"
-	"github.com/mazay/mikromanager/utils"
 	"go.uber.org/zap"
 )
 
 type PollerCFG struct {
 	Client *internal.Api
-	Db     *db.DB
-	Device *utils.Device
+	Db     *database.DB
+	Device *database.Device
 }
 
 type BackupCFG struct {
 	Client *internal.SshClient
-	Db     *db.DB
-	Device *utils.Device
+	Db     *database.DB
+	Device *database.Device
 }
 
 var (
@@ -35,8 +33,7 @@ var (
 
 	s3 *internal.S3
 
-	policy = &utils.ExportsRetentionPolicy{Name: "Default"}
-	user   = &utils.User{}
+	policy = &database.ExportsRetentionPolicy{Name: "Default"}
 
 	logger = &zap.Logger{}
 	wg     = sync.WaitGroup{}
@@ -75,58 +72,41 @@ func main() {
 
 	wg.Add(1)
 
-	db := &db.DB{Path: config.DbPath}
-	err = db.Init()
+	db := database.DB{}
+	err = db.Open(config.DbPath)
 	if err != nil {
 		logger.Panic("DB init issue", zap.String("error", err.Error()))
 		osExit(1)
 	}
 	defer db.Close()
 
-	logger.Debug("ensure 'Default' exports retention policy exists")
-	err = policy.GetDefault(db)
-	if err != nil || policy.Id == "" {
-		logger.Error(err.Error())
-	}
-
-	if policy.Id == "" {
-		policy.Hourly = 24
-		policy.Daily = 14
-		policy.Weekly = 26
-		err = policy.Create(db)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-	}
-
 	logger.Debug("ensure at least one user exists, create 'admin' otherwise")
-	users, err := user.GetAll(db)
+	user := &database.User{}
+	users, err := user.GetAll(&db)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 
 	if len(users) == 0 {
-		encryptedPw, err := utils.EncryptString("admin", config.EncryptionKey)
+		logger.Info("no users found, creating 'admin' user")
+		encryptedPw, err := database.EncryptString("admin", config.EncryptionKey)
 		if err != nil {
 			logger.Error(err.Error())
 			osExit(3)
 		}
 		user.Username = "admin"
 		user.EncryptedPassword = encryptedPw
-		err = user.Create(db)
+		err = user.Create(&db)
 		if err != nil {
 			logger.Error(err.Error())
 			osExit(3)
 		}
 	}
 
-	collections, _ := db.ListCollections()
-	logger.Debug("DB collections", zap.String("list", strings.Join(collections, ", ")))
-
 	// run HTTP server
 	server := http.HttpConfig{
 		Port:          "8000",
-		Db:            db,
+		Db:            &db,
 		EncryptionKey: config.EncryptionKey,
 		Logger:        logger,
 		BackupPath:    config.BackupPath,
@@ -134,27 +114,24 @@ func main() {
 	}
 	go server.HttpServer()
 
-	// run S3 migration
-	go s3Migrate(db, s3)
-
 	scheduler := gocron.NewScheduler(time.Local)
 	logger.Info("devicePollerInterval", zap.Duration("interval", config.DevicePollerInterval))
-	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, db, pollerCH)
+	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, &db, pollerCH)
 	if pollerErr != nil {
 		logger.Error("poller", zap.Any("Job", pollerJob), zap.Any("error", pollerErr))
 	}
 	logger.Info("deviceExportInterval", zap.Duration("interval", config.DeviceExportInterval))
-	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, db, exportCH)
+	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, &db, exportCH)
 	if exportErr != nil {
 		logger.Error("export", zap.Any("Job", exportJob), zap.Any("error", exportErr))
 	}
 	logger.Info("export retention job interval is 24 hours")
-	exportRetentionJob, exportRetentionErr := scheduler.Every("24h").Do(rotateExports, db)
+	exportRetentionJob, exportRetentionErr := scheduler.Every("24h").Do(rotateExports, &db)
 	if exportRetentionErr != nil {
 		logger.Error("export", zap.Any("Job", exportRetentionJob), zap.Any("error", exportRetentionErr))
 	}
 	logger.Info("session cleanup job interval is 24 hours")
-	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(cleanupSessions, db)
+	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(cleanupSessions, &db)
 	if sessionCleanupErr != nil {
 		logger.Error("session", zap.Any("Job", sessionCleanupJob), zap.Any("error", sessionCleanupErr))
 	}
@@ -167,7 +144,7 @@ func main() {
 }
 
 func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
-	var d = &utils.Device{}
+	var d = &database.Device{}
 
 	logger.Info("starting device polling task")
 	devices, err := d.GetAll(db)
@@ -182,7 +159,7 @@ func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
 			return err
 		}
 		logger.Debug("authentication", zap.String("credentials", creds.Alias), zap.String("device", device.Address))
-		decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
+		decryptedPw, encryptionErr := database.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
 		if encryptionErr != nil {
 			logger.Error(encryptionErr.Error())
 			return err
@@ -234,14 +211,11 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 					cfg.Device.PollingSucceeded = 0
 				} else {
 					cfg.Device.PollingSucceeded = 1
-					cfg.Device.PolledAt = time.Now()
+					now := time.Now()
+					cfg.Device.PolledAt = &now
 				}
 
-				if cfg.Device.Id != "" {
-					dbErr = cfg.Device.Update(cfg.Db)
-				} else {
-					dbErr = cfg.Device.Create(cfg.Db)
-				}
+				dbErr = cfg.Device.Update(cfg.Db)
 
 				if dbErr != nil {
 					logger.Error(dbErr.Error())
@@ -252,7 +226,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 }
 
 func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
-	var d = &utils.Device{}
+	var d = &database.Device{}
 
 	logger.Info("starting backup task")
 	devices, err := d.GetAll(db)
@@ -267,7 +241,7 @@ func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
 			return
 		}
 		logger.Debug("authentication", zap.String("credentials", creds.Alias), zap.String("device", device.Address))
-		decryptedPw, encryptionErr := utils.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
+		decryptedPw, encryptionErr := database.DecryptString(creds.EncryptedPassword, cfg.EncryptionKey)
 		if encryptionErr != nil {
 			logger.Error(encryptionErr.Error())
 			return
@@ -292,7 +266,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 
 				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
-					output, err := s3.UploadExport(cfg.Device.Id, []byte(export))
+					output, err := s3.UploadExport(cfg.Device.ID, []byte(export))
 					if err != nil {
 						logger.Error(err.Error())
 					}
@@ -309,7 +283,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 func rotateExports(db *db.DB) {
 	var err error
 	var exportsList []*internal.Export
-	var device *utils.Device
+	var device *database.Device
 
 	logger.Info("starting exports retention task")
 	err = policy.GetDefault(db)
@@ -323,7 +297,7 @@ func rotateExports(db *db.DB) {
 		return
 	}
 	for _, device := range devices {
-		exports, err := s3.GetExports(device.Id)
+		exports, err := s3.GetExports(device.ID)
 		if err != nil {
 			logger.Error(err.Error())
 		} else {
@@ -346,7 +320,7 @@ func rotateExports(db *db.DB) {
 
 func cleanupSessions(db *db.DB) {
 	var err error
-	var session *utils.Session
+	var session *database.Session
 
 	logger.Info("starting session cleanup task")
 	sessions, err := session.GetAll(db)
@@ -357,58 +331,8 @@ func cleanupSessions(db *db.DB) {
 
 	for _, s := range sessions {
 		if s.ValidThrough.Before(time.Now()) {
-			logger.Debug("session expired", zap.String("id", s.Id))
+			logger.Debug("session expired", zap.String("id", s.ID))
 			err = s.Delete(db)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-		}
-	}
-}
-
-func s3Migrate(db *db.DB, s3 *internal.S3) {
-	var (
-		err       error
-		exportOld *utils.Export
-	)
-
-	logger.Info("starting S3 migration task")
-	exports, err := exportOld.GetAll(db)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	for _, e := range exports {
-		logger.Debug("migrating export to s3", zap.String("filename", e.Filename))
-		// open file
-		file, err := os.Open(e.Filename)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-
-		// Get the file size
-		stat, err := file.Stat()
-		if err != nil {
-			logger.Error(err.Error())
-		}
-
-		// read file contents into a byte array
-		ba := make([]byte, stat.Size())
-		_, err = bufio.NewReader(file).Read(ba)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		file.Close() // close file after reading so it can be deleted
-
-		// upload to s3
-		output, err := s3.UploadExport(e.DeviceId, ba)
-		if err != nil {
-			logger.Error(err.Error())
-		} else {
-			logger.Info("migrated export to s3", zap.String("s3 key", *output.Key))
-			// delete local file
-			err = e.Delete(db)
 			if err != nil {
 				logger.Error(err.Error())
 			}

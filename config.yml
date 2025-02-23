@@ -29,9 +29,8 @@ apiPollers: 2
 # valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 # deviceExportInterval: 1h
 
-# full or relative path to the database, defaults to `database.clover` if ommited
-# the path will be created and new DB initialised if missing
-dbPath: database.clover
+# full or relative path to the database, defaults to `database/mikromanager.db` if ommited
+dbPath: database/mikromanager.db
 
 # DEPRECATED - latest version uses S3 for storing the backups
 # full or relative path to the backups
@@ -45,7 +44,7 @@ exportWorkers: 10
 s3Bucket: mikromanager-backups
 
 # S3 bucket path if you want to store the backups in a specific path
-# s3BucketPath: devel
+s3BucketPath: devel
 
 # S3 endpoint useful for non-AWS S3 providers
 # s3Endpoint: https://s3.amazonaws.com

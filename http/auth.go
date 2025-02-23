@@ -1,11 +1,10 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/mazay/mikromanager/utils"
+	"github.com/mazay/mikromanager/db"
 )
 
 type loginForm struct {
@@ -18,8 +17,8 @@ type loginForm struct {
 func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 	var (
 		err     error
-		user    = &utils.User{}
-		session = &utils.Session{}
+		user    = &db.User{}
+		session = &db.Session{}
 		data    = &loginForm{}
 	)
 
@@ -42,13 +41,7 @@ func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if user.Id == "" {
-			data.UsernameMsg = fmt.Sprintf("User '%s' not found", data.Username)
-			c.renderTemplate(w, []string{loginTmpl}, data)
-			return
-		}
-
-		decryptedPw, err := utils.DecryptString(user.EncryptedPassword, c.EncryptionKey)
+		decryptedPw, err := db.DecryptString(user.EncryptedPassword, c.EncryptionKey)
 		if err != nil {
 			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -61,7 +54,7 @@ func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		session.UserId = user.Id
+		session.UserId = user.ID
 		err = session.Create(c.Db)
 		if err != nil {
 			c.Logger.Error(err.Error())
@@ -71,7 +64,7 @@ func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 
 		http.SetCookie(w, &http.Cookie{
 			Name:    "session_token",
-			Value:   session.Id,
+			Value:   session.ID,
 			Expires: session.ValidThrough,
 		})
 
@@ -85,7 +78,7 @@ func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) logout(w http.ResponseWriter, r *http.Request) {
 	var (
 		err     error
-		session = &utils.Session{}
+		session = &db.Session{}
 	)
 
 	cookie, err := r.Cookie("session_token")
@@ -95,7 +88,7 @@ func (c *HttpConfig) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Id = cookie.Value
+	session.ID = cookie.Value
 	err = session.GetById(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())
