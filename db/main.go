@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -41,8 +42,15 @@ type DB struct {
 // and configures the logging level. It also migrates the schema for the
 // specified models. Returns an error if the connection or migration fails.
 func (db *DB) Open(path string) error {
+	logLevel, ok := dbLogLevels[db.LogLevel]
+	if !ok {
+		return fmt.Errorf("invalid log level: %s", db.LogLevel)
+	}
+	if path == "" {
+		return fmt.Errorf("path to the database is empty")
+	}
 	gormDB, err := gorm.Open(sqlite.Open(path), &gorm.Config{
-		Logger: logger.Default.LogMode(dbLogLevels[db.LogLevel]),
+		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
 		return err
