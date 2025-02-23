@@ -9,7 +9,7 @@ func TestDBOpen(t *testing.T) {
 	// Test successful database connection and migration
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "silent"}
+	db := &DB{LogLevel: "info"}
 	err := db.Open(dbPath)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
