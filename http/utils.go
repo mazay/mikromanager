@@ -16,6 +16,7 @@ var funcMap = template.FuncMap{
 	"memoryUsage":   memoryUsage,
 	"containsInt":   containsInt,
 	"humahizeBytes": humahizeBytes,
+	"hasPrefix":     strings.HasPrefix,
 }
 
 func replace(input, from, to string) string {

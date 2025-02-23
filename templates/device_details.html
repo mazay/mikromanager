@@ -20,7 +20,7 @@
 
       <dt class="col-sm-3">Model</dt>
       <dd class="col-sm-9">
-        {{ if eq .Device.BoardName "CHR" }}
+        {{ if and (hasPrefix .Device.BoardName "CHR") (eq .Device.ArchitectureName "x86_64") }}
         <a href="https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234" target="_blank">
           {{ .Device.BoardName }}
         </a>
@@ -39,28 +39,28 @@
       </dd>
 
       <dt class="col-sm-3">Serial Number</dt>
-      <dd class="col-sm-9">{{ .Device.SerialNumber }}</dd>
+      <dd class="col-sm-9">{{ or .Device.SerialNumber "Unknown" }}</dd>
 
       <dt class="col-sm-3">Board Name</dt>
-      <dd class="col-sm-9">{{ .Device.BoardName }}</dd>
+      <dd class="col-sm-9">{{ or .Device.BoardName "Unknown" }}</dd>
 
       <dt class="col-sm-3">Software Version</dt>
-      <dd class="col-sm-9">{{ .Device.Version }}</dd>
+      <dd class="col-sm-9">{{ or .Device.Version "Unknown" }}</dd>
 
       <dt class="col-sm-3">Current Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.CurrentFirmware }}</dd>
+      <dd class="col-sm-9">{{ or .Device.CurrentFirmware "Unknown" }}</dd>
 
       <dt class="col-sm-3">Factory Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.FactoryFirmware }}</dd>
+      <dd class="col-sm-9">{{ or .Device.FactoryFirmware "Unknown" }}</dd>
 
       <dt class="col-sm-3">Upgrade Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.UpgradeFirmware }}</dd>
+      <dd class="col-sm-9">{{ or .Device.UpgradeFirmware "Unknown" }}</dd>
 
       <dt class="col-sm-3">Firmware Type</dt>
-      <dd class="col-sm-9">{{ .Device.FirmwareType }}</dd>
+      <dd class="col-sm-9">{{ or .Device.FirmwareType "Unknown" }}</dd>
 
       <dt class="col-sm-3">BuildTime</dt>
-      <dd class="col-sm-9">{{ .Device.BuildTime }}</dd>
+      <dd class="col-sm-9">{{ or .Device.BuildTime "Unknown" }}</dd>
 
       <dt class="col-sm-3">Exports</dt>
       <dd class="col-sm-9">

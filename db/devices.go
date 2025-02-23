@@ -6,37 +6,37 @@ import (
 
 type Device struct {
 	Base
-	Address              string `gorm:"unique"`
-	ApiPort              string
-	ArchitectureName     string
-	BadBlocks            int64
-	BoardName            string
-	BuildTime            string
-	CPU                  string
-	CpuCount             int64
-	CpuFrequency         int64
-	CpuLoad              int64
+	Address              string `gorm:"unique" json:"address"`
+	ApiPort              string `json:"apiPort"`
+	ArchitectureName     string `json:"architecture-name"`
+	BadBlocks            int64  `json:"bad-blocks,string"`
+	BoardName            string `json:"board-name"`
+	BuildTime            string `json:"build-time"`
+	CPU                  string `json:"cpu"`
+	CpuCount             int64  `json:"cpu-count,string"`
+	CpuFrequency         int64  `json:"cpu-frequency,string"`
+	CpuLoad              int64  `json:"cpu-load,string"`
 	CredentialsId        string
-	FactorySoftware      string
-	FreeHddSpace         int64
-	FreeMemory           int64
-	Identity             string
-	Platform             string
+	FactorySoftware      string `json:"factory-software"`
+	FreeHddSpace         int64  `json:"free-hdd-space,string"`
+	FreeMemory           int64  `json:"free-memory,string"`
+	Identity             string `json:"identity"`
+	Platform             string `json:"platform"`
 	PolledAt             time.Time
 	PollingSucceeded     int64
 	SshPort              string
-	TotalHddSpace        int64
-	TotalMemory          int64
-	Uptime               string
-	Version              string
-	WriteSectSinceReboot int64
-	WriteSectTotal       int64
-	Model                string
-	SerialNumber         string
-	FirmwareType         string
-	FactoryFirmware      string
-	CurrentFirmware      string
-	UpgradeFirmware      string
+	TotalHddSpace        int64  `json:"total-hdd-space,string"`
+	TotalMemory          int64  `json:"total-memory,string"`
+	Uptime               string `json:"uptime"`
+	Version              string `json:"version"`
+	WriteSectSinceReboot int64  `json:"write-sect-since-reboot,string"`
+	WriteSectTotal       int64  `json:"write-sect-total,string"`
+	Model                string `json:"model"`
+	SerialNumber         string `json:"serial-number"`
+	FirmwareType         string `json:"firmware-type"`
+	FactoryFirmware      string `json:"factory-firmware"`
+	CurrentFirmware      string `json:"current-firmware"`
+	UpgradeFirmware      string `json:"upgrade-firmware"`
 }
 
 func (d *Device) GetAll(db *DB) ([]*Device, error) {
