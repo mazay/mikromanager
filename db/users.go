@@ -7,7 +7,7 @@ type User struct {
 }
 
 func (u *User) Create(db *DB) error {
-	return db.DB.Debug().Create(&u).Error
+	return db.DB.Create(&u).Error
 }
 
 func (u *User) Delete(db *DB) error {

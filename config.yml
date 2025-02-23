@@ -32,6 +32,10 @@ apiPollers: 2
 # full or relative path to the database, defaults to `database/mikromanager.db` if ommited
 dbPath: database/mikromanager.db
 
+# DB log level, sets log level for the gorm - https://gorm.io/docs/logger.html
+# defaults to `silent` if ommited
+dbLogLevel: silent
+
 # DEPRECATED - latest version uses S3 for storing the backups
 # full or relative path to the backups
 # the path will be created

@@ -71,7 +71,7 @@ func main() {
 
 	wg.Add(1)
 
-	db := database.DB{}
+	db := database.DB{LogLevel: config.DbLogLevel}
 	err = db.Open(config.DbPath)
 	if err != nil {
 		logger.Panic("DB init issue", zap.String("error", err.Error()))

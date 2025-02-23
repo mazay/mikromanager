@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+var (
+	dbLogLevels = map[string]logger.LogLevel{
+		"silent": logger.Silent,
+		"error":  logger.Error,
+		"warn":   logger.Warn,
+		"info":   logger.Info,
+	}
 )
 
 // Base contains common columns for all tables.
@@ -23,11 +33,14 @@ func (base *Base) BeforeCreate(tx *gorm.DB) error {
 }
 
 type DB struct {
-	DB *gorm.DB
+	DB       *gorm.DB
+	LogLevel string
 }
 
 func (db *DB) Open(path string) error {
-	gormDB, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
+	gormDB, err := gorm.Open(sqlite.Open(path), &gorm.Config{
+		Logger: logger.Default.LogMode(dbLogLevels[db.LogLevel]),
+	})
 	if err != nil {
 		return err
 	}
