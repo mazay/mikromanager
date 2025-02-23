@@ -5,11 +5,9 @@ ARG TARGETARCH
 ENV GOOS=${TARGETOS}
 ENV GOARCH=${TARGETARCH}
 ENV CGO_ENABLED=1
-# hadolint ignore=DL3018
-RUN apk --no-cache add gcc
 WORKDIR /go/src/github.com/mazay/mikromanager
 # hadolint ignore=DL3018
-RUN apk --no-cache add git curl
+RUN apk --no-cache add git curl build-base
 COPY ./ ./
 RUN go mod download
 # hadolint ignore=DL3059
