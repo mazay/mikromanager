@@ -1,17 +1,13 @@
 package db
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCredentialsCreate(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,10 +38,7 @@ func TestCredentialsCreate(t *testing.T) {
 }
 
 func TestCredentialsGet(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,10 +76,7 @@ func TestCredentialsGet(t *testing.T) {
 }
 
 func TestCredentialsUpdate(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,10 +112,7 @@ func TestCredentialsUpdate(t *testing.T) {
 }
 
 func TestCredentialsDelete(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,10 +140,7 @@ func TestCredentialsDelete(t *testing.T) {
 }
 
 func TestCredentialsGetDefault(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,10 +177,7 @@ func TestCredentialsGetDefault(t *testing.T) {
 }
 
 func TestCredentialsGetAll(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}

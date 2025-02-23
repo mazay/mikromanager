@@ -1,7 +1,6 @@
 package db
 
 import (
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -49,10 +48,7 @@ var (
 )
 
 func TestDevicesGetAll(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,10 +106,7 @@ func TestDevicesGetAll(t *testing.T) {
 }
 
 func TestDevicesGetCredentials(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,10 +163,7 @@ func TestDevicesGetCredentials(t *testing.T) {
 }
 
 func TestDevicesCreate(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -198,10 +188,7 @@ func TestDevicesCreate(t *testing.T) {
 }
 
 func TestDevicesUpdate(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,10 +217,7 @@ func TestDevicesUpdate(t *testing.T) {
 }
 
 func TestDevicesGetById(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -266,10 +250,7 @@ func TestDevicesGetById(t *testing.T) {
 }
 
 func TestDevicesDelete(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-	db := &DB{LogLevel: "info"}
-	err := db.Open(dbPath)
+	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
