@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/mazay/mikromanager/utils"
+	"github.com/mazay/mikromanager/db"
 	"go.uber.org/zap"
 )
 
@@ -63,10 +63,10 @@ func (c *HttpConfig) renderTemplate(w http.ResponseWriter, tmplList []string, da
 	}
 }
 
-func (c *HttpConfig) checkSession(r *http.Request) (*utils.Session, error) {
+func (c *HttpConfig) checkSession(r *http.Request) (*db.Session, error) {
 	var (
 		err     error
-		session = &utils.Session{}
+		session = &db.Session{}
 	)
 
 	cookie, err := r.Cookie("session_token")

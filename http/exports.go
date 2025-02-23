@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/internal"
-	"github.com/mazay/mikromanager/utils"
 )
 
 type exportsData struct {
@@ -14,7 +14,7 @@ type exportsData struct {
 	DeviceId    string
 	Count       int
 	Exports     []*internal.Export
-	Devices     []*utils.Device
+	Devices     []*db.Device
 	Pagination  *Pagination
 	CurrentPage int
 }
@@ -22,7 +22,7 @@ type exportsData struct {
 type exportData struct {
 	BackupPath string
 	Export     *internal.Export
-	Device     *utils.Device
+	Device     *db.Device
 	ExportData string
 }
 
@@ -32,7 +32,7 @@ type exportData struct {
 func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		device     = &utils.Device{}
+		device     = &db.Device{}
 		data       = &exportsData{BackupPath: c.BackupPath}
 		id         = r.URL.Query().Get("id")
 		pagination = &Pagination{}
@@ -91,7 +91,7 @@ func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
-		device    = &utils.Device{}
+		device    = &db.Device{}
 		data      = &exportData{BackupPath: c.BackupPath}
 		id        = r.URL.Query().Get("id")
 		templates = []string{exportTmpl, baseTmpl}
@@ -118,8 +118,7 @@ func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 	device.Id = export.GetDeviceId()
 	err = device.GetById(c.Db)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		c.Logger.Error(err.Error())
 	}
 	data.Device = device
 
@@ -137,7 +136,7 @@ func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) downloadExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err    error
-		device = &utils.Device{}
+		device = &db.Device{}
 		id     = r.URL.Query().Get("id")
 	)
 

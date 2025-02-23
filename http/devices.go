@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
+	"github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/internal"
-	"github.com/mazay/mikromanager/utils"
 )
 
 type deviceForm struct {
@@ -14,23 +14,23 @@ type deviceForm struct {
 	SshPort       string
 	CredentialsId string
 	Msg           string
-	Credentials   []*utils.Credentials
+	Credentials   []*db.Credentials
 }
 
 type deviceDetails struct {
-	Device     *utils.Device
+	Device     *db.Device
 	Exports    []*internal.Export
 	BackupPath string
 }
 
 type devicesData struct {
 	Count       int
-	Devices     []*utils.Device
+	Devices     []*db.Device
 	Pagination  *Pagination
 	CurrentPage int
 }
 
-func (df *deviceForm) formFillIn(device *utils.Device) {
+func (df *deviceForm) formFillIn(device *db.Device) {
 	df.Id = device.Id
 	df.Address = device.Address
 	df.ApiPort = device.ApiPort
@@ -43,7 +43,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 		err       error
 		deviceErr error
 		data      = &deviceForm{}
-		creds     = &utils.Credentials{}
+		creds     = &db.Credentials{}
 		templates = []string{deviceFormTmpl, baseTmpl}
 	)
 
@@ -75,13 +75,14 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 		sshPort := r.PostForm.Get("sshPort")
 		credentialsId := r.PostForm.Get("credentialsId")
 
-		device := &utils.Device{
-			Id:            id,
-			Address:       address,
-			ApiPort:       apiPort,
-			SshPort:       sshPort,
-			CredentialsId: credentialsId,
+		device := &db.Device{
+			Address: address,
+			ApiPort: apiPort,
+			SshPort: sshPort,
 		}
+
+		device.Id = id
+		device.CredentialsId = credentialsId
 
 		if id == "" {
 			// "id" is unset - create new credentials
@@ -112,7 +113,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 		// fill in the form if "id" GET parameter set
 		id := r.URL.Query().Get("id")
 		if id != "" {
-			d := &utils.Device{}
+			d := &db.Device{}
 			d.Id = id
 			err = d.GetById(c.Db)
 			if err != nil {
@@ -129,7 +130,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) getDevices(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		d          = &utils.Device{}
+		d          = &db.Device{}
 		data       = &devicesData{}
 		pagination = &Pagination{}
 		templates  = []string{indexTmpl, paginationTmpl, baseTmpl}
@@ -175,7 +176,7 @@ func (c *HttpConfig) getDevices(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
-		device    = &utils.Device{}
+		device    = &db.Device{}
 		data      = &deviceDetails{BackupPath: c.BackupPath}
 		id        = r.URL.Query().Get("id")
 		templates = []string{deviceDetailsTmpl, baseTmpl}
@@ -216,7 +217,7 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err error
-		d   = &utils.Device{}
+		d   = &db.Device{}
 		id  = r.URL.Query().Get("id")
 	)
 

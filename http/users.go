@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/mazay/mikromanager/utils"
+	"github.com/mazay/mikromanager/db"
 )
 
 type userForm struct {
@@ -15,12 +15,12 @@ type userForm struct {
 
 type usersData struct {
 	Count       int
-	Users       []*utils.User
+	Users       []*db.User
 	Pagination  *Pagination
 	CurrentPage int
 }
 
-func (uf *userForm) formFillIn(user *utils.User) {
+func (uf *userForm) formFillIn(user *db.User) {
 	uf.Id = user.Id
 	uf.Username = user.Username
 	uf.EncryptedPassword = user.EncryptedPassword
@@ -31,7 +31,7 @@ func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 		err       error
 		formErr   error
 		data      = &userForm{}
-		user      = &utils.User{}
+		user      = &db.User{}
 		templates = []string{userFormTmpl, baseTmpl}
 	)
 
@@ -52,7 +52,7 @@ func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 
 		id := r.PostForm.Get("idInput")
 		username := r.PostForm.Get("username")
-		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), c.EncryptionKey)
+		encryptedPw, err := db.EncryptString(r.PostForm.Get("password"), c.EncryptionKey)
 		if err != nil {
 			c.Logger.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -95,7 +95,8 @@ func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 		// fill in the form if "id" GET parameter set
 		id := r.URL.Query().Get("id")
 		if id != "" {
-			u := &utils.User{Id: id}
+			u := &db.User{}
+			u.Id = id
 			err = u.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
@@ -111,7 +112,7 @@ func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) getUsers(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		u          = &utils.User{}
+		u          = &db.User{}
 		data       = &usersData{}
 		pagination = &Pagination{}
 		templates  = []string{usersTmpl, paginationTmpl, baseTmpl}
@@ -156,7 +157,7 @@ func (c *HttpConfig) getUsers(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) deleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		err error
-		u   = &utils.User{}
+		u   = &db.User{}
 		id  = r.URL.Query().Get("id")
 	)
 

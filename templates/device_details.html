@@ -20,7 +20,7 @@
 
       <dt class="col-sm-3">Model</dt>
       <dd class="col-sm-9">
-        {{ if eq .Device.BoardName "CHR" }}
+        {{ if and (hasPrefix .Device.BoardName "CHR") (eq .Device.ArchitectureName "x86_64") }}
         <a href="https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234" target="_blank">
           {{ .Device.BoardName }}
         </a>
@@ -39,28 +39,28 @@
       </dd>
 
       <dt class="col-sm-3">Serial Number</dt>
-      <dd class="col-sm-9">{{ .Device.SerialNumber }}</dd>
+      <dd class="col-sm-9">{{ or .Device.SerialNumber "Unknown" }}</dd>
 
       <dt class="col-sm-3">Board Name</dt>
-      <dd class="col-sm-9">{{ .Device.BoardName }}</dd>
+      <dd class="col-sm-9">{{ or .Device.BoardName "Unknown" }}</dd>
 
       <dt class="col-sm-3">Software Version</dt>
-      <dd class="col-sm-9">{{ .Device.Version }}</dd>
+      <dd class="col-sm-9">{{ or .Device.Version "Unknown" }}</dd>
 
       <dt class="col-sm-3">Current Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.CurrentFirmware }}</dd>
+      <dd class="col-sm-9">{{ or .Device.CurrentFirmware "Unknown" }}</dd>
 
       <dt class="col-sm-3">Factory Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.FactoryFirmware }}</dd>
+      <dd class="col-sm-9">{{ or .Device.FactoryFirmware "Unknown" }}</dd>
 
       <dt class="col-sm-3">Upgrade Firmware</dt>
-      <dd class="col-sm-9">{{ .Device.UpgradeFirmware }}</dd>
+      <dd class="col-sm-9">{{ or .Device.UpgradeFirmware "Unknown" }}</dd>
 
       <dt class="col-sm-3">Firmware Type</dt>
-      <dd class="col-sm-9">{{ .Device.FirmwareType }}</dd>
+      <dd class="col-sm-9">{{ or .Device.FirmwareType "Unknown" }}</dd>
 
-      <dt class="col-sm-3">BuildTime</dt>
-      <dd class="col-sm-9">{{ .Device.BuildTime }}</dd>
+      <dt class="col-sm-3">Firmware Build Time</dt>
+      <dd class="col-sm-9">{{ or .Device.BuildTime "Unknown" }}</dd>
 
       <dt class="col-sm-3">Exports</dt>
       <dd class="col-sm-9">
@@ -84,7 +84,7 @@
       <dd class="col-sm-9">{{ .Device.CpuCount }}</dd>
 
       <dt class="col-sm-3">CPU Frequency</dt>
-      <dd class="col-sm-9">{{ if .Device.CpuFrequency }}{{ .Device.CpuFrequency }}{{ else }}N/A{{ end }}</dd>
+      <dd class="col-sm-9">{{ if .Device.CpuFrequency }}{{ .Device.CpuFrequency }} MHz{{ else }}N/A{{ end }}</dd>
 
       <dt class="col-sm-3">CPU Load</dt>
       <dd class="col-sm-9">{{ .Device.CpuLoad }}%</dd>
@@ -99,10 +99,10 @@
       <dd class="col-sm-9">{{ .Device.PolledAt.Format "2006-01-02 15:04:05" }}</dd>
 
       <dt class="col-sm-3">Created</dt>
-      <dd class="col-sm-9">{{ .Device.Created.Format "2006-01-02 15:04:05" }}</dd>
+      <dd class="col-sm-9">{{ .Device.CreatedAt.Format "2006-01-02 15:04:05" }}</dd>
 
       <dt class="col-sm-3">Updated</dt>
-      <dd class="col-sm-9">{{ .Device.Updated.Format "2006-01-02 15:04:05" }}</dd>
+      <dd class="col-sm-9">{{ .Device.UpdatedAt.Format "2006-01-02 15:04:05" }}</dd>
     </dl>
   </div>
 </div>

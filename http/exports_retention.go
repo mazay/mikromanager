@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/mazay/mikromanager/utils"
+	"github.com/mazay/mikromanager/db"
 )
 
 type exportRetentionPolicyForm struct {
@@ -16,7 +16,7 @@ type exportRetentionPolicyForm struct {
 	Msg    string
 }
 
-func (erp *exportRetentionPolicyForm) formFillIn(policy *utils.ExportsRetentionPolicy) {
+func (erp *exportRetentionPolicyForm) formFillIn(policy *db.ExportsRetentionPolicy) {
 	erp.Id = policy.Id
 	erp.Name = policy.Name
 	erp.Hourly = policy.Hourly
@@ -28,7 +28,7 @@ func (c *HttpConfig) editExportRetentionPolicy(w http.ResponseWriter, r *http.Re
 	var (
 		err       error
 		data      = &exportRetentionPolicyForm{}
-		erp       = &utils.ExportsRetentionPolicy{Name: "Default"}
+		erp       = &db.ExportsRetentionPolicy{Name: "Default"}
 		templates = []string{erpTmpl, baseTmpl}
 	)
 

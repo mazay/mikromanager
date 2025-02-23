@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/mazay/mikromanager/utils"
+	"github.com/mazay/mikromanager/db"
 )
 
 type credentialsForm struct {
@@ -15,12 +15,12 @@ type credentialsForm struct {
 
 type credentialsData struct {
 	Count       int
-	Credentials []*utils.Credentials
+	Credentials []*db.Credentials
 	Pagination  *Pagination
 	CurrentPage int
 }
 
-func (cf *credentialsForm) formFillIn(creds *utils.Credentials) {
+func (cf *credentialsForm) formFillIn(creds *db.Credentials) {
 	cf.Id = creds.Id
 	cf.Alias = creds.Alias
 	cf.Username = creds.Username
@@ -29,7 +29,7 @@ func (cf *credentialsForm) formFillIn(creds *utils.Credentials) {
 func (c *HttpConfig) getCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		creds      = &utils.Credentials{}
+		creds      = &db.Credentials{}
 		data       = &credentialsData{}
 		pagination = &Pagination{}
 		templates  = []string{credsTmpl, paginationTmpl, baseTmpl}
@@ -98,7 +98,7 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 		id := r.PostForm.Get("idInput")
 		alias := r.PostForm.Get("alias")
 		username := r.PostForm.Get("username")
-		encryptedPw, err := utils.EncryptString(r.PostForm.Get("password"), c.EncryptionKey)
+		encryptedPw, err := db.EncryptString(r.PostForm.Get("password"), c.EncryptionKey)
 
 		if err != nil {
 			c.Logger.Error(err.Error())
@@ -106,8 +106,7 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		creds := &utils.Credentials{
-			Id:                id,
+		creds := &db.Credentials{
 			Alias:             alias,
 			Username:          username,
 			EncryptedPassword: encryptedPw,
@@ -118,6 +117,7 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 			credsErr = creds.Create(c.Db)
 		} else {
 			// "id" is set - update existing credentials
+			creds.Id = id
 			err = creds.GetById(c.Db)
 			if err != nil {
 				c.Logger.Error(err.Error())
@@ -142,9 +142,9 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 		// fill in the form if "id" GET parameter set
 		id := r.URL.Query().Get("id")
 		if id != "" {
-			creds := &utils.Credentials{}
+			creds := &db.Credentials{}
 			creds.Id = id
-			err := creds.GetById(c.Db)
+			err = creds.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
@@ -159,7 +159,7 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) deleteCredentials(w http.ResponseWriter, r *http.Request) {
 	var (
 		err   error
-		creds = &utils.Credentials{}
+		creds = &db.Credentials{}
 	)
 
 	_, err = c.checkSession(r)
