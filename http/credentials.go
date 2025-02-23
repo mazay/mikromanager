@@ -21,7 +21,7 @@ type credentialsData struct {
 }
 
 func (cf *credentialsForm) formFillIn(creds *db.Credentials) {
-	cf.Id = creds.ID
+	cf.Id = creds.Id
 	cf.Alias = creds.Alias
 	cf.Username = creds.Username
 }
@@ -117,7 +117,7 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 			credsErr = creds.Create(c.Db)
 		} else {
 			// "id" is set - update existing credentials
-			creds.ID = id
+			creds.Id = id
 			err = creds.GetById(c.Db)
 			if err != nil {
 				c.Logger.Error(err.Error())
@@ -143,7 +143,7 @@ func (c *HttpConfig) editCredentials(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		if id != "" {
 			creds := &db.Credentials{}
-			creds.ID = id
+			creds.Id = id
 			err = creds.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
@@ -168,7 +168,7 @@ func (c *HttpConfig) deleteCredentials(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creds.ID = r.URL.Query().Get("id")
+	creds.Id = r.URL.Query().Get("id")
 
 	err = creds.Delete(c.Db)
 	if err != nil {

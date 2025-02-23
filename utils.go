@@ -49,7 +49,7 @@ func fetchManagementIp(cfg *PollerCFG) error {
 	}
 	if len(ipaddr) > 0 {
 		addr := strings.Split(ipaddr[0].Map["address"], "/")[0]
-		logger.Info("management address discovered", zap.String("device", cfg.Device.ID), zap.String("address", addr))
+		logger.Info("management address discovered", zap.String("device", cfg.Device.Id), zap.String("address", addr))
 		cfg.Device.Address = addr
 		return nil
 	}

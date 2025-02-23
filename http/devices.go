@@ -31,11 +31,11 @@ type devicesData struct {
 }
 
 func (df *deviceForm) formFillIn(device *db.Device) {
-	df.Id = device.ID
+	df.Id = device.Id
 	df.Address = device.Address
 	df.ApiPort = device.ApiPort
 	df.SshPort = device.SshPort
-	df.CredentialsId = *device.CredentialsId
+	df.CredentialsId = device.CredentialsId
 }
 
 func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
@@ -81,8 +81,8 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 			SshPort: sshPort,
 		}
 
-		device.ID = id
-		device.CredentialsId = &credentialsId
+		device.Id = id
+		device.CredentialsId = credentialsId
 
 		if id == "" {
 			// "id" is unset - create new credentials
@@ -96,7 +96,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 			device.Address = address
 			device.ApiPort = apiPort
 			device.SshPort = sshPort
-			device.CredentialsId = &credentialsId
+			device.CredentialsId = credentialsId
 			deviceErr = device.Update(c.Db)
 		}
 
@@ -114,7 +114,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		if id != "" {
 			d := &db.Device{}
-			d.ID = id
+			d.Id = id
 			err = d.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
@@ -194,7 +194,7 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fetch device from the DB
-	device.ID = id
+	device.Id = id
 	err = device.GetById(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())
@@ -203,7 +203,7 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Device = device
 
-	exports, err := c.S3.GetExports(device.ID)
+	exports, err := c.S3.GetExports(device.Id)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -232,7 +232,7 @@ func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d.ID = id
+	d.Id = id
 
 	// delete device
 	err = d.Delete(c.Db)
@@ -243,7 +243,7 @@ func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete exports
-	exports, err := c.S3.GetExports(d.ID)
+	exports, err := c.S3.GetExports(d.Id)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

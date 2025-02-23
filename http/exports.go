@@ -115,11 +115,10 @@ func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Export = export
 
-	device.ID = export.GetDeviceId()
+	device.Id = export.GetDeviceId()
 	err = device.GetById(c.Db)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		c.Logger.Error(err.Error())
 	}
 	data.Device = device
 
@@ -158,7 +157,7 @@ func (c *HttpConfig) downloadExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	device.ID = export.GetDeviceId()
+	device.Id = export.GetDeviceId()
 	err = device.GetById(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

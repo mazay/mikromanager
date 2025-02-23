@@ -34,10 +34,15 @@
           <a href="/exports?id={{ $export.GetDeviceId }}"><i class="bi-funnel"></i></a>
           {{ end }}
         </td>
+        {{ $found := false }}
         {{ range $device := $.Devices }}
           {{ if eq $device.Id $export.GetDeviceId }}
+            {{ $found = true }}
             <td>{{ $device.Identity }} ({{ $device.Id }})</td>
           {{ end }}
+        {{ end }}
+        {{ if not $found }}
+          <td>Unknown device ({{ $export.GetDeviceId }})</td>
         {{ end }}
         <td>{{ $export.LastModified.Format "2006-01-02 15:04:05" }}</td>
         <td>{{ humahizeBytes $export.Size }}</td>

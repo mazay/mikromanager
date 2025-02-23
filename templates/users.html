@@ -23,12 +23,12 @@
     {{ range $user := .Users }}
       <tr id="{{ $user.Id }}">
         <td>{{ $user.Username }}</td>
-        <td>{{ $user.Created.Format "2006-01-02 15:04:05 UTC" }}</td>
+        <td>{{ $user.CreatedAt.Format "2006-01-02 15:04:05 UTC" }}</td>
         <td>
-          {{ if $user.Updated.IsZero }}
+          {{ if $user.UpdatedAt.IsZero }}
           N/A
           {{ else }}
-          {{ $user.Updated.Format "2006-01-02 15:04:05 UTC" }}</td>
+          {{ $user.UpdatedAt.Format "2006-01-02 15:04:05 UTC" }}</td>
           {{ end }}
         <td>
           <a class="btn btn-outline-warning btn-sm" role="button" href="/user/edit?id={{ $user.Id }}"><i class="bi-pencil"></i></a>

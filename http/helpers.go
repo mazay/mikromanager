@@ -74,7 +74,7 @@ func (c *HttpConfig) checkSession(r *http.Request) (*db.Session, error) {
 		return session, err
 	}
 
-	session.ID = cookie.Value
+	session.Id = cookie.Value
 	err = session.GetById(c.Db)
 	if err != nil {
 		return session, err

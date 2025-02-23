@@ -17,7 +17,7 @@ type exportRetentionPolicyForm struct {
 }
 
 func (erp *exportRetentionPolicyForm) formFillIn(policy *db.ExportsRetentionPolicy) {
-	erp.Id = policy.ID
+	erp.Id = policy.Id
 	erp.Name = policy.Name
 	erp.Hourly = policy.Hourly
 	erp.Daily = policy.Daily

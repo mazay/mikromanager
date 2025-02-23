@@ -54,7 +54,7 @@ func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		session.UserId = user.ID
+		session.UserId = user.Id
 		err = session.Create(c.Db)
 		if err != nil {
 			c.Logger.Error(err.Error())
@@ -64,7 +64,7 @@ func (c *HttpConfig) login(w http.ResponseWriter, r *http.Request) {
 
 		http.SetCookie(w, &http.Cookie{
 			Name:    "session_token",
-			Value:   session.ID,
+			Value:   session.Id,
 			Expires: session.ValidThrough,
 		})
 
@@ -88,7 +88,7 @@ func (c *HttpConfig) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.ID = cookie.Value
+	session.Id = cookie.Value
 	err = session.GetById(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())

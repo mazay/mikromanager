@@ -15,7 +15,11 @@
   <div class="col">
     <dl class="row">
       <dt class="col-sm-3">Device</dt>
+      {{ if .Device.Identity }}
       <dd class="col-sm-9"><a href="/details?id={{ .Device.Id }}">{{ .Device.Identity }}</a> ({{ .Device.Id }})</dd>
+      {{ else }}
+      <dd class="col-sm-9">Unknown device ({{ .Export.GetDeviceId }})</dd>
+      {{ end }}
 
       <dt class="col-sm-3">Created</dt>
       <dd class="col-sm-9">{{ .Export.LastModified.Format "2006-01-02 15:04:05" }}</dd>

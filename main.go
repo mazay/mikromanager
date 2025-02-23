@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
-	"github.com/mazay/mikromanager/db"
 	database "github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/internal"
@@ -143,7 +142,7 @@ func main() {
 	wg.Wait()
 }
 
-func devicesPoller(cfg *Config, db *db.DB, pollerCH chan<- *PollerCFG) error {
+func devicesPoller(cfg *Config, db *database.DB, pollerCH chan<- *PollerCFG) error {
 	var d = &database.Device{}
 
 	logger.Info("starting device polling task")
@@ -211,8 +210,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 					cfg.Device.PollingSucceeded = 0
 				} else {
 					cfg.Device.PollingSucceeded = 1
-					now := time.Now()
-					cfg.Device.PolledAt = &now
+					cfg.Device.PolledAt = time.Now()
 				}
 
 				dbErr = cfg.Device.Update(cfg.Db)
@@ -225,7 +223,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 	}
 }
 
-func backupScheduler(cfg *Config, db *db.DB, exportCH chan<- *BackupCFG) {
+func backupScheduler(cfg *Config, db *database.DB, exportCH chan<- *BackupCFG) {
 	var d = &database.Device{}
 
 	logger.Info("starting backup task")
@@ -266,7 +264,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 
 				export, sshErr := cfg.Client.Run("/export show-sensitive")
 				if sshErr == nil {
-					output, err := s3.UploadExport(cfg.Device.ID, []byte(export))
+					output, err := s3.UploadExport(cfg.Device.Id, []byte(export))
 					if err != nil {
 						logger.Error(err.Error())
 					}
@@ -280,7 +278,7 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 	}
 }
 
-func rotateExports(db *db.DB) {
+func rotateExports(db *database.DB) {
 	var err error
 	var exportsList []*internal.Export
 	var device *database.Device
@@ -297,7 +295,7 @@ func rotateExports(db *db.DB) {
 		return
 	}
 	for _, device := range devices {
-		exports, err := s3.GetExports(device.ID)
+		exports, err := s3.GetExports(device.Id)
 		if err != nil {
 			logger.Error(err.Error())
 		} else {
@@ -318,7 +316,7 @@ func rotateExports(db *db.DB) {
 	}
 }
 
-func cleanupSessions(db *db.DB) {
+func cleanupSessions(db *database.DB) {
 	var err error
 	var session *database.Session
 
@@ -331,7 +329,7 @@ func cleanupSessions(db *db.DB) {
 
 	for _, s := range sessions {
 		if s.ValidThrough.Before(time.Now()) {
-			logger.Debug("session expired", zap.String("id", s.ID))
+			logger.Debug("session expired", zap.String("id", s.Id))
 			err = s.Delete(db)
 			if err != nil {
 				logger.Error(err.Error())

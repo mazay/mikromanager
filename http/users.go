@@ -21,7 +21,7 @@ type usersData struct {
 }
 
 func (uf *userForm) formFillIn(user *db.User) {
-	uf.Id = user.ID
+	uf.Id = user.Id
 	uf.Username = user.Username
 	uf.EncryptedPassword = user.EncryptedPassword
 }
@@ -59,7 +59,7 @@ func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user.ID = id
+		user.Id = id
 		user.Username = username
 		user.EncryptedPassword = encryptedPw
 
@@ -96,7 +96,7 @@ func (c *HttpConfig) editUser(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		if id != "" {
 			u := &db.User{}
-			u.ID = id
+			u.Id = id
 			err = u.GetById(c.Db)
 			if err != nil {
 				data.Msg = err.Error()
@@ -172,7 +172,7 @@ func (c *HttpConfig) deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u.ID = id
+	u.Id = id
 
 	err = u.Delete(c.Db)
 	if err != nil {

@@ -1,16 +1,23 @@
 package db
 
 import (
-	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Session struct {
 	Base
-	UserId       string    `json:"userId"`
-	ValidThrough time.Time `json:"expires"`
+	UserId       string
+	ValidThrough time.Time
+}
+
+// BeforeCreate will set the session to expire in 24 hours
+func (s *Session) BeforeCreate(tx *gorm.DB) error {
+	s.Id = uuid.New().String()
+	s.ValidThrough = time.Now().Add(time.Hour * 24)
+	return nil
 }
 
 func (s *Session) Expired() bool {
@@ -21,25 +28,19 @@ func (s *Session) Expired() bool {
 }
 
 func (s *Session) Create(db *DB) error {
-	return db.DB.Create(s).Error
+	return db.DB.Create(&s).Error
 }
 
 func (s *Session) Delete(db *DB) error {
-	return db.DB.Delete(s).Error
+	return db.DB.Delete(&s).Error
 }
 
 func (s *Session) GetById(db *DB) error {
-	return db.DB.First(s, "ID = ?", s.ID).Error
+	return db.DB.First(&s, "id = ?", s.Id).Error
 }
 
 func (s *Session) Update(db *DB) error {
-	var session Session
-
-	if err := db.DB.Where("ID = ?", s.ID).Find(&session).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		return s.Create(db)
-	}
-
-	return db.DB.Model(s).Updates(s).Error
+	return db.DB.Model(&s).Where("id = ?", s.Id).Updates(s).Error
 }
 
 func (s *Session) GetAll(db *DB) ([]*Session, error) {
