@@ -16,7 +16,9 @@ type Session struct {
 // BeforeCreate will set the session to expire in 24 hours after creation and set a UUID rather than numeric ID.
 func (s *Session) BeforeCreate(tx *gorm.DB) error {
 	s.Id = uuid.New().String()
-	s.ValidThrough = time.Now().Add(time.Hour * 24)
+	if s.ValidThrough.IsZero() {
+		s.ValidThrough = time.Now().Add(time.Hour * 24)
+	}
 	return nil
 }
 
@@ -64,5 +66,5 @@ func (s *Session) GetAll(db *DB) ([]*Session, error) {
 // It returns a slice of Session pointers and an error if the retrieval fails.
 func (s *Session) GetByUserId(db *DB, userId string) ([]*Session, error) {
 	var sessionList []*Session
-	return sessionList, db.DB.Where("userId = ?", s.UserId).Find(&sessionList).Error
+	return sessionList, db.DB.Where("user_id = ?", s.UserId).Find(&sessionList).Error
 }

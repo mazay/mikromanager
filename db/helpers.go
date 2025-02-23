@@ -11,3 +11,15 @@ func openTestDb(dbDir string) (*DB, error) {
 	}
 	return db, nil
 }
+
+func createTestUser(db *DB) (*User, error) {
+	user := &User{
+		Username:          "test-user",
+		EncryptedPassword: "test-password",
+	}
+	err := user.Create(db)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
