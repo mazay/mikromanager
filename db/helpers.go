@@ -28,3 +28,14 @@ func createTestUser(db *DB) (*User, error) {
 	}
 	return user, nil
 }
+
+func createTestDevice(db *DB) (*Device, error) {
+	device := &Device{
+		Address: "10.10.10.10",
+	}
+	err := device.Create(db)
+	if err != nil {
+		return nil, err
+	}
+	return device, nil
+}
