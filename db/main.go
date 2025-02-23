@@ -37,6 +37,9 @@ type DB struct {
 	LogLevel string
 }
 
+// Open initializes the database connection using the provided file path
+// and configures the logging level. It also migrates the schema for the
+// specified models. Returns an error if the connection or migration fails.
 func (db *DB) Open(path string) error {
 	gormDB, err := gorm.Open(sqlite.Open(path), &gorm.Config{
 		Logger: logger.Default.LogMode(dbLogLevels[db.LogLevel]),
@@ -47,7 +50,7 @@ func (db *DB) Open(path string) error {
 
 	db.DB = gormDB
 
-	// Migrate the schema
+	// Migrate the schemas
 	err = db.DB.AutoMigrate(&Credentials{}, &User{}, &Device{}, &ExportsRetentionPolicy{}, &Session{})
 	if err != nil {
 		return err
@@ -56,6 +59,7 @@ func (db *DB) Open(path string) error {
 	return nil
 }
 
+// Close the underlying database connection.
 func (db *DB) Close() error {
 	sqlDB, err := db.DB.DB()
 	if err != nil {

@@ -39,11 +39,17 @@ type Device struct {
 	UpgradeFirmware      string `json:"upgrade-firmware"`
 }
 
+// GetAll fetches all devices from the database.
+//
+// The function returns a slice of *Device instances and an error.
 func (d *Device) GetAll(db *DB) ([]*Device, error) {
 	var deviceList []*Device
 	return deviceList, db.DB.Find(&deviceList).Error
 }
 
+// GetCredentials returns the credentials object associated with the device,
+// or the default credential set if the device has not been configured to use
+// a specific set of credentials.
 func (d *Device) GetCredentials(db *DB) (*Credentials, error) {
 	var c = &Credentials{}
 	if d.CredentialsId == "" {
@@ -54,19 +60,31 @@ func (d *Device) GetCredentials(db *DB) (*Credentials, error) {
 	}
 }
 
+// Create will create a new device entry in the database with the current object's values.
+// The function automatically sets the PollingSucceeded field to -1 to indicate that the
+// device has not been polled yet.
+//
+// The function returns an error if the creation fails.
 func (d *Device) Create(db *DB) error {
 	d.PollingSucceeded = -1
 	return db.DB.Create(&d).Error
 }
 
+// Update will update an existing device entry in the database with the current
+// object's values. It returns an error if the update fails.
 func (d *Device) Update(db *DB) error {
 	return db.DB.Model(&d).Where("id = ?", d.Id).Updates(d).Error
 }
 
+// GetById fetches a device entry from the database using the current object's ID
+// and populates the current object with its values. It returns an error if the fetch
+// fails.
 func (d *Device) GetById(db *DB) error {
 	return db.DB.First(&d, "id = ?", d.Id).Error
 }
 
+// Delete will delete an existing device entry from the database that matches the
+// current object's ID. It returns an error if the deletion fails.
 func (d *Device) Delete(db *DB) error {
 	return db.DB.Delete(&d).Error
 }
