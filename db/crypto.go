@@ -32,8 +32,11 @@ func DecryptString(cryptoText string, keyString string) (plainTextString string,
 	return string(decrypted), nil
 }
 
-// decryptAES decrypts the given data using the given key with AES encryption
-// using a cipher feedback mode of operation. The first 16 bytes of the data
+// encryptAES encrypts the given data using the given key with AES encryption
+// in cipher feedback mode. A random initialization vector (IV) is generated
+// and prepended to the encrypted data. The function returns the IV combined
+// with the encrypted data or an error if the encryption fails.// decryptAES decrypts the given data using the given key with AES encryption
+// using a counter mode of operation. The first 16 bytes of the data
 // are expected to be the initialization vector. The function returns an error
 // if the decryption fails.
 func decryptAES(key, data []byte) ([]byte, error) {
@@ -44,7 +47,7 @@ func decryptAES(key, data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	stream := cipher.NewCFBDecrypter(block, iv)
+	stream := cipher.NewCTR(block, iv)
 
 	stream.XORKeyStream(data, data)
 	return data, nil
@@ -74,10 +77,11 @@ func EncryptString(plainText string, keyString string) (cipherTextString string,
 	return base64.URLEncoding.EncodeToString(encrypted), nil
 }
 
-// encryptAES encrypts the given data using the given key with AES encryption
-// in cipher feedback mode. A random initialization vector (IV) is generated
-// and prepended to the encrypted data. The function returns the IV combined
-// with the encrypted data or an error if the encryption fails.
+// encryptAES encrypts the given plaintext data using the given key with AES
+// encryption and returns the encrypted data as a slice of bytes. The key is
+// first used to create a new AES cipher, which is then used to create a new CTR
+// stream. The IV for the CTR stream is populated with random data from the
+// crypto/rand package. The function returns an error if the encryption fails.
 func encryptAES(key, data []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -94,7 +98,7 @@ func encryptAES(key, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	stream := cipher.NewCFBEncrypter(block, iv)
+	stream := cipher.NewCTR(block, iv)
 
 	// note that encrypted is still a window in to the output slice
 	stream.XORKeyStream(encrypted, data)
