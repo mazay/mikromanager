@@ -39,7 +39,7 @@ jobs:
       - name: Run tests
         run: |
           cd ./src/github.com/${{ github.repository }}
-          go test -timeout 5m ./...
+          go test -timeout 5m ./... -coverprofile cover.out
 
   docker:
     runs-on: ubuntu-latest
