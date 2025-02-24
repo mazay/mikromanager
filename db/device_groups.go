@@ -1,30 +1,32 @@
 package db
 
-import "gorm.io/gorm/clause"
-
 type DeviceGroup struct {
 	Base
 	Name    string    `gorm:"unique"`
-	Devices []*Device `gorm:"foreignKey:Id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Devices []*Device `gorm:"many2many:device_groups_devices;"`
 }
 
 func (g *DeviceGroup) Create(db *DB) error {
-	return db.DB.Omit(clause.Associations).Create(&g).Error
+	return db.DB.Create(&g).Error
 }
 
 func (g *DeviceGroup) Update(db *DB) error {
-	return db.DB.Omit(clause.Associations).Model(&g).Where("id = ?", g.Id).Updates(g).Error
+	err := db.DB.Model(&g).Association("Devices").Replace(g.Devices)
+	if err != nil {
+		return err
+	}
+	return db.DB.Save(&g).Error
 }
 
 func (g *DeviceGroup) Delete(db *DB) error {
-	return db.DB.Omit(clause.Associations).Delete(&g).Error
+	return db.DB.Delete(&g).Error
 }
 
 func (g *DeviceGroup) GetAll(db *DB) ([]*DeviceGroup, error) {
 	var groups []*DeviceGroup
-	return groups, db.DB.Find(&groups).Error
+	return groups, db.DB.Model(g).Preload("Devices").Find(&groups).Error
 }
 
 func (g *DeviceGroup) GetById(db *DB) error {
-	return db.DB.First(&g, "id = ?", g.Id).Error
+	return db.DB.Model(g).Preload("Devices").First(&g, "id = ?", g.Id).Error
 }

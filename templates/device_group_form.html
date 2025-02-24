@@ -1,5 +1,5 @@
 {{ define "nav-inventory" }}active{{ end }}
-{{ define "nav-devices" }}active{{ end }}
+{{ define "nav-dgroups" }}active{{ end }}
 {{ define "content" }}
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -38,12 +38,13 @@
       </div>
     </div>
     <div class="row mb-3">
-      <label for="inputDevices" class="col-sm-2 col-form-label">Members</label>
+      <label for="devicesInput" class="col-sm-2 col-form-label">Members</label>
       <div class="col-sm-10">
-        <select name="inputDevices" class="form-select"  aria-describedby="devicesHelp">
-          <option value="">---</option>
+        <select name="devicesInput" class="form-select" multiple aria-describedby="devicesHelp">
         {{ range $device := .Devices }}
-          <option value="{{ $device.Id }}">{{ $device.Identity }}</option>
+          {{ $selected := false }}
+          {{ if in $device.Id $.SelectedDevices }}{{ $selected = true }}{{ end }}
+          <option{{ if $selected }} selected{{ end }} value="{{ $device.Id }}">{{ or $device.Identity $device.Address }}</option>
         {{ end }}
         </select>
         <div id="devicesHelp" class="form-text">Select devices to add to the group.</div>

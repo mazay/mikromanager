@@ -22,6 +22,7 @@
         <th scope="col">Version</th>
         <th scope="col">Uptime</th>
         <th scope="col">Last Polled</th>
+        <th scope="col">Groups</th>
         <th scope="col"><a class="btn btn-outline-success btn-sm" role="button" href="/edit"><i class="bi-plus-square"></i></a></th>
       </tr>
     </thead>
@@ -52,6 +53,11 @@
           {{ $device.PolledAt.Format "2006-01-02 15:04:05" }}
           {{ else }}
           N/A
+          {{ end }}
+        </td>
+        <td>
+          {{ range $group := $device.Groups }}
+            {{ $group.Name }}<br>
           {{ end }}
         </td>
         <td>

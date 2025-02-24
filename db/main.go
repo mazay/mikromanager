@@ -29,7 +29,9 @@ type Base struct {
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *Base) BeforeCreate(tx *gorm.DB) error {
-	base.Id = uuid.New().String()
+	if base.Id == "" {
+		base.Id = uuid.New().String()
+	}
 	return nil
 }
 

@@ -7,10 +7,11 @@ import (
 )
 
 type deviceGroupForm struct {
-	Id      string
-	Name    string
-	Msg     string
-	Devices []*db.Device
+	Id              string
+	Name            string
+	Msg             string
+	Devices         []*db.Device
+	SelectedDevices []string
 }
 
 type deviceGroupDetails struct {
@@ -25,10 +26,13 @@ type deviceGroupsData struct {
 	CurrentPage  int
 }
 
-func (df *deviceGroupForm) formFillIn(group *db.DeviceGroup) {
+func (df *deviceGroupForm) formFillIn(group *db.DeviceGroup, devices []*db.Device) {
 	df.Id = group.Id
 	df.Name = group.Name
-	df.Devices = group.Devices
+	df.Devices = devices
+	for _, dev := range group.Devices {
+		df.SelectedDevices = append(df.SelectedDevices, dev.Id)
+	}
 }
 
 func (c *HttpConfig) editDeviceGroup(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +97,7 @@ func (c *HttpConfig) editDeviceGroup(w http.ResponseWriter, r *http.Request) {
 		if groupErr != nil {
 			// return data with errors if validation failed
 			data.Id = id
-			data.formFillIn(group)
+			data.formFillIn(group, devsAll)
 			data.Msg = groupErr.Error()
 		} else {
 			http.Redirect(w, r, "/device/groups", http.StatusFound)
@@ -109,7 +113,7 @@ func (c *HttpConfig) editDeviceGroup(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				data.Msg = err.Error()
 			} else {
-				data.formFillIn(g)
+				data.formFillIn(g, devsAll)
 			}
 		}
 	}

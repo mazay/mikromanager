@@ -103,6 +103,9 @@
 
       <dt class="col-sm-3">Updated</dt>
       <dd class="col-sm-9">{{ .Device.UpdatedAt.Format "2006-01-02 15:04:05" }}</dd>
+
+      <dt class="col-sm-3">Groups</dt>
+      <dd class="col-sm-9">{{ range $group := .Device.Groups }}{{ $group.Name }}<br>{{ end }}</dd>
     </dl>
   </div>
 </div>

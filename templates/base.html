@@ -1,6 +1,7 @@
 {{ define "nav-inventory" }}{{ end }}
 {{ define "nav-devices" }}{{ end }}
 {{ define "nav-exports" }}{{ end }}
+{{ define "nav-dgroups" }}{{ end }}
 {{ define "nav-configuration" }}{{ end }}
 {{ define "nav-credentials" }}{{ end }}
 {{ define "nav-users" }}{{ end }}
@@ -34,7 +35,7 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item {{ template "nav-devices" . }}" href="/">Devices</a></li>
             <li><a class="dropdown-item {{ template "nav-exports" . }}" href="/exports">Exports</a></li>
-            <li><a class="dropdown-item {{ template "nav-exports" . }}" href="/device/groups">Device groups</a></li>
+            <li><a class="dropdown-item {{ template "nav-dgroups" . }}" href="/device/groups">Device groups</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown">

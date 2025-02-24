@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"html/template"
+	"slices"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ var funcMap = template.FuncMap{
 	"containsInt":   containsInt,
 	"humahizeBytes": humahizeBytes,
 	"hasPrefix":     strings.HasPrefix,
+	"in":            func(s string, l []string) bool { return slices.Contains(l, s) },
 }
 
 func replace(input, from, to string) string {
