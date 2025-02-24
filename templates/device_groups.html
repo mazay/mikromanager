@@ -39,15 +39,15 @@
       </tr>
 
       <!-- Modal start -->
-      <div class="modal fade" id="IP{{ replace $group.Name "-" "" }}" tabindex="-1" aria-labelledby="{{ replace $group.Name "-" "" }}Label" aria-hidden="true">
+      <div class="modal fade" id="IP{{ replace $group.Id "-" "" }}" tabindex="-1" aria-labelledby="{{ replace $group.Id "-" "" }}Label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" id="{{ replace $group.Name "-" "" }}Label">Warning</h1>
+              <h1 class="modal-title fs-5" id="{{ replace $group.Id "-" "" }}Label">Warning</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              You are about to delete device group name "{{ $group.Name }}". Are you sure you want to proceed?
+              You are about to delete device group named "{{ $group.Name }}". Are you sure you want to proceed?
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>

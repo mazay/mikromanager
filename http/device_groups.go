@@ -196,3 +196,34 @@ func (c *HttpConfig) getDeviceGroup(w http.ResponseWriter, r *http.Request) {
 	data.Group = group
 	c.renderTemplate(w, templates, data)
 }
+
+func (c *HttpConfig) deleteDeviceGroup(w http.ResponseWriter, r *http.Request) {
+	var (
+		err error
+		g   = &db.DeviceGroup{}
+		id  = r.URL.Query().Get("id")
+	)
+
+	_, err = c.checkSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if id == "" {
+		http.Error(w, "Something went wrong, no device group ID provided", http.StatusInternalServerError)
+		return
+	}
+
+	g.Id = id
+
+	// delete device
+	err = g.Delete(c.Db)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/device/groups", http.StatusFound)
+}
