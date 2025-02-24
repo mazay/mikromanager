@@ -141,8 +141,8 @@ func TestDevicesGetCredentials(t *testing.T) {
 	devs := []*Device{
 		// device uses non-default credentials
 		{
-			Address:       "10.0.0.1",
-			CredentialsId: creds[1].Id,
+			Address:     "10.0.0.1",
+			Credentials: creds[1],
 		},
 		// device uses default credentials
 		{
@@ -161,7 +161,7 @@ func TestDevicesGetCredentials(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if d.CredentialsId == "" {
+		if d.Credentials == nil {
 			assert.Equal(t, "Default", fetchedCreds.Alias)
 		} else {
 			assert.Equal(t, "test-alias", fetchedCreds.Alias)

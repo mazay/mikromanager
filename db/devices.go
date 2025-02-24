@@ -16,7 +16,8 @@ type Device struct {
 	CpuCount             int64  `json:"cpu-count,string"`
 	CpuFrequency         int64  `json:"cpu-frequency,string"`
 	CpuLoad              int64  `json:"cpu-load,string"`
-	CredentialsId        string
+	CredentialsID        string
+	Credentials          *Credentials
 	FactorySoftware      string `json:"factory-software"`
 	FreeHddSpace         int64  `json:"free-hdd-space,string"`
 	FreeMemory           int64  `json:"free-memory,string"`
@@ -60,12 +61,10 @@ func (d *Device) GetAllPreload(db *DB) ([]*Device, error) {
 // a specific set of credentials.
 func (d *Device) GetCredentials(db *DB) (*Credentials, error) {
 	var c = &Credentials{}
-	if d.CredentialsId == "" {
+	if d.Credentials == nil {
 		return c, c.GetDefault(db)
-	} else {
-		c.Id = d.CredentialsId
-		return c, c.GetById(db)
 	}
+	return d.Credentials, nil
 }
 
 // Create will create a new device entry in the database with the current object's values.
