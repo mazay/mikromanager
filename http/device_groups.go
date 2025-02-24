@@ -15,15 +15,14 @@ type deviceGroupForm struct {
 }
 
 type deviceGroupDetails struct {
-	DeviceGroup *db.DeviceGroup
-	Devices     []*db.Device
+	Group *db.DeviceGroup
 }
 
 type deviceGroupsData struct {
-	Count        int
-	DeviceGroups []*db.DeviceGroup
-	Pagination   *Pagination
-	CurrentPage  int
+	Count       int
+	Groups      []*db.DeviceGroup
+	Pagination  *Pagination
+	CurrentPage int
 }
 
 func (df *deviceGroupForm) formFillIn(group *db.DeviceGroup, devices []*db.Device) {
@@ -161,8 +160,39 @@ func (c *HttpConfig) getDeviceGroups(w http.ResponseWriter, r *http.Request) {
 		}
 		data.Pagination = pagination
 		data.CurrentPage = pageId
-		data.DeviceGroups = chunkedDevices[pageId-1]
+		data.Groups = chunkedDevices[pageId-1]
 	}
 
+	c.renderTemplate(w, templates, data)
+}
+
+func (c *HttpConfig) getDeviceGroup(w http.ResponseWriter, r *http.Request) {
+	var (
+		err       error
+		group     = &db.DeviceGroup{}
+		data      = &deviceGroupDetails{}
+		id        = r.URL.Query().Get("id")
+		templates = []string{deviceGroupTmpl, baseTmpl}
+	)
+
+	_, err = c.checkSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if id == "" {
+		http.Error(w, "Something went wrong, no device ID provided", http.StatusInternalServerError)
+		return
+	}
+
+	group.Id = id
+	err = group.GetById(c.Db)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data.Group = group
 	c.renderTemplate(w, templates, data)
 }

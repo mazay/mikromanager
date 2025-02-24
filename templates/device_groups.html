@@ -22,7 +22,7 @@
       </tr>
     </thead>
     <tbody>
-    {{ range $group := .DeviceGroups }}
+    {{ range $group := .Groups }}
       <tr id="{{ $group.Id }}">
         <td></td>
         <td>{{ $group.Name }}</td>
@@ -30,7 +30,7 @@
         <td>{{ $group.CreatedAt.Format "2006-01-02 15:04:05" }}</td>
         <td>{{ $group.UpdatedAt.Format "2006-01-02 15:04:05" }}</td>
         <td>
-          <a class="btn btn-outline-info btn-sm" role="button" href="/details?id={{ $group.Id }}"><i class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-outline-info btn-sm" role="button" href="/device/group?id={{ $group.Id }}"><i class="bi-clipboard-pulse"></i></a>
           <a class="btn btn-outline-warning btn-sm" role="button" href="/device/group/edit?id={{ $group.Id }}"><i class="bi-pencil"></i></a>
           <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $group.Id "-" "" }}">
             <i class="bi-trash"></i>
