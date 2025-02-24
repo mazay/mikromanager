@@ -47,13 +47,19 @@ var (
 	}
 )
 
-func TestDevicesGetAll(t *testing.T) {
+func TestDevicesGetAllPlain(t *testing.T) {
 	db, err := openTestDb(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	group, err := createTestDeviceGroup(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	for _, dev := range testDevices {
+		dev.Groups = []*DeviceGroup{group}
 		err = dev.Create(db)
 		if err != nil {
 			t.Fatal(err)
@@ -67,6 +73,7 @@ func TestDevicesGetAll(t *testing.T) {
 	}
 
 	assert.Equal(t, 2, len(fetchedDevs))
+	assert.Len(t, fetchedDevs[0].Groups, 0)
 	assert.Equal(t, testDevices[0].Address, fetchedDevs[0].Address)
 	assert.Equal(t, testDevices[0].ApiPort, fetchedDevs[0].ApiPort)
 	assert.Equal(t, testDevices[0].ArchitectureName, fetchedDevs[0].ArchitectureName)
