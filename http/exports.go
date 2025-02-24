@@ -47,7 +47,7 @@ func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data.Devices, err = device.GetAll(c.Db)
+	data.Devices, err = device.GetAllPlain(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

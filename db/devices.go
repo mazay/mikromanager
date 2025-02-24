@@ -40,12 +40,19 @@ type Device struct {
 	Groups               []*DeviceGroup `gorm:"many2many:device_groups_devices;"`
 }
 
-// GetAll fetches all devices from the database.
-//
-// The function returns a slice of *Device instances and an error.
-func (d *Device) GetAll(db *DB) ([]*Device, error) {
+// GetAllPlain retrieves all device entries from the database and returns them
+// as a slice of *Device instances. It returns an error if the retrieval fails.
+func (d *Device) GetAllPlain(db *DB) ([]*Device, error) {
 	var deviceList []*Device
-	return deviceList, db.DB.Model(d).Preload("Groups").Find(&deviceList).Error
+	return deviceList, db.DB.Find(&deviceList).Error
+}
+
+// GetAllPreload retrieves all device entries from the database and returns them
+// as a slice of *Device instances, including their associated groups. It returns
+// an error if the retrieval fails.
+func (d *Device) GetAllPreload(db *DB) ([]*Device, error) {
+	var deviceList []*Device
+	return deviceList, db.DB.Model(&d).Preload("Groups").Find(&deviceList).Error
 }
 
 // GetCredentials returns the credentials object associated with the device,
@@ -69,6 +76,12 @@ func (d *Device) GetCredentials(db *DB) (*Credentials, error) {
 func (d *Device) Create(db *DB) error {
 	d.PollingSucceeded = -1
 	return db.DB.Create(&d).Error
+}
+
+// Save will persist the current state of the device to the database.
+// If the save operation fails, it returns an error.
+func (d *Device) Save(db *DB) error {
+	return db.DB.Save(&d).Error
 }
 
 // Update will update an existing device entry in the database with the current

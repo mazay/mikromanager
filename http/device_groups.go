@@ -49,7 +49,7 @@ func (c *HttpConfig) editDeviceGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	devsAll, err := device.GetAll(c.Db)
+	devsAll, err := device.GetAllPlain(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -143,7 +143,7 @@ func (c *HttpConfig) getDeviceGroups(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fetch device groups
-	groupList, err := g.GetAll(c.Db)
+	groupList, err := g.GetAllPreload(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

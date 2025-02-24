@@ -97,7 +97,7 @@ func TestDeviceGroupGetAll(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	groups, err := group.GetAll(db)
+	groups, err := group.GetAllPreload(db)
 	if err != nil {
 		t.Fatal(err)
 	}

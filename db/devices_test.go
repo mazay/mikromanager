@@ -61,7 +61,7 @@ func TestDevicesGetAll(t *testing.T) {
 	}
 
 	d := &Device{}
-	fetchedDevs, err := d.GetAll(db)
+	fetchedDevs, err := d.GetAllPlain(db)
 	if err != nil {
 		t.Fatal(err)
 	}
