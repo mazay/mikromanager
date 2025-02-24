@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"html/template"
+	"slices"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ var funcMap = template.FuncMap{
 	"containsInt":   containsInt,
 	"humahizeBytes": humahizeBytes,
 	"hasPrefix":     strings.HasPrefix,
+	"in":            func(s string, l []string) bool { return slices.Contains(l, s) },
 }
 
 func replace(input, from, to string) string {
@@ -59,7 +61,7 @@ func containsInt(s []int, e int) bool {
 
 // chunkSliceOfObjects accepts slices of Export, Credentials or Device objects and a chunk size
 // and returns chunks of the input objects
-func chunkSliceOfObjects[obj internal.Export | db.Credentials | db.Device | db.User](slice []*obj, chunkSize int) [][]*obj {
+func chunkSliceOfObjects[obj internal.Export | db.Credentials | db.Device | db.User | db.DeviceGroup](slice []*obj, chunkSize int) [][]*obj {
 	var chunks [][]*obj
 	for i := 0; i < len(slice); i += chunkSize {
 		end := i + chunkSize

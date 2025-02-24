@@ -146,7 +146,8 @@ func devicesPoller(cfg *Config, db *database.DB, pollerCH chan<- *PollerCFG) err
 	var d = &database.Device{}
 
 	logger.Info("starting device polling task")
-	devices, err := d.GetAll(db)
+	// have to use the preload method here to not lose the device groups
+	devices, err := d.GetAllPlain(db)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -213,7 +214,7 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 					cfg.Device.PolledAt = time.Now()
 				}
 
-				dbErr = cfg.Device.Update(cfg.Db)
+				dbErr = cfg.Device.Save(cfg.Db)
 
 				if dbErr != nil {
 					logger.Error(dbErr.Error())
@@ -227,7 +228,7 @@ func backupScheduler(cfg *Config, db *database.DB, exportCH chan<- *BackupCFG) {
 	var d = &database.Device{}
 
 	logger.Info("starting backup task")
-	devices, err := d.GetAll(db)
+	devices, err := d.GetAllPlain(db)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -289,7 +290,7 @@ func rotateExports(db *database.DB) {
 		logger.Error(err.Error())
 		return
 	}
-	devices, err := device.GetAll(db)
+	devices, err := device.GetAllPlain(db)
 	if err != nil {
 		logger.Error(err.Error())
 		return

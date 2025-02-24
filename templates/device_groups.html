@@ -1,0 +1,66 @@
+{{ define "pagination" }}{{ end }}
+{{ define "nav-inventory" }}active{{ end }}
+{{ define "nav-dgroups" }}active{{ end }}
+{{ define "content" }}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">Device Groups</li>
+  </ol>
+</nav>
+<legend class="text-center display-6">Device Groups: {{ .Count }}</legend>
+<hr class="border border-primary border-3 opacity-75">
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col">Members</th>
+        <th scope="col">Created</th>
+        <th scope="col">Updated</th>
+        <th scope="col"><a class="btn btn-outline-success btn-sm" role="button" href="/device/group/edit"><i class="bi-plus-square"></i></a></th>
+      </tr>
+    </thead>
+    <tbody>
+    {{ range $group := .Groups }}
+      <tr id="{{ $group.Id }}">
+        <td></td>
+        <td>{{ $group.Name }}</td>
+        <td>{{ len $group.Devices }}</td>
+        <td>{{ $group.CreatedAt.Format "2006-01-02 15:04:05" }}</td>
+        <td>{{ $group.UpdatedAt.Format "2006-01-02 15:04:05" }}</td>
+        <td>
+          <a class="btn btn-outline-info btn-sm" role="button" href="/device/group?id={{ $group.Id }}"><i class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-outline-warning btn-sm" role="button" href="/device/group/edit?id={{ $group.Id }}"><i class="bi-pencil"></i></a>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#IP{{ replace $group.Id "-" "" }}">
+            <i class="bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+
+      <!-- Modal start -->
+      <div class="modal fade" id="IP{{ replace $group.Id "-" "" }}" tabindex="-1" aria-labelledby="{{ replace $group.Id "-" "" }}Label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="{{ replace $group.Id "-" "" }}Label">Warning</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              You are about to delete device group named "{{ $group.Name }}". Are you sure you want to proceed?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
+              <a class="btn btn-danger" role="button" href="/device/group/delete?id={{ $group.Id }}">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal end -->
+    {{ end }}
+    </tbody>
+  </table>
+</div>
+
+{{ template "pagination" . }}
+{{ end }}

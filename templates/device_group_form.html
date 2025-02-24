@@ -1,0 +1,63 @@
+{{ define "nav-inventory" }}active{{ end }}
+{{ define "nav-dgroups" }}active{{ end }}
+{{ define "content" }}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/device/groups">Device Groups</a></li>
+    {{ if ne .Id "" }}
+    <li class="breadcrumb-item"><a href="/device/group?id={{ .Id }}">{{ .Id }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+    {{ else }}
+    <li class="breadcrumb-item active" aria-current="page">New</li>
+    {{ end }}
+  </ol>
+</nav>
+<div class="container">
+  <form method="POST" action="/device/group/edit">
+    {{ if ne .Id "" }}
+    <legend class="text-center display-6">Edit Device Group</legend>
+    <hr class="border border-primary border-3 opacity-75">
+    <div class="row mb-3">
+      <label for="disabledIdInput" class="col-sm-2 col-form-label">ID</label>
+      <div class="col-sm-10">
+        <input name="idInput" type="text" id="disabledIdInput" class="form-control-plaintext" readonly value="{{ .Id }}">
+      </div>
+    </div>
+    {{ else }}
+    <legend class="text-center display-6">Create Device Group</legend>
+    <hr class="border border-primary border-3 opacity-75">
+    {{ end }}
+    <div class="row mb-3">
+      <label for="nameInput" class="col-sm-2 col-form-label">Name</label>
+      <div class="col-sm-10">
+        <input name="nameInput" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="nameInput" aria-describedby="nameHelp nameValidationFeedback" required value="{{ .Name }}">
+        <div id="nameHelp" class="form-text">Device Group name, must be unique.</div>
+        <div id="nameValidationFeedback" class="invalid-feedback">
+          {{ .Msg }}
+        </div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="devicesInput" class="col-sm-2 col-form-label">Members</label>
+      <div class="col-sm-10">
+        <select name="devicesInput" class="form-select" multiple aria-describedby="devicesHelp">
+        {{ range $device := .Devices }}
+          {{ $selected := false }}
+          {{ if in $device.Id $.SelectedDevices }}{{ $selected = true }}{{ end }}
+          <option{{ if $selected }} selected{{ end }} value="{{ $device.Id }}">{{ or $device.Identity $device.Address }}</option>
+        {{ end }}
+        </select>
+        <div id="devicesHelp" class="form-text">Select devices to add to the group.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-2">
+      </div>
+      <div class="col-sm-10">
+        <a class="btn btn-danger" role="button" href="{{ if ne .Id "" }}/device/group?id={{ .Id }}{{ else }}/device/groups{{ end }}">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </form>
+</div>
+{{ end }}

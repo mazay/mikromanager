@@ -37,6 +37,10 @@ func (c *HttpConfig) HttpServer() {
 	http.HandleFunc("/exports", handlerWrapper(c.getExports, c.Logger))
 	http.HandleFunc("/export", handlerWrapper(c.getExport, c.Logger))
 	http.HandleFunc("/export/download", handlerWrapper(c.downloadExport, c.Logger))
+	http.HandleFunc("/device/groups", handlerWrapper(c.getDeviceGroups, c.Logger))
+	http.HandleFunc("/device/group/edit", handlerWrapper(c.editDeviceGroup, c.Logger))
+	http.HandleFunc("/device/group", handlerWrapper(c.getDeviceGroup, c.Logger))
+	http.HandleFunc("/device/group/delete", handlerWrapper(c.deleteDeviceGroup, c.Logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
 	c.Logger.Fatal(http.ListenAndServe(":"+c.Port, nil).Error())
 }

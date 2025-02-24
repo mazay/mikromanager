@@ -1,0 +1,23 @@
+{{ define "nav-inventory" }}active{{ end }}
+{{ define "nav-dgroups" }}active{{ end }}
+{{ define "content" }}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/device/groups">Device Groups</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ .Group.Id }}</li>
+  </ol>
+</nav>
+<legend class="text-center display-6">Device Group "{{ .Group.Name }}" <a class="btn btn-warning btn-sm" role="button" href="/device/group/edit?id={{ .Group.Id }}"><i class="bi-pencil"></i></a></legend>
+<div class="row align-items-start">
+  <div class="col">
+    <dl class="row">
+      <dt class="col-sm-3">Members</dt>
+      <dd class="col-sm-9 list-group">
+        {{ range $device := .Group.Devices }}
+        <a class="list-group-item list-group-item-action" href="/details?id={{ $device.Id }}">{{ $device.Identity }} ({{ $device.Id }})</a>
+        {{ end }}
+      </dd>
+    </dl>
+  </div>
+</div>
+{{ end }}

@@ -150,7 +150,7 @@ func (c *HttpConfig) getDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fetch devices
-	deviceList, err := d.GetAll(c.Db)
+	deviceList, err := d.GetAllPreload(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
