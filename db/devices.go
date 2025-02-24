@@ -2,6 +2,8 @@ package db
 
 import (
 	"time"
+
+	"gorm.io/gorm/clause"
 )
 
 type Device struct {
@@ -98,7 +100,7 @@ func (d *Device) Update(db *DB) error {
 // and populates the current object with its values. It returns an error if the fetch
 // fails.
 func (d *Device) GetById(db *DB) error {
-	return db.DB.Model(d).Preload("Groups").First(&d, "id = ?", d.Id).Error
+	return db.DB.Model(d).Preload(clause.Associations).First(&d, "id = ?", d.Id).Error
 }
 
 // Delete will delete an existing device entry from the database that matches the
