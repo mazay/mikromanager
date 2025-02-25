@@ -14,7 +14,7 @@ require (
 	github.com/go-co-op/gocron v1.37.0
 	github.com/go-routeros/routeros/v3 v3.0.1
 	github.com/google/uuid v1.6.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.35.0
 	gopkg.in/yaml.v3 v3.0.1
