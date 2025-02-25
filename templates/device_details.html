@@ -104,6 +104,15 @@
       <dt class="col-sm-3">Updated</dt>
       <dd class="col-sm-9">{{ .Device.UpdatedAt.Format "2006-01-02 15:04:05" }}</dd>
 
+      <dt class="col-sm-3">Credentials</dt>
+      <dd class="col-sm-9">
+        {{ if .Device.Credentials }}
+        <a href="/credentials/edit?id={{ .Device.Credentials.Id }}"><i class="bi-key"></i> {{ .Device.Credentials.Alias }}</a>
+        {{ else }}
+        <i class="bi-key"> Unset</i>
+        {{ end }}
+      </dd>
+
       <dt class="col-sm-3">Groups</dt>
       <dd class="col-sm-9 list-group">
         {{ range $group := .Device.Groups }}

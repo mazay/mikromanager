@@ -35,7 +35,7 @@ func (df *deviceForm) formFillIn(device *db.Device) {
 	df.Address = device.Address
 	df.ApiPort = device.ApiPort
 	df.SshPort = device.SshPort
-	df.CredentialsId = device.CredentialsId
+	df.CredentialsId = device.CredentialsID
 }
 
 func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +82,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 		}
 
 		device.Id = id
-		device.CredentialsId = credentialsId
+		device.CredentialsID = credentialsId
 
 		if id == "" {
 			// "id" is unset - create new credentials
@@ -96,7 +96,7 @@ func (c *HttpConfig) editDevice(w http.ResponseWriter, r *http.Request) {
 			device.Address = address
 			device.ApiPort = apiPort
 			device.SshPort = sshPort
-			device.CredentialsId = credentialsId
+			device.CredentialsID = credentialsId
 			deviceErr = device.Update(c.Db)
 		}
 
