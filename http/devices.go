@@ -286,5 +286,5 @@ func (c *HttpConfig) updateDevice(w http.ResponseWriter, r *http.Request) {
 
 	// trigger an update without blocking
 	go internal.UpdateDevice(d, c.Db, c.EncryptionKey, c.Logger)
-	http.Redirect(w, r, "/", http.StatusFound)
+	w.WriteHeader(http.StatusOK)
 }
