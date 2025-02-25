@@ -16,10 +16,20 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
-        <a class="btn btn-warning" role="button" href="/device/update?id={{ .Id }}">Update</a>
+        <button id="{{ .Id }}" type="button" class="btn btn-warning" data-bs-dismiss="modal" role="button" onClick="update_click(this.id)">Update</button>
       </div>
     </div>
   </div>
 </div>
 <!-- update modal end -->
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript">
+  function update_click(clicked_id)
+  {
+    console.log(clicked_id);
+    fetch('/device/update?id=' + clicked_id);
+  }
+</script>
 {{ end }}
