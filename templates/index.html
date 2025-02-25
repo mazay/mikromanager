@@ -65,7 +65,7 @@
         </td>
         <td>
           {{ range $group := $device.Groups }}
-            {{ $group.Name }}<br>
+            <a class="list-group-item list-group-item-action" href="/device/group?id={{ $group.Id }}">{{ $group.Name }}</a>
           {{ end }}
         </td>
         <td>
