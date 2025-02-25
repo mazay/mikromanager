@@ -20,6 +20,7 @@
         <th scope="col">SSH Port</th>
         <th scope="col">Arch</th>
         <th scope="col">Version</th>
+        <th scope="col">Update Available</th>
         <th scope="col">Uptime</th>
         <th scope="col">Last Polled</th>
         <th scope="col">Groups</th>
@@ -47,6 +48,13 @@
         <td>{{ $device.SshPort }}</td>
         <td>{{ $device.ArchitectureName }}</td>
         <td>{{ $device.Version }}</td>
+        <td>
+          {{ if ne $device.InstalledVersion $device.LatestVersion }}
+          <div type="button" data-bs-toggle="modal" data-bs-target="#update-{{ $device.Id }}" class="text-warning">{{ $device.LatestVersion }} <i class="bi bi-arrow-up-circle text-warning"></i></div>
+          {{ else }}
+          <div class="text-success">Up to date</div>
+          {{ end }}
+        </td>
         <td>{{ $device.Uptime }}</td>
         <td>
           {{ if not $device.PolledAt.IsZero }}
@@ -70,7 +78,9 @@
         </td>
       </tr>
 
-      <!-- Modal start -->
+      {{ template "update_modal" $device }}
+
+      <!-- delete modal start -->
       <div class="modal fade" id="IP{{ replace $device.Address "." "" }}" tabindex="-1" aria-labelledby="{{ replace $device.Address "." "" }}Label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -88,7 +98,7 @@
           </div>
         </div>
       </div>
-      <!-- Modal end -->
+      <!-- delete modal end -->
     {{ end }}
     </tbody>
   </table>

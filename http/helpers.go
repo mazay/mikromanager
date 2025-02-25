@@ -27,6 +27,7 @@ var (
 	deviceGroupFormTmpl = path.Join("templates", "device_group_form.html")
 	deviceGroupsTmpl    = path.Join("templates", "device_groups.html")
 	deviceGroupTmpl     = path.Join("templates", "device_group_details.html")
+	updateModalTmpl     = path.Join("templates", "update_modal.html")
 )
 
 func handlerWrapper(fn http.HandlerFunc, logger *zap.Logger) http.HandlerFunc {

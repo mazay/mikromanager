@@ -41,6 +41,10 @@ type Device struct {
 	CurrentFirmware      string         `json:"current-firmware"`
 	UpgradeFirmware      string         `json:"upgrade-firmware"`
 	Groups               []*DeviceGroup `gorm:"many2many:device_groups_devices;"`
+	UpdateChannel        string         `json:"channel"`
+	InstalledVersion     string         `json:"installed-version"`
+	LatestVersion        string         `json:"latest-version"`
+	Status               string         `json:"status"`
 }
 
 // GetAllPlain retrieves all device entries from the database and returns them
