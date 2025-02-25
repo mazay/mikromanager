@@ -25,8 +25,8 @@ type exportData struct {
 func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
+		exports    []*db.Export
 		export     = &db.Export{}
-		exports    = []*db.Export{}
 		data       = &exportsData{}
 		id         = r.URL.Query().Get("id")
 		pagination = &Pagination{}
