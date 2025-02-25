@@ -8,6 +8,7 @@ import (
 )
 
 type exportsData struct {
+	Count       int
 	DeviceId    string
 	Exports     []*db.Export
 	Pagination  *Pagination
@@ -60,7 +61,8 @@ func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(exports) > 0 {
+	data.Count = len(exports)
+	if data.Count > 0 {
 		chunkedExports := chunkSliceOfObjects(exports, perPage)
 		pagination.paginate(*r.URL, pageId, len(chunkedExports))
 
