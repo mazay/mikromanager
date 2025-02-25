@@ -72,13 +72,7 @@
       <dd class="col-sm-9">{{ or .Device.BuildTime "Unknown" }}</dd>
 
       <dt class="col-sm-3">Exports</dt>
-      <dd class="col-sm-9">
-        {{ if gt (len .Exports) 0 }}
-        <a href="/exports?id={{ .Device.Id }}">{{ len .Exports }}</a>
-        {{ else }}
-        {{ len .Exports }}
-        {{ end }}
-      </dd>
+      <dd class="col-sm-9"><a href="/exports?id={{ .Device.Id }}">{{ len .Exports }}</a></dd>
     </dl>
   </div>
   <div class="col">

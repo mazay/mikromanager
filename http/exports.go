@@ -3,26 +3,19 @@ package http
 import (
 	"fmt"
 	"net/http"
-	"sort"
 
 	"github.com/mazay/mikromanager/db"
-	"github.com/mazay/mikromanager/internal"
 )
 
 type exportsData struct {
-	BackupPath  string
 	DeviceId    string
-	Count       int
-	Exports     []*internal.Export
-	Devices     []*db.Device
+	Exports     []*db.Export
 	Pagination  *Pagination
 	CurrentPage int
 }
 
 type exportData struct {
-	BackupPath string
-	Export     *internal.Export
-	Device     *db.Device
+	Export     *db.Export
 	ExportData string
 }
 
@@ -32,24 +25,18 @@ type exportData struct {
 func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
-		device     = &db.Device{}
-		data       = &exportsData{BackupPath: c.BackupPath}
+		exports    []*db.Export
+		export     = &db.Export{}
+		data       = &exportsData{}
 		id         = r.URL.Query().Get("id")
 		pagination = &Pagination{}
 		templates  = []string{exportsTmpl, paginationTmpl, baseTmpl}
 	)
 
 	data.DeviceId = id
-
 	_, err = c.checkSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-
-	data.Devices, err = device.GetAllPlain(c.Db)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -59,19 +46,21 @@ func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exports, err := c.S3.GetExports(id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if id != "" {
+		exports, err = export.GetByDeviceId(c.Db, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		exports, err = export.GetAll(c.Db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
-	// sort exports by last modified date in descending order
-	sort.Slice(exports, func(i, j int) bool {
-		return exports[i].LastModified.After(*exports[j].LastModified)
-	})
-
-	data.Count = len(exports)
-	if data.Count > 0 {
+	if len(exports) > 0 {
 		chunkedExports := chunkSliceOfObjects(exports, perPage)
 		pagination.paginate(*r.URL, pageId, len(chunkedExports))
 
@@ -91,8 +80,8 @@ func (c *HttpConfig) getExports(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
-		device    = &db.Device{}
-		data      = &exportData{BackupPath: c.BackupPath}
+		export    = &db.Export{}
+		data      = &exportData{}
 		id        = r.URL.Query().Get("id")
 		templates = []string{exportTmpl, baseTmpl}
 	)
@@ -108,21 +97,15 @@ func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	export, err := c.S3.GetExportAttributes(id)
+	export.Id = id
+	err = export.GetById(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data.Export = export
 
-	device.Id = export.GetDeviceId()
-	err = device.GetById(c.Db)
-	if err != nil {
-		c.Logger.Error(err.Error())
-	}
-	data.Device = device
-
-	exportBody, err := export.GetBody(c.S3)
+	exportBody, err := c.S3.GetFile(export.S3Key, *export.Size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -136,7 +119,7 @@ func (c *HttpConfig) getExport(w http.ResponseWriter, r *http.Request) {
 func (c *HttpConfig) downloadExport(w http.ResponseWriter, r *http.Request) {
 	var (
 		err    error
-		device = &db.Device{}
+		export = &db.Export{}
 		id     = r.URL.Query().Get("id")
 	)
 
@@ -151,26 +134,20 @@ func (c *HttpConfig) downloadExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	export, err := c.S3.GetExportAttributes(id)
+	export.Id = id
+	err = export.GetById(c.Db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	device.Id = export.GetDeviceId()
-	err = device.GetById(c.Db)
+	exportBody, err := c.S3.GetFile(export.S3Key, *export.Size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	exportBody, err := export.GetBody(c.S3)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	filename := fmt.Sprintf("%s %s.rsc", device.Identity, export.LastModified.Format("2006-01-02 15:04:05"))
+	filename := fmt.Sprintf("%s %s.rsc", export.Device.Identity, export.LastModified.Format("2006-01-02 15:04:05"))
 
 	// stream the export file
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
