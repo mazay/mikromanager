@@ -18,9 +18,8 @@ type deviceForm struct {
 }
 
 type deviceDetails struct {
-	Device     *db.Device
-	Exports    []*internal.Export
-	BackupPath string
+	Device  *db.Device
+	Exports []*db.Export
 }
 
 type devicesData struct {
@@ -177,7 +176,8 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err       error
 		device    = &db.Device{}
-		data      = &deviceDetails{BackupPath: c.BackupPath}
+		export    = &db.Export{}
+		data      = &deviceDetails{}
 		id        = r.URL.Query().Get("id")
 		templates = []string{deviceDetailsTmpl, baseTmpl, updateModalTmpl}
 	)
@@ -203,7 +203,7 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Device = device
 
-	exports, err := c.S3.GetExports(device.Id)
+	exports, err := export.GetByDeviceId(c.Db, id)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

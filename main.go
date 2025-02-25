@@ -276,6 +276,23 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 						logger.Error(err.Error())
 					}
 
+					attrs, err := s3.GetExportAttributes(*output.Key)
+					if err != nil {
+						logger.Error(err.Error())
+					}
+
+					export := &database.Export{
+						S3Key:        *output.Key,
+						LastModified: attrs.LastModified,
+						ETag:         *output.ETag,
+						Size:         attrs.Size,
+						DeviceId:     cfg.Device.Id,
+					}
+					err = export.Save(cfg.Db)
+					if err != nil {
+						logger.Error(err.Error())
+					}
+
 					logger.Info("created a new backup", zap.String("device", cfg.Device.Address), zap.String("s3 key", *output.Key))
 				} else {
 					logger.Error(sshErr.Error())
@@ -286,9 +303,12 @@ func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
 }
 
 func rotateExports(db *database.DB) {
-	var err error
-	var exportsList []*internal.Export
-	var device *database.Device
+	var (
+		err         error
+		export      *database.Export
+		exportsList []*database.Export
+		device      *database.Device
+	)
 
 	logger.Info("starting exports retention task")
 	err = policy.GetDefault(db)
@@ -296,27 +316,33 @@ func rotateExports(db *database.DB) {
 		logger.Error(err.Error())
 		return
 	}
-	devices, err := device.GetAllPlain(db)
+	devices, err := device.GetAllPreload(db)
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
 	for _, device := range devices {
-		exports, err := s3.GetExports(device.Id)
+		exports, err := export.GetByDeviceId(db, device.Id)
 		if err != nil {
 			logger.Error(err.Error())
-		} else {
-			exportsList = append(exportsList, rotateHourlyExports(exports, policy.Hourly)...)
-			exportsList = append(exportsList, rotateDailyExports(exports, policy.Daily)...)
-			exportsList = append(exportsList, rotateWeeklyExports(exports, policy.Weekly)...)
+			return
+		}
+		exportsList = append(exportsList, rotateHourlyExports(exports, policy.Hourly)...)
+		exportsList = append(exportsList, rotateDailyExports(exports, policy.Daily)...)
+		exportsList = append(exportsList, rotateWeeklyExports(exports, policy.Weekly)...)
 
-			for _, export := range exports {
-				if !exportInSlice(export, exportsList) {
-					logger.Debug("deleting export", zap.String("filename", export.Key))
-					err := s3.DeleteFile(export.Key)
-					if err != nil {
-						logger.Error(err.Error())
-					}
+		for _, export := range exports {
+			if !exportInSlice(export, exportsList) {
+				logger.Debug("deleting export", zap.String("filename", export.S3Key))
+
+				err := s3.DeleteFile(export.S3Key)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+
+				err = export.Delete(db)
+				if err != nil {
+					logger.Error(err.Error())
 				}
 			}
 		}

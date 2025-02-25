@@ -3,10 +3,10 @@ package main
 import (
 	"time"
 
-	"github.com/mazay/mikromanager/internal"
+	"github.com/mazay/mikromanager/db"
 )
 
-func exportInSlice(a *internal.Export, list []*internal.Export) bool {
+func exportInSlice(a *db.Export, list []*db.Export) bool {
 	for _, b := range list {
 		if b == a {
 			return true
@@ -16,8 +16,8 @@ func exportInSlice(a *internal.Export, list []*internal.Export) bool {
 }
 
 // getLatestExport returns latest export object in the list
-func getLatestExport(slice []*internal.Export) *internal.Export {
-	var latest *internal.Export
+func getLatestExport(slice []*db.Export) *db.Export {
+	var latest *db.Export
 	for _, export := range slice {
 		if latest == nil || export.LastModified.After(*latest.LastModified) {
 			latest = export
@@ -28,11 +28,11 @@ func getLatestExport(slice []*internal.Export) *internal.Export {
 
 // exportsToKeep finds a list of export objects within the given time slots that we'd want to keep
 // typically latest backup for a timeWindow after each item in the timeSlice
-func exportsToKeep(exports []*internal.Export, timeSlice []time.Time, timeWindow time.Duration) []*internal.Export {
-	var exportList []*internal.Export
+func exportsToKeep(exports []*db.Export, timeSlice []time.Time, timeWindow time.Duration) []*db.Export {
+	var exportList []*db.Export
 
 	for _, t := range timeSlice {
-		var tmpList []*internal.Export
+		var tmpList []*db.Export
 		t2 := t.Add(timeWindow)
 		for _, export := range exports {
 			if export.LastModified.After(t) && export.LastModified.Before(t2) {
@@ -48,8 +48,8 @@ func exportsToKeep(exports []*internal.Export, timeSlice []time.Time, timeWindow
 }
 
 // rotateHourlyExports return a list of hourly exports that should be kept
-func rotateHourlyExports(exports []*internal.Export, number int64) []*internal.Export {
-	var exportsList []*internal.Export
+func rotateHourlyExports(exports []*db.Export, number int64) []*db.Export {
+	var exportsList []*db.Export
 
 	now := time.Now()
 	end := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, now.Location())
@@ -67,8 +67,8 @@ func rotateHourlyExports(exports []*internal.Export, number int64) []*internal.E
 }
 
 // rotateDailyExports return a list of daily exports that should be kept
-func rotateDailyExports(exports []*internal.Export, number int64) []*internal.Export {
-	var exportsList []*internal.Export
+func rotateDailyExports(exports []*db.Export, number int64) []*db.Export {
+	var exportsList []*db.Export
 
 	now := time.Now()
 	end := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -86,8 +86,8 @@ func rotateDailyExports(exports []*internal.Export, number int64) []*internal.Ex
 }
 
 // rotateWeeklyExports return a list of weekly exports that should be kept
-func rotateWeeklyExports(exports []*internal.Export, number int64) []*internal.Export {
-	var exportsList []*internal.Export
+func rotateWeeklyExports(exports []*db.Export, number int64) []*db.Export {
+	var exportsList []*db.Export
 
 	now := time.Now()
 	weekDayDiff := 7 - now.Weekday()

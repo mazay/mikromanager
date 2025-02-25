@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/mazay/mikromanager/db"
-	"github.com/mazay/mikromanager/internal"
 )
 
 var funcMap = template.FuncMap{
@@ -61,7 +60,7 @@ func containsInt(s []int, e int) bool {
 
 // chunkSliceOfObjects accepts slices of Export, Credentials or Device objects and a chunk size
 // and returns chunks of the input objects
-func chunkSliceOfObjects[obj internal.Export | db.Credentials | db.Device | db.User | db.DeviceGroup](slice []*obj, chunkSize int) [][]*obj {
+func chunkSliceOfObjects[obj db.Export | db.Credentials | db.Device | db.User | db.DeviceGroup](slice []*obj, chunkSize int) [][]*obj {
 	var chunks [][]*obj
 	for i := 0; i < len(slice); i += chunkSize {
 		end := i + chunkSize
