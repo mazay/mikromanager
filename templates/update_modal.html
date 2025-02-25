@@ -1,0 +1,25 @@
+{{ define "update_modal" }}
+<!-- update modal start -->
+<div class="modal fade" id="update-{{ .Id }}" tabindex="-1" aria-labelledby="{{ .Id }}Label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="update{{ .Id }}Label">Warning</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to perform an update for device "{{ or .Identity .Address }}" from version "{{ .InstalledVersion }}" to version "{{ .LatestVersion }}"?
+        </br></br>
+        Please check <a target="_blank" rel="noopener noreferrer" href=https://mikrotik.com/download/changelogs#c-{{ .UpdateChannel }}-v{{ replace .LatestVersion "." "_" }}>the changelog</a> before proceeding.
+        </br></br>
+        The device will be rebooted as part of the update process.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
+        <a class="btn btn-warning" role="button" href="/device/update?id={{ .Id }}">Update</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- update modal end -->
+{{ end }}

@@ -41,6 +41,7 @@ func (c *HttpConfig) HttpServer() {
 	http.HandleFunc("/device/group/edit", handlerWrapper(c.editDeviceGroup, c.Logger))
 	http.HandleFunc("/device/group", handlerWrapper(c.getDeviceGroup, c.Logger))
 	http.HandleFunc("/device/group/delete", handlerWrapper(c.deleteDeviceGroup, c.Logger))
+	http.HandleFunc("/device/update", handlerWrapper(c.updateDevice, c.Logger))
 	http.Handle("/static/", http.StripPrefix("/static/", static))
 	c.Logger.Fatal(http.ListenAndServe(":"+c.Port, nil).Error())
 }

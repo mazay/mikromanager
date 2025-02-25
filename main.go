@@ -171,6 +171,7 @@ func devicesPoller(cfg *Config, db *database.DB, pollerCH chan<- *PollerCFG) err
 			Password: decryptedPw,
 			Async:    false,
 			UseTLS:   false,
+			Logger:   logger,
 		}
 		pollerCH <- &PollerCFG{Client: client, Db: db, Device: device}
 	}
@@ -199,6 +200,11 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 				fetchErr = fetchIdentity(cfg)
 				if fetchErr != nil {
 					logger.Error(fetchErr.Error())
+				}
+
+				minorErr = cfg.Client.CheckForUpdates(cfg.Device)
+				if minorErr != nil {
+					logger.Error(minorErr.Error())
 				}
 
 				// do not consider fetchManagementIp errors as a failure, just log them

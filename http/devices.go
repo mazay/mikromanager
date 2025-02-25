@@ -133,7 +133,7 @@ func (c *HttpConfig) getDevices(w http.ResponseWriter, r *http.Request) {
 		d          = &db.Device{}
 		data       = &devicesData{}
 		pagination = &Pagination{}
-		templates  = []string{indexTmpl, paginationTmpl, baseTmpl}
+		templates  = []string{indexTmpl, paginationTmpl, baseTmpl, updateModalTmpl}
 	)
 
 	_, err = c.checkSession(r)
@@ -179,7 +179,7 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 		device    = &db.Device{}
 		data      = &deviceDetails{BackupPath: c.BackupPath}
 		id        = r.URL.Query().Get("id")
-		templates = []string{deviceDetailsTmpl, baseTmpl}
+		templates = []string{deviceDetailsTmpl, baseTmpl, updateModalTmpl}
 	)
 
 	_, err = c.checkSession(r)
@@ -209,7 +209,6 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	data.Exports = exports
 	c.renderTemplate(w, templates, data)
 }
@@ -256,5 +255,36 @@ func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func (c *HttpConfig) updateDevice(w http.ResponseWriter, r *http.Request) {
+	var (
+		err error
+		d   = &db.Device{}
+		id  = r.URL.Query().Get("id")
+	)
+
+	_, err = c.checkSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if id == "" {
+		http.Error(w, "Something went wrong, no device ID provided", http.StatusInternalServerError)
+		return
+	}
+
+	d.Id = id
+	err = d.GetById(c.Db)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// trigger an update without blocking
+	go internal.UpdateDevice(d, c.Db, c.EncryptionKey, c.Logger)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

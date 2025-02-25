@@ -47,6 +47,15 @@
       <dt class="col-sm-3">Software Version</dt>
       <dd class="col-sm-9">{{ or .Device.Version "Unknown" }}</dd>
 
+      <dt class="col-sm-3">Latest Software Version</dt>
+      <dd class="col-sm-9">
+        {{ if ne .Device.InstalledVersion .Device.LatestVersion }}
+        <div type="button" data-bs-toggle="modal" data-bs-target="#update-{{ .Device.Id }}" class="text-warning">{{ .Device.LatestVersion }} <i class="bi bi-arrow-up-circle text-warning"></i></div>
+        {{ else }}
+        <div class="text-success">Up to date</div>
+        {{ end }}
+      </dd>
+
       <dt class="col-sm-3">Current Firmware</dt>
       <dd class="col-sm-9">{{ or .Device.CurrentFirmware "Unknown" }}</dd>
 
@@ -122,4 +131,7 @@
     </dl>
   </div>
 </div>
+
+{{ template "update_modal" .Device }}
+
 {{ end }}

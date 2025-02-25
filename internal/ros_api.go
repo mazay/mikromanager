@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-routeros/routeros/v3"
 	"github.com/go-routeros/routeros/v3/proto"
+	"go.uber.org/zap"
 )
 
 type Api struct {
@@ -15,6 +16,7 @@ type Api struct {
 	Password string
 	UseTLS   bool
 	Async    bool
+	Logger   *zap.Logger
 }
 
 func (api *Api) getEndpoint() string {
