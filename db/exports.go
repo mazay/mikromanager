@@ -37,3 +37,7 @@ func (e *Export) GetByDeviceId(db *DB, deviceId string) ([]*Export, error) {
 	var exportList []*Export
 	return exportList, db.DB.Preload(clause.Associations).Find(&exportList, "device_id = ?", deviceId).Error
 }
+
+func (e *Export) DeleteByDeviceId(db *DB, deviceId string) error {
+	return db.DB.Where("device_id = ?", deviceId).Delete(&e).Error
+}
