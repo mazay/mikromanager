@@ -217,6 +217,7 @@ func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 	var (
 		err error
 		d   = &db.Device{}
+		e   = &db.Export{}
 		id  = r.URL.Query().Get("id")
 	)
 
@@ -233,15 +234,7 @@ func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	d.Id = id
 
-	// delete device
-	err = d.Delete(c.Db)
-	if err != nil {
-		c.Logger.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// delete exports
+	// delete exports from S3
 	exports, err := c.S3.GetExports(d.Id)
 	if err != nil {
 		c.Logger.Error(err.Error())
@@ -249,6 +242,22 @@ func (c *HttpConfig) deleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = c.S3.DeleteExports(exports)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// delete exports from DB
+	err = e.DeleteByDeviceId(c.Db, d.Id)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// delete device
+	err = d.Delete(c.Db)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
