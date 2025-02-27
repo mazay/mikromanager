@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-routeros/routeros/v3/proto"
 	"github.com/mazay/mikromanager/db"
-	"go.uber.org/zap"
 )
 
 type HealthItem struct {
@@ -14,6 +13,24 @@ type HealthItem struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 	Type  string `json:"type"`
+}
+
+type Health struct {
+	Voltage           float32 `json:"voltage"`
+	CpuTemp           float32 `json:"cpu-temperature"`
+	BoardTemp1        float32 `json:"board-temperature1"`
+	BoardTemp2        float32 `json:"board-temperature2"`
+	SfpTemp           float32 `json:"sfp-temperature"`
+	FanState          string  `json:"fan-state"`
+	Fan1Speed         int     `json:"fan1-speed"`
+	Fan2Speed         int     `json:"fan2-speed"`
+	Fan3Speed         int     `json:"fan3-speed"`
+	Psu1Voltage       float32 `json:"psu1-voltage"`
+	Psu2Voltage       float32 `json:"psu2-voltage"`
+	PoeOutConsumption float32 `json:"poe-out-consumption"`
+	JackVoltage       float32 `json:"jack-voltage"`
+	TwoPinVoltage     float32 `json:"2pin-voltage"`
+	PoeInVoltage      float32 `json:"poe-in-voltage"`
 }
 
 // Parse takes a slice of routeros sentences and returns a slice of HealthItem objects.
@@ -41,8 +58,8 @@ func (hi *HealthItem) Parse(outputs []*proto.Sentence) ([]*HealthItem, error) {
 // parses the sentences into a slice of HealthItem objects and then extracts the health
 // information from those objects. It returns an error if the slice of sentences is empty or
 // if any of the expected health items are missing.
-func SentencesToHealth(outputs []*proto.Sentence) (*db.Health, error) {
-	health := &db.Health{}
+func SentencesToHealth(outputs []*proto.Sentence) (*Health, error) {
+	health := &Health{}
 	if len(outputs) == 0 {
 		return nil, fmt.Errorf("empty output")
 	}
@@ -100,11 +117,27 @@ func SentencesToHealth(outputs []*proto.Sentence) (*db.Health, error) {
 				return nil, fmt.Errorf("fan-state is empty")
 			}
 			health.FanState = i.Value
-		case "fan-speed":
+		case "fan1-speed":
 			if i.Value == "" {
-				return nil, fmt.Errorf("fan-speed is empty")
+				return nil, fmt.Errorf("fan1-speed is empty")
 			}
-			health.FanSpeed, err = parseInt(i.Value)
+			health.Fan1Speed, err = parseInt(i.Value)
+			if err != nil {
+				return nil, err
+			}
+		case "fan2-speed":
+			if i.Value == "" {
+				return nil, fmt.Errorf("fan2-speed is empty")
+			}
+			health.Fan2Speed, err = parseInt(i.Value)
+			if err != nil {
+				return nil, err
+			}
+		case "fan3-speed":
+			if i.Value == "" {
+				return nil, fmt.Errorf("fan3-speed is empty")
+			}
+			health.Fan3Speed, err = parseInt(i.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -168,21 +201,27 @@ func SentencesToHealth(outputs []*proto.Sentence) (*db.Health, error) {
 // and then saves the health data associated with the given device to the
 // specified database. If any step fails, an error is logged and the
 // process is aborted.
-func (api *Api) GetDeviceHealth(device *db.Device, database *db.DB) {
+func GetDeviceHealth(device *db.Device, database *db.DB, encryptionKey string) (*Health, error) {
+	credentials, err := device.GetCredentials(database)
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedPassword, err := db.DecryptString(credentials.EncryptedPassword, encryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	api := &Api{
+		Address:  device.Address,
+		Username: credentials.Username,
+		Password: encryptedPassword,
+		Async:    true,
+	}
 	resource, err := api.Run("/system/health/getall")
 	if err != nil {
-		api.Logger.Error("failed to fetch health data", zap.Error(err))
-		return
+		return nil, err
 	}
-	api.Logger.Debug("fetched rouerboard health data", zap.String("address", api.Address))
-	health, err := SentencesToHealth(resource)
-	if err != nil {
-		api.Logger.Error("failed to parse health data", zap.Error(err))
-		return
-	}
-	health.DeviceId = device.Id
-	err = health.Save(database)
-	if err != nil {
-		api.Logger.Error("failed to save health data", zap.Error(err))
-	}
+
+	return SentencesToHealth(resource)
 }
