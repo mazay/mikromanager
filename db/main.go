@@ -69,7 +69,6 @@ func (db *DB) Open(path string) error {
 		&Session{},
 		&DeviceGroup{},
 		&Export{},
-		&Health{},
 	)
 	if err != nil {
 		return err

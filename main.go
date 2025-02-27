@@ -169,7 +169,7 @@ func devicesPoller(cfg *Config, db *database.DB, pollerCH chan<- *PollerCFG) err
 			Port:     device.ApiPort,
 			Username: creds.Username,
 			Password: decryptedPw,
-			Async:    false,
+			Async:    true,
 			UseTLS:   false,
 			Logger:   logger,
 		}
@@ -186,7 +186,6 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 				var fetchErr error
 				var minorErr error
 				var dbErr error
-				go cfg.Client.GetDeviceHealth(cfg.Device, cfg.Db)
 
 				logger.Info("polling device", zap.String("address", cfg.Client.Address))
 				fetchErr = fetchResources(cfg)

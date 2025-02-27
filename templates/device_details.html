@@ -1,6 +1,14 @@
 {{ define "nav-inventory" }}active{{ end }}
 {{ define "nav-devices" }}active{{ end }}
 {{ define "content" }}
+{{ if .Errors }}
+{{ range $error := .Errors }}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>{{ $error }}</strong>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{ end }}
+{{ end }}
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/">Devices</a></li>
@@ -131,58 +139,96 @@
   <div class="col">
     <h3 class="text-center">Health</h3>
     <table class="table table-striped table-hover">
+      {{ if .Health.Voltage }}
       <tr>
         <td>Voltage</td>
-        <td>{{ .Health.Voltage }}V</td>
+        <td>{{ .Health.Voltage }} V</td>
       </tr>
+      {{ end }}
+      {{ if  .Health.CpuTemp }}
       <tr>
         <td>CPU Temperature</td>
-        <td>{{ .Health.CpuTemp }}°C</td>
+        <td>{{ .Health.CpuTemp }} °C</td>
       </tr>
+      {{ end }}
+      {{ if .Health.BoardTemp1 }}
       <tr>
         <td>Board Temperature 1</td>
-        <td>{{ .Health.BoardTemp1 }}°C</td>
+        <td>{{ .Health.BoardTemp1 }} °C</td>
       </tr>
+      {{ end }}
+      {{ if .Health.BoardTemp2 }}
       <tr>
         <td>Board Temperature 2</td>
-        <td>{{ .Health.BoardTemp2 }}°C</td>
+        <td>{{ .Health.BoardTemp2 }} °C</td>
       </tr>
+      {{ end }}
+      {{ if .Health.SfpTemp }}
       <tr>
         <td>SFP Temperature</td>
-        <td>{{ .Health.SfpTemp }}°C</td>
+        <td>{{ .Health.SfpTemp }} °C</td>
       </tr>
+      {{ end }}
+      {{ if .Health.FanState }}
       <tr>
         <td>Fan State</td>
         <td>{{ .Health.FanState }}</td>
       </tr>
+      {{ end }}
+      {{ if .Health.Fan1Speed }}
       <tr>
-        <td>Fan Speed</td>
-        <td>{{ .Health.FanSpeed }}RPM</td>
+        <td>Fan1 Speed</td>
+        <td>{{ .Health.Fan1Speed }} RPM</td>
       </tr>
+      {{ end }}
+      {{ if .Health.Fan2Speed }}
+      <tr>
+        <td>Fan2 Speed</td>
+        <td>{{ .Health.Fan2Speed }} RPM</td>
+      </tr>
+      {{ end }}
+      {{ if .Health.Fan3Speed }}
+      <tr>
+        <td>Fan3 Speed</td>
+        <td>{{ .Health.Fan3Speed }} RPM</td>
+      </tr>
+      {{ end }}
+      {{ if .Health.Psu1Voltage }}
       <tr>
         <td>PSU 1 Voltage</td>
-        <td>{{ .Health.Psu1Voltage }}V</td>
+        <td>{{ .Health.Psu1Voltage }} V</td>
       </tr>
+      {{ end }}
+      {{ if .Health.Psu2Voltage }}
       <tr>
         <td>PSU 2 Voltage</td>
-        <td>{{ .Health.Psu2Voltage }}V</td>
+        <td>{{ .Health.Psu2Voltage }} V</td>
       </tr>
+      {{ end }}
+      {{ if .Health.PoeOutConsumption}}
       <tr>
         <td>POE Out Consumption</td>
-        <td>{{ .Health.PoeOutConsumption }}W</td>
+        <td>{{ .Health.PoeOutConsumption }} W</td>
       </tr>
+      {{ end }}
+      {{ if .Health.JackVoltage }}
       <tr>
         <td>Jack Voltage</td>
-        <td>{{ .Health.JackVoltage }}V</td>
+        <td>{{ .Health.JackVoltage }} V</td>
       </tr>
+      {{ end }}
+      {{ if .Health.TwoPinVoltage }}
       <tr>
         <td>2 Pin Voltage</td>
-        <td>{{ .Health.TwoPinVoltage }}V</td>
+        <td>{{ .Health.TwoPinVoltage }} V</td>
       </tr>
+      {{ end }}
+      {{ if .Health.PoeInVoltage }}
       <tr>
         <td>POE In Voltage</td>
-        <td>{{ .Health.PoeInVoltage }}V</td>
+        <td>{{ .Health.PoeInVoltage }} V</td>
       </tr>
+      {{ end }}
     </table>
   </div>
 </div>
