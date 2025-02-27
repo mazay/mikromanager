@@ -18,10 +18,11 @@ type deviceForm struct {
 }
 
 type deviceDetails struct {
-	Device  *db.Device
-	Exports []*db.Export
-	Health  *internal.Health
-	Errors  []string
+	Device       *db.Device
+	Exports      []*db.Export
+	Health       *internal.Health
+	CpuResources map[string]*internal.CpuResource
+	Errors       []string
 }
 
 type devicesData struct {
@@ -219,6 +220,14 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 		data.Errors = append(data.Errors, err.Error())
 	} else {
 		data.Health = health
+	}
+
+	cpuRes, err := internal.GetCpuResources(device, c.Db, c.EncryptionKey)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		data.Errors = append(data.Errors, err.Error())
+	} else {
+		data.CpuResources = cpuRes
 	}
 
 	c.renderTemplate(w, templates, data)
