@@ -61,7 +61,16 @@ func (db *DB) Open(path string) error {
 	db.DB = gormDB
 
 	// Migrate the schemas
-	err = db.DB.AutoMigrate(&Credentials{}, &User{}, &Device{}, &ExportsRetentionPolicy{}, &Session{}, &DeviceGroup{}, &Export{})
+	err = db.DB.AutoMigrate(
+		&Credentials{},
+		&User{},
+		&Device{},
+		&ExportsRetentionPolicy{},
+		&Session{},
+		&DeviceGroup{},
+		&Export{},
+		&Health{},
+	)
 	if err != nil {
 		return err
 	}

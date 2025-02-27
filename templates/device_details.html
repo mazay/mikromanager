@@ -125,6 +125,68 @@
     </dl>
   </div>
 </div>
+{{ if .Health }}
+<hr class="border border-success border-3 opacity-75">
+<div class="row align-items-start">
+  <div class="col">
+    <h3 class="text-center">Health</h3>
+    <table class="table table-striped table-hover">
+      <tr>
+        <td>Voltage</td>
+        <td>{{ .Health.Voltage }}V</td>
+      </tr>
+      <tr>
+        <td>CPU Temperature</td>
+        <td>{{ .Health.CpuTemp }}°C</td>
+      </tr>
+      <tr>
+        <td>Board Temperature 1</td>
+        <td>{{ .Health.BoardTemp1 }}°C</td>
+      </tr>
+      <tr>
+        <td>Board Temperature 2</td>
+        <td>{{ .Health.BoardTemp2 }}°C</td>
+      </tr>
+      <tr>
+        <td>SFP Temperature</td>
+        <td>{{ .Health.SfpTemp }}°C</td>
+      </tr>
+      <tr>
+        <td>Fan State</td>
+        <td>{{ .Health.FanState }}</td>
+      </tr>
+      <tr>
+        <td>Fan Speed</td>
+        <td>{{ .Health.FanSpeed }}RPM</td>
+      </tr>
+      <tr>
+        <td>PSU 1 Voltage</td>
+        <td>{{ .Health.Psu1Voltage }}V</td>
+      </tr>
+      <tr>
+        <td>PSU 2 Voltage</td>
+        <td>{{ .Health.Psu2Voltage }}V</td>
+      </tr>
+      <tr>
+        <td>POE Out Consumption</td>
+        <td>{{ .Health.PoeOutConsumption }}W</td>
+      </tr>
+      <tr>
+        <td>Jack Voltage</td>
+        <td>{{ .Health.JackVoltage }}V</td>
+      </tr>
+      <tr>
+        <td>2 Pin Voltage</td>
+        <td>{{ .Health.TwoPinVoltage }}V</td>
+      </tr>
+      <tr>
+        <td>POE In Voltage</td>
+        <td>{{ .Health.PoeInVoltage }}V</td>
+      </tr>
+    </table>
+  </div>
+</div>
+{{ end }}
 
 {{ template "update_modal" .Device }}
 
