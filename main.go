@@ -186,6 +186,8 @@ func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
 				var fetchErr error
 				var minorErr error
 				var dbErr error
+				go cfg.Client.GetDeviceHealth(cfg.Device, cfg.Db)
+
 				logger.Info("polling device", zap.String("address", cfg.Client.Address))
 				fetchErr = fetchResources(cfg)
 				if fetchErr != nil {

@@ -38,7 +38,7 @@
           <abbr title="The device polling has not been performed yet" class="bi bi-exclamation-triangle text-success"></abbr>
           {{ end }}
         </td>
-        <td>{{ $device.Identity }}</td>
+        <td><a href="/details?id={{ $device.Id }}">{{ or $device.Identity $device.Address }}</a></td>
         <td>
           {{ $device.Address }}
           <a href="http://{{ $device.Address }}" target="_blank"><i class="bi-globe"></i></a>

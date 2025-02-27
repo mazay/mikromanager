@@ -20,6 +20,7 @@ type deviceForm struct {
 type deviceDetails struct {
 	Device  *db.Device
 	Exports []*db.Export
+	Health  *db.Health
 }
 
 type devicesData struct {
@@ -203,13 +204,23 @@ func (c *HttpConfig) getDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Device = device
 
-	exports, err := export.GetByDeviceId(c.Db, id)
+	exports, err := export.GetByDeviceId(c.Db, device.Id)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data.Exports = exports
+
+	health := &db.Health{DeviceId: device.Id}
+	err = health.GetByDeviceId(c.Db)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data.Health = health
 	c.renderTemplate(w, templates, data)
 }
 
