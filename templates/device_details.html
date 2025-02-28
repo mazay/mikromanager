@@ -142,6 +142,12 @@
         <td>{{ .Health.Voltage }} V</td>
       </tr>
       {{ end }}
+      {{ if .Health.Temperature }}
+      <tr>
+        <td>Temperature</td>
+        <td>{{ .Health.Temperature }} V</td>
+      </tr>
+      {{ end }}
       {{ if  .Health.CpuTemp }}
       <tr>
         <td>CPU Temperature</td>
