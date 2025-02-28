@@ -17,6 +17,7 @@ type HealthItem struct {
 
 type Health struct {
 	Voltage           float32 `json:"voltage"`
+	Temperature       float32 `json:"temperature"`
 	CpuTemp           float32 `json:"cpu-temperature"`
 	BoardTemp1        float32 `json:"board-temperature1"`
 	BoardTemp2        float32 `json:"board-temperature2"`
@@ -77,6 +78,14 @@ func SentencesToHealth(outputs []*proto.Sentence) (*Health, error) {
 				return nil, fmt.Errorf("voltage is empty")
 			}
 			health.Voltage, err = parseFloat32(i.Value)
+			if err != nil {
+				return nil, err
+			}
+		case "temperature":
+			if i.Value == "" {
+				return nil, fmt.Errorf("temperature is empty")
+			}
+			health.Temperature, err = parseFloat32(i.Value)
 			if err != nil {
 				return nil, err
 			}
