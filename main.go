@@ -113,6 +113,18 @@ func main() {
 	}
 	go server.HttpServer()
 
+	logger.Info("starting MikroTik API pollers", zap.Int("count", config.ApiPollers))
+	for range make([]int, config.ApiPollers) {
+		wg.Add(1)
+		go apiWorker(pollerCH)
+	}
+
+	logger.Info("starting MikroManager export workers", zap.Int("count", config.ExportWorkers))
+	for range make([]int, config.ExportWorkers) {
+		wg.Add(1)
+		go exportWorker(exportCH)
+	}
+
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		logger.Error("scheduler", zap.Any("error", err))
@@ -150,9 +162,6 @@ func main() {
 		logger.Error("session", zap.Any("Job", sessionCleanupJob), zap.Any("error", sessionCleanupErr))
 	}
 	scheduler.Start()
-
-	apiWorker(config, pollerCH)
-	exportWorker(config, exportCH)
 
 	wg.Wait()
 }
@@ -193,56 +202,51 @@ func devicesPoller(cfg *Config, db *database.DB, pollerCH chan<- *PollerCFG) err
 	return nil
 }
 
-func apiWorker(cfg *Config, pollerCH <-chan *PollerCFG) {
-	logger.Info("starting MikroTik API pollers", zap.Int("count", cfg.ApiPollers))
-	for x := 0; x < cfg.ApiPollers; x++ {
-		go func() {
-			for cfg := range pollerCH {
-				var fetchErr error
-				var minorErr error
-				var dbErr error
+func apiWorker(pollerCH <-chan *PollerCFG) {
+	for cfg := range pollerCH {
+		var fetchErr error
+		var minorErr error
+		var dbErr error
 
-				logger.Info("polling device", zap.String("address", cfg.Client.Address))
-				fetchErr = fetchResources(cfg)
-				if fetchErr != nil {
-					logger.Error(fetchErr.Error())
-				}
+		logger.Info("polling device", zap.String("address", cfg.Client.Address))
+		fetchErr = fetchResources(cfg)
+		if fetchErr != nil {
+			logger.Error(fetchErr.Error())
+		}
 
-				fetchErr = fetchRbDetails(cfg)
-				if fetchErr != nil {
-					logger.Error(fetchErr.Error())
-				}
+		fetchErr = fetchRbDetails(cfg)
+		if fetchErr != nil {
+			logger.Error(fetchErr.Error())
+		}
 
-				fetchErr = fetchIdentity(cfg)
-				if fetchErr != nil {
-					logger.Error(fetchErr.Error())
-				}
+		fetchErr = fetchIdentity(cfg)
+		if fetchErr != nil {
+			logger.Error(fetchErr.Error())
+		}
 
-				minorErr = cfg.Client.CheckForUpdates(cfg.Device)
-				if minorErr != nil {
-					logger.Error(minorErr.Error())
-				}
+		minorErr = cfg.Client.CheckForUpdates(cfg.Device)
+		if minorErr != nil {
+			logger.Error(minorErr.Error())
+		}
 
-				// do not consider fetchManagementIp errors as a failure, just log them
-				minorErr = fetchManagementIp(cfg)
-				if minorErr != nil {
-					logger.Error(minorErr.Error())
-				}
+		// do not consider fetchManagementIp errors as a failure, just log them
+		minorErr = fetchManagementIp(cfg)
+		if minorErr != nil {
+			logger.Error(minorErr.Error())
+		}
 
-				if fetchErr != nil {
-					cfg.Device.PollingSucceeded = 0
-				} else {
-					cfg.Device.PollingSucceeded = 1
-					cfg.Device.PolledAt = time.Now()
-				}
+		if fetchErr != nil {
+			cfg.Device.PollingSucceeded = 0
+		} else {
+			cfg.Device.PollingSucceeded = 1
+			cfg.Device.PolledAt = time.Now()
+		}
 
-				dbErr = cfg.Device.Save(cfg.Db)
+		dbErr = cfg.Device.Save(cfg.Db)
 
-				if dbErr != nil {
-					logger.Error(dbErr.Error())
-				}
-			}
-		}()
+		if dbErr != nil {
+			logger.Error(dbErr.Error())
+		}
 	}
 }
 
@@ -277,44 +281,38 @@ func backupScheduler(cfg *Config, db *database.DB, exportCH chan<- *BackupCFG) {
 	}
 }
 
-func exportWorker(config *Config, exportCH <-chan *BackupCFG) {
-	logger.Info("starting MikroManager export workers", zap.Int("count", config.ExportWorkers))
-	for x := 0; x < config.ExportWorkers; x++ {
-		wg.Add(1)
-		go func() {
-			for cfg := range exportCH {
-				logger.Debug("creating backup", zap.String("address", cfg.Client.Host))
+func exportWorker(exportCH <-chan *BackupCFG) {
+	for cfg := range exportCH {
+		logger.Debug("creating backup", zap.String("address", cfg.Client.Host))
 
-				export, sshErr := cfg.Client.Run("/export show-sensitive")
-				if sshErr == nil {
-					output, err := s3.UploadExport(cfg.Device.Id, []byte(export))
-					if err != nil {
-						logger.Error(err.Error())
-					}
-
-					attrs, err := s3.GetExportAttributes(*output.Key)
-					if err != nil {
-						logger.Error(err.Error())
-					}
-
-					export := &database.Export{
-						S3Key:        *output.Key,
-						LastModified: attrs.LastModified,
-						ETag:         *output.ETag,
-						Size:         attrs.Size,
-						DeviceId:     cfg.Device.Id,
-					}
-					err = export.Save(cfg.Db)
-					if err != nil {
-						logger.Error(err.Error())
-					}
-
-					logger.Info("created a new backup", zap.String("device", cfg.Device.Address), zap.String("s3 key", *output.Key))
-				} else {
-					logger.Error(sshErr.Error())
-				}
+		export, sshErr := cfg.Client.Run("/export show-sensitive")
+		if sshErr == nil {
+			output, err := s3.UploadExport(cfg.Device.Id, []byte(export))
+			if err != nil {
+				logger.Error(err.Error())
 			}
-		}()
+
+			attrs, err := s3.GetExportAttributes(*output.Key)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+
+			export := &database.Export{
+				S3Key:        *output.Key,
+				LastModified: attrs.LastModified,
+				ETag:         *output.ETag,
+				Size:         attrs.Size,
+				DeviceId:     cfg.Device.Id,
+			}
+			err = export.Save(cfg.Db)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+
+			logger.Info("created a new backup", zap.String("device", cfg.Device.Address), zap.String("s3 key", *output.Key))
+		} else {
+			logger.Error(sshErr.Error())
+		}
 	}
 }
 
