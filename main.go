@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-co-op/gocron"
+	"github.com/go-co-op/gocron/v2"
 	database "github.com/mazay/mikromanager/db"
 	"github.com/mazay/mikromanager/http"
 	"github.com/mazay/mikromanager/internal"
@@ -113,28 +113,43 @@ func main() {
 	}
 	go server.HttpServer()
 
-	scheduler := gocron.NewScheduler(time.Local)
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		logger.Error("scheduler", zap.Any("error", err))
+	}
 	logger.Info("devicePollerInterval", zap.Duration("interval", config.DevicePollerInterval))
-	pollerJob, pollerErr := scheduler.Every(config.DevicePollerInterval).Do(devicesPoller, config, &db, pollerCH)
+	pollerJob, pollerErr := scheduler.NewJob(
+		gocron.DurationJob(config.DevicePollerInterval),
+		gocron.NewTask(devicesPoller, config, &db, pollerCH),
+	)
 	if pollerErr != nil {
 		logger.Error("poller", zap.Any("Job", pollerJob), zap.Any("error", pollerErr))
 	}
 	logger.Info("deviceExportInterval", zap.Duration("interval", config.DeviceExportInterval))
-	exportJob, exportErr := scheduler.Every(config.DeviceExportInterval).Do(backupScheduler, config, &db, exportCH)
+	exportJob, exportErr := scheduler.NewJob(
+		gocron.DurationJob(config.DeviceExportInterval),
+		gocron.NewTask(backupScheduler, config, &db, exportCH),
+	)
 	if exportErr != nil {
 		logger.Error("export", zap.Any("Job", exportJob), zap.Any("error", exportErr))
 	}
 	logger.Info("export retention job interval is 24 hours")
-	exportRetentionJob, exportRetentionErr := scheduler.Every("24h").Do(rotateExports, &db)
+	exportRetentionJob, exportRetentionErr := scheduler.NewJob(
+		gocron.DurationJob(24*time.Hour),
+		gocron.NewTask(rotateExports, &db),
+	)
 	if exportRetentionErr != nil {
 		logger.Error("export", zap.Any("Job", exportRetentionJob), zap.Any("error", exportRetentionErr))
 	}
 	logger.Info("session cleanup job interval is 24 hours")
-	sessionCleanupJob, sessionCleanupErr := scheduler.Every("24h").Do(cleanupSessions, &db)
+	sessionCleanupJob, sessionCleanupErr := scheduler.NewJob(
+		gocron.DurationJob(24*time.Hour),
+		gocron.NewTask(cleanupSessions, &db),
+	)
 	if sessionCleanupErr != nil {
 		logger.Error("session", zap.Any("Job", sessionCleanupJob), zap.Any("error", sessionCleanupErr))
 	}
-	scheduler.StartAsync()
+	scheduler.Start()
 
 	apiWorker(config, pollerCH)
 	exportWorker(config, exportCH)
