@@ -26,7 +26,7 @@ func (e *Export) Delete(db *DB) error {
 
 func (e *Export) GetAll(db *DB) ([]*Export, error) {
 	var exportList []*Export
-	return exportList, db.DB.Preload(clause.Associations).Find(&exportList).Error
+	return exportList, db.DB.Order("last_modified desc").Preload(clause.Associations).Find(&exportList).Error
 }
 
 func (e *Export) GetById(db *DB) error {
