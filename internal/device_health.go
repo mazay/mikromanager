@@ -28,6 +28,8 @@ type Health struct {
 	Fan3Speed         int     `json:"fan3-speed"`
 	Psu1Voltage       float32 `json:"psu1-voltage"`
 	Psu2Voltage       float32 `json:"psu2-voltage"`
+	Psu1State         string  `json:"psu1-state"`
+	Psu2State         string  `json:"psu2-state"`
 	PoeOutConsumption float32 `json:"poe-out-consumption"`
 	JackVoltage       float32 `json:"jack-voltage"`
 	TwoPinVoltage     float32 `json:"2pin-voltage"`
@@ -166,6 +168,16 @@ func SentencesToHealth(outputs []*proto.Sentence) (*Health, error) {
 			if err != nil {
 				return nil, err
 			}
+		case "psu1-state":
+			if i.Value == "" {
+				return nil, fmt.Errorf("psu1-state is empty")
+			}
+			health.Psu1State = i.Value
+		case "psu2-state":
+			if i.Value == "" {
+				return nil, fmt.Errorf("psu2-state is empty")
+			}
+			health.Psu2State = i.Value
 		case "poe-out-consumption":
 			if i.Value == "" {
 				return nil, fmt.Errorf("poe-out-consumption is empty")

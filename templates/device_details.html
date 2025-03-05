@@ -198,14 +198,26 @@
       {{ end }}
       {{ if .Health.Psu1Voltage }}
       <tr>
-        <td>PSU 1 Voltage</td>
+        <td>PSU1 Voltage</td>
         <td>{{ .Health.Psu1Voltage }} V</td>
       </tr>
       {{ end }}
       {{ if .Health.Psu2Voltage }}
       <tr>
-        <td>PSU 2 Voltage</td>
+        <td>PSU2 Voltage</td>
         <td>{{ .Health.Psu2Voltage }} V</td>
+      </tr>
+      {{ end }}
+      {{ if .Health.Psu1State }}
+      <tr>
+        <td>PSU1 State</td>
+        <td>{{ .Health.Psu1State }}</td>
+      </tr>
+      {{ end }}
+      {{ if .Health.Psu2State }}
+      <tr>
+        <td>PSU2 State</td>
+        <td>{{ .Health.Psu2State }}</td>
       </tr>
       {{ end }}
       {{ if .Health.PoeOutConsumption}}
