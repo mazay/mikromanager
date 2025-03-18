@@ -8,16 +8,16 @@ import (
 
 type Device struct {
 	Base
-	Address              string `gorm:"unique" json:"address"`
-	ApiPort              string `json:"apiPort"`
-	ArchitectureName     string `json:"architecture-name"`
-	BadBlocks            int64  `json:"bad-blocks,string"`
-	BoardName            string `json:"board-name"`
-	BuildTime            string `json:"build-time"`
-	CPU                  string `json:"cpu"`
-	CpuCount             int64  `json:"cpu-count,string"`
-	CpuFrequency         int64  `json:"cpu-frequency,string"`
-	CpuLoad              int64  `json:"cpu-load,string"`
+	Address              string  `gorm:"unique" json:"address"`
+	ApiPort              string  `json:"apiPort"`
+	ArchitectureName     string  `json:"architecture-name"`
+	BadBlocks            float32 `json:"bad-blocks,string"`
+	BoardName            string  `json:"board-name"`
+	BuildTime            string  `json:"build-time"`
+	CPU                  string  `json:"cpu"`
+	CpuCount             int64   `json:"cpu-count,string"`
+	CpuFrequency         int64   `json:"cpu-frequency,string"`
+	CpuLoad              int64   `json:"cpu-load,string"`
 	CredentialsID        string
 	Credentials          *Credentials
 	FactorySoftware      string `json:"factory-software"`
