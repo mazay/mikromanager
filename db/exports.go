@@ -35,7 +35,7 @@ func (e *Export) GetById(db *DB) error {
 
 func (e *Export) GetByDeviceId(db *DB, deviceId string) ([]*Export, error) {
 	var exportList []*Export
-	return exportList, db.DB.Preload(clause.Associations).Find(&exportList, "device_id = ?", deviceId).Error
+	return exportList, db.DB.Order("last_modified desc").Preload(clause.Associations).Find(&exportList, "device_id = ?", deviceId).Error
 }
 
 func (e *Export) DeleteByDeviceId(db *DB, deviceId string) error {
