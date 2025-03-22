@@ -9,23 +9,23 @@ import (
 )
 
 type Config struct {
-	ApiPollers           int           `yaml:"apiPollers"`
-	BackupPath           string        `yaml:"backupPath"`
-	ExportWorkers        int           `yaml:"exportWorkers"`
-	DevicePollerInterval time.Duration `yaml:"devicePollerInterval"`
-	DeviceExportInterval time.Duration `yaml:"deviceExportInterval"`
-	DbPath               string        `yaml:"dbPath"`
-	DbLogLevel           string        `yaml:"dbLogLevel"`
-	EncryptionKey        string        `yaml:"encryptionKey"`
-	LogLevel             string        `yaml:"logLevel"`
-	S3Bucket             string        `yaml:"s3Bucket"`
-	S3BucketPath         string        `yaml:"s3BucketPath"`
-	S3Endpoint           string        `yaml:"s3Endpoint"`
-	S3Region             string        `yaml:"s3Region"`
-	S3StorageClass       string        `yaml:"s3StorageClass"`
-	S3AccessKey          string        `yaml:"s3AccessKey"`
-	S3SecretAccessKey    string        `yaml:"s3SecretAccessKey"`
-	S3OpsRetries         int           `yaml:"s3OpsRetries"`
+	ApiPollers               int           `yaml:"apiPollers"`
+	BackupPath               string        `yaml:"backupPath"`
+	ExportWorkers            int           `yaml:"exportWorkers"`
+	DevicePollerInterval     time.Duration `yaml:"devicePollerInterval"`
+	deviceExportCronSchedule string        `yaml:"deviceExportCronSchedule"`
+	DbPath                   string        `yaml:"dbPath"`
+	DbLogLevel               string        `yaml:"dbLogLevel"`
+	EncryptionKey            string        `yaml:"encryptionKey"`
+	LogLevel                 string        `yaml:"logLevel"`
+	S3Bucket                 string        `yaml:"s3Bucket"`
+	S3BucketPath             string        `yaml:"s3BucketPath"`
+	S3Endpoint               string        `yaml:"s3Endpoint"`
+	S3Region                 string        `yaml:"s3Region"`
+	S3StorageClass           string        `yaml:"s3StorageClass"`
+	S3AccessKey              string        `yaml:"s3AccessKey"`
+	S3SecretAccessKey        string        `yaml:"s3SecretAccessKey"`
+	S3OpsRetries             int           `yaml:"s3OpsRetries"`
 }
 
 func configProcessError(err error) {
@@ -41,8 +41,8 @@ func (cfg *Config) setDefaults() {
 	if cfg.DevicePollerInterval == 0 {
 		cfg.DevicePollerInterval = time.Millisecond * 1000 * 300
 	}
-	if cfg.DeviceExportInterval == 0 {
-		cfg.DeviceExportInterval = time.Hour * 1
+	if cfg.deviceExportCronSchedule == "" {
+		cfg.deviceExportCronSchedule = "0 * * * *"
 	}
 	if cfg.DbPath == "" {
 		cfg.DbPath = "database/mikromanager.db"
