@@ -137,9 +137,9 @@ func main() {
 	if pollerErr != nil {
 		logger.Error("poller", zap.Any("Job", pollerJob), zap.Any("error", pollerErr))
 	}
-	logger.Info("deviceExportInterval", zap.Duration("interval", config.DeviceExportInterval))
+	logger.Info("deviceExportCronSchedule", zap.String("cron schedule", config.deviceExportCronSchedule))
 	exportJob, exportErr := scheduler.NewJob(
-		gocron.DurationJob(config.DeviceExportInterval),
+		gocron.CronJob(config.deviceExportCronSchedule, false),
 		gocron.NewTask(backupScheduler, config, &db, exportCH),
 	)
 	if exportErr != nil {
@@ -147,7 +147,7 @@ func main() {
 	}
 	logger.Info("export retention job interval is 24 hours")
 	exportRetentionJob, exportRetentionErr := scheduler.NewJob(
-		gocron.DurationJob(24*time.Hour),
+		gocron.CronJob("0 * * * *", false),
 		gocron.NewTask(rotateExports, &db),
 	)
 	if exportRetentionErr != nil {
@@ -155,7 +155,7 @@ func main() {
 	}
 	logger.Info("session cleanup job interval is 24 hours")
 	sessionCleanupJob, sessionCleanupErr := scheduler.NewJob(
-		gocron.DurationJob(24*time.Hour),
+		gocron.CronJob("0 * * * *", false),
 		gocron.NewTask(cleanupSessions, &db),
 	)
 	if sessionCleanupErr != nil {
