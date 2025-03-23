@@ -86,7 +86,9 @@
   <div class="col">
     <dl class="row">
       <dt class="col-sm-3">Bad Blocks</dt>
-      <dd class="col-sm-9">{{ .Device.BadBlocks }}</dd>
+      <dd class="col-sm-9">
+        <span class="badge text-bg-{{ if gt .Device.BadBlocks 0.0 }}warning{{ else }}success{{ end }}">{{ .Device.BadBlocks }}%</span>
+      </dd>
 
       <dt class="col-sm-3">CPU</dt>
       <dd class="col-sm-9">{{ .Device.CPU }}</dd>

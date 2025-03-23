@@ -23,11 +23,9 @@ apiPollers: 2
 # valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 # devicePollerInterval: 30s
 
-# deviceExportInterval defines how often devices config should be exported/backed up,
-# the time is between finish of a previous run and start of the new one
-# defaults to 1 hour if ommited
-# valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
-# deviceExportInterval: 1h
+# deviceExportCronSchedule defines the cron schedule for creating device configuration exports
+# defaults to `0 * * * *` if ommited
+# deviceExportCronSchedule: 0 * * * *
 
 # full or relative path to the database, defaults to `database/mikromanager.db` if ommited
 dbPath: database/mikromanager.db
