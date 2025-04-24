@@ -6,6 +6,7 @@
 {{ define "nav-credentials" }}{{ end }}
 {{ define "nav-users" }}{{ end }}
 {{ define "nav-erp" }}{{ end }}
+{{ define "nav-config-snippet" }}{{ end }}
 {{ define "scripts" }}{{ end }}
 {{ define "base" }}
 <!doctype html>
@@ -45,6 +46,7 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item {{ template "nav-credentials" . }}" href="/credentials">Credentials</a></li>
             <li><a class="dropdown-item {{ template "nav-erp" . }}" href="/erp">Exports Retention Policy</a></li>
+            <li><a class="dropdown-item {{ template "nav-config-snippet" . }}" href="/config-snippets">Configuration Snippets</a></li>
             <li><a class="dropdown-item {{ template "nav-users" . }}" href="/users">Users</a></li>
           </ul>
         </li>
