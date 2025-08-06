@@ -47,12 +47,16 @@ func (cli *SshClient) Run(command string) ([]byte, error) {
 	if err != nil {
 		return result, err
 	}
+	// We don't need to check the error here
+	//nolint:errcheck
 	defer conn.Close()
 
 	session, err = conn.NewSession()
 	if err != nil {
 		return result, err
 	}
+	// We don't need to check the error here
+	//nolint:errcheck
 	defer session.Close()
 
 	session.Stdout = &buff

@@ -77,7 +77,11 @@ func main() {
 		logger.Panic("DB init issue", zap.String("error", err.Error()))
 		osExit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			logger.Error("failed to close the database", zap.Error(err))
+		}
+	}()
 
 	logger.Debug("ensure at least one user exists, create 'admin' otherwise")
 	user := &database.User{}

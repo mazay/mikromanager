@@ -41,6 +41,8 @@ func (api *Api) Run(command string) ([]*proto.Sentence, error) {
 	if err != nil {
 		return []*proto.Sentence{}, err
 	}
+	// We don't need to check the error here
+	//nolint:errcheck
 	defer client.Close()
 
 	if api.Async {
