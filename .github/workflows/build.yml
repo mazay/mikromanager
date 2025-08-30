@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Chechout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ./src/github.com/${{ github.repository }}
 
@@ -46,7 +46,7 @@ jobs:
     needs: test
     steps:
       - name: Chechout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Docker meta
         id: meta
