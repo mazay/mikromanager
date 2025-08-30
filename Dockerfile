@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} public.ecr.aws/docker/library/golang:1.24.5-alpine3.21 AS builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} public.ecr.aws/docker/library/golang:1.25.0-alpine3.21 AS builder
 ARG RELEASE_VERSION=devel
 ARG TARGETOS
 ARG TARGETARCH
