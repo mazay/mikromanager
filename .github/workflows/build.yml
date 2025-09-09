@@ -13,33 +13,24 @@ permissions:
   packages: write
   contents: read
 
-env:
-  GO_VERSION: "1.24"
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Chechout
         uses: actions/checkout@v5
-        with:
-          path: ./src/github.com/${{ github.repository }}
 
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: ./src/github.com/${{ github.repository }}/go.mod
+          go-version-file: go.mod
           cache-dependency-path: "**/go.sum"
 
       - name: Install dependencies
-        run: |
-          cd ./src/github.com/${{ github.repository }}
-          go mod download
+        run: go mod download
 
       - name: Run tests
-        run: |
-          cd ./src/github.com/${{ github.repository }}
-          go test -timeout 5m ./... -coverprofile cover.out
+        run: go test -timeout 5m ./... -coverprofile cover.out
 
   docker:
     runs-on: ubuntu-latest
