@@ -33,7 +33,7 @@
           {{ .Device.BoardName }}
         </a>
         {{ else }}
-        <a href="https://mikrotik.com/products?filter&s=c&search={{ .Device.Model }}" target="_blank">
+        <a href="https://mikrotik.com/products?s[0]={{ .Device.Model }}" target="_blank">
           {{ .Device.Model }}
         </a>
         {{ end }}
