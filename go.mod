@@ -13,7 +13,7 @@ require (
 	github.com/go-routeros/routeros/v3 v3.0.1
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	golang.org/x/crypto v0.45.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.31.1
