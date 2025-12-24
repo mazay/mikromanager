@@ -2,8 +2,9 @@ package db
 
 type DeviceGroup struct {
 	Base
-	Name    string    `gorm:"unique"`
-	Devices []*Device `gorm:"many2many:device_groups_devices;"`
+	Name                  string                  `gorm:"unique"`
+	Devices               []*Device               `gorm:"many2many:device_groups_devices;"`
+	ConfigurationSnippets []*ConfigurationSnippet `gorm:"many2many:device_groups_configuration_snippets;"`
 }
 
 // Create will create a new device group entry in the database with the current object's values.
