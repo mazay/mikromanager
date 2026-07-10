@@ -3,9 +3,7 @@ package internal
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"path"
 	"time"
@@ -13,7 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
+	tmtypes "github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
@@ -164,18 +163,20 @@ func (b *S3) GetObjectAttributes(key string) (*s3.GetObjectAttributesOutput, err
 // object. It returns an error if the retrieval fails.
 func (b *S3) GetExportAttributes(key string) (*Export, error) {
 	var (
-		err    error
 		export = &Export{}
 	)
 
 	resp, err := b.GetObjectAttributes(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object attributes for %s: %w", key, err)
+	}
 
 	export.Key = key
 	export.LastModified = resp.LastModified
 	export.ETag = *resp.ETag
 	export.Size = resp.ObjectSize
 
-	return export, err
+	return export, nil
 }
 
 // UploadFile uploads a file to the S3 bucket using the provided S3 key.
@@ -183,17 +184,17 @@ func (b *S3) GetExportAttributes(key string) (*Export, error) {
 // upload is performed concurrently with a concurrency level of 5.
 // The StorageClass specified in the S3 struct is used for the upload.
 // It returns an error if the upload fails.
-func (b *S3) UploadFile(s3Key string, data []byte) (*manager.UploadOutput, error) {
-	uploader := manager.NewUploader(b.client, func(u *manager.Uploader) {
-		u.PartSize = 5 * 1024 * 1024 // 5 MB per part
-		u.Concurrency = 5
+func (b *S3) UploadFile(s3Key string, data []byte) (*transfermanager.UploadObjectOutput, error) {
+	uploader := transfermanager.New(b.client, func(o *transfermanager.Options) {
+		o.PartSizeBytes = 5 * 1024 * 1024 // 5 MB per part
+		o.Concurrency = 5
 	})
 
-	return uploader.Upload(context.TODO(), &s3.PutObjectInput{
+	return uploader.UploadObject(context.TODO(), &transfermanager.UploadObjectInput{
 		Bucket:       aws.String(b.Bucket),
 		Key:          aws.String(s3Key),
 		Body:         bytes.NewReader(data),
-		StorageClass: types.StorageClass(b.StorageClass),
+		StorageClass: tmtypes.StorageClass(b.StorageClass),
 	})
 }
 
@@ -202,7 +203,7 @@ func (b *S3) UploadFile(s3Key string, data []byte) (*manager.UploadOutput, error
 // a directory like <bucketPath>/exports/<deviceId>. The StorageClass specified
 // in the S3 struct is used for the upload. It returns an error if the upload
 // fails.
-func (b *S3) UploadExport(deviceId string, data []byte) (*manager.UploadOutput, error) {
+func (b *S3) UploadExport(deviceId string, data []byte) (*transfermanager.UploadObjectOutput, error) {
 	s3Key := path.Join(s3BasePath(b.BucketPath, deviceId), fmt.Sprintf("%d.rsc", time.Now().Unix()))
 	return b.UploadFile(s3Key, data)
 }
@@ -212,16 +213,16 @@ func (b *S3) UploadExport(deviceId string, data []byte) (*manager.UploadOutput, 
 // with a concurrency level of 5. The function returns the downloaded file contents as a
 // byte slice and an error if the download fails.
 func (b *S3) GetFile(s3Key string, size int64) ([]byte, error) {
-	downloader := manager.NewDownloader(b.client, func(d *manager.Downloader) {
-		d.PartSize = 5 * 1024 * 1024 // 5 MB per part
-		d.Concurrency = 5
+	downloader := transfermanager.New(b.client, func(o *transfermanager.Options) {
+		o.PartSizeBytes = 5 * 1024 * 1024 // 5 MB per part
+		o.Concurrency = 5
 	})
 
 	buf := make([]byte, int(size))
-	w := manager.NewWriteAtBuffer(buf)
-	_, err := downloader.Download(context.TODO(), w, &s3.GetObjectInput{
-		Bucket: aws.String(b.Bucket),
-		Key:    aws.String(s3Key),
+	_, err := downloader.DownloadObject(context.TODO(), &transfermanager.DownloadObjectInput{
+		Bucket:   aws.String(b.Bucket),
+		Key:      aws.String(s3Key),
+		WriterAt: tmtypes.NewWriteAtBuffer(buf),
 	})
 
 	return buf, err
@@ -236,7 +237,7 @@ func (b *S3) DeleteFile(s3Key string) error {
 		Key:    aws.String(s3Key),
 	}
 
-	// Delete the object
+	// We don't need the result, just checking for API errors
 	_, err := b.client.DeleteObject(context.TODO(), input)
 
 	return err
@@ -244,13 +245,13 @@ func (b *S3) DeleteFile(s3Key string) error {
 
 // DeleteExports removes a list of exports from the S3 bucket specified by the S3 keys
 // in the list of Export objects. If the list is empty, the function simply returns nil.
-// It returns an error if the deletion fails for any of the objects.
+// It returns an error if the deletion fails for any of the objects or the operation itself fails.
 func (b *S3) DeleteExports(exports []*Export) error {
 	if len(exports) == 0 {
 		return nil
 	}
 
-	// gererate a set of ObjectIdentifiers
+	// Create a set of ObjectIdentifiers from the Export slice
 	objects := make([]types.ObjectIdentifier, len(exports))
 	for i, e := range exports {
 		objects[i] = types.ObjectIdentifier{
@@ -265,25 +266,23 @@ func (b *S3) DeleteExports(exports []*Export) error {
 			Quiet:   aws.Bool(true),
 		},
 	}
+
 	delOut, err := b.client.DeleteObjects(context.TODO(), &input)
-	if err != nil || len(delOut.Errors) > 0 {
-		if err != nil {
-			var noBucket *types.NoSuchBucket
-			if errors.As(err, &noBucket) {
-				err = noBucket
-			}
-		} else if len(delOut.Errors) > 0 {
-			for _, outErr := range delOut.Errors {
-				log.Printf("%s: %s\n", *outErr.Key, *outErr.Message)
-			}
-			err = fmt.Errorf("%s", *delOut.Errors[0].Message)
-		}
-	} else {
-		for _, delObjs := range delOut.Deleted {
-			err = s3.NewObjectNotExistsWaiter(b.client).Wait(
-				context.TODO(), &s3.HeadObjectInput{Bucket: aws.String(b.Bucket), Key: delObjs.Key}, time.Minute)
-		}
+
+	if err != nil {
+		// Handle AWS API errors (e.g., permission denied, network failure)
+		return fmt.Errorf("failed to send delete request to S3: %w", err)
 	}
 
-	return err
+	if len(delOut.Errors) > 0 {
+		// Build a detailed error message listing all failed deletions
+		var combinedError string
+		for _, outErr := range delOut.Errors {
+			combinedError += fmt.Sprintf("Key '%s': %s; ", *outErr.Key, *outErr.Message)
+		}
+		return fmt.Errorf("failed to delete some exports: %s", combinedError)
+	}
+
+	// Success: All objects were targeted for deletion and no errors were returned by S3.
+	return nil
 }
