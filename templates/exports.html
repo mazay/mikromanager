@@ -29,17 +29,29 @@
       {{ range $export := .Exports }}
       <tr id="{{ $export.Id }}">
         <td>
-          <a href="/details?id={{ $export.Device.Id }}"><i class="bi-clipboard-pulse"></i></a>
+          {{- with $device := $export.Device -}}
+          <a href="/details?id={{ $device.Id }}"><i class="bi-clipboard-pulse"></i></a>
           {{ if eq $.DeviceId "" }}
-          <a href="/exports?id={{ $export.Device.Id }}"><i class="bi-funnel"></i></a>
+          <a href="/exports?id={{ $device.Id }}"><i class="bi-funnel"></i></a>
           {{ end }}
+          {{- else -}}
+          <!-- Device not available -->
+          <span class="text-muted">N/A</span>
+          {{- end -}}
         </td>
-        <td><a href="/details?id={{ $export.Device.Id }}">{{ or $export.Device.Identity $export.Device.Id }}</a></td>
+        <td>{{- with $device := $export.Device -}}
+          <a href="/details?id={{ $device.Id }}">{{ or $device.Identity $device.Id }}</a>
+          {{- else -}}
+          N/A
+          {{- end -}}
+        </td>
         <td>{{ $export.LastModified.Format "2006-01-02 15:04:05" }}</td>
         <td>{{ humahizeBytes $export.Size }}</td>
         <td>
-          <a class="btn btn-outline-info btn-sm" role="button" href="/export?id={{ $export.Id }}"><i class="bi-clipboard-pulse"></i></a>
-          <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ $export.Id }}" target="_blank"><i class="bi-download"></i></a>
+          <a class="btn btn-outline-info btn-sm" role="button" href="/export?id={{ $export.Id }}"><i
+              class="bi-clipboard-pulse"></i></a>
+          <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ $export.Id }}"
+            target="_blank"><i class="bi-download"></i></a>
         </td>
       </tr>
       {{ end }}
