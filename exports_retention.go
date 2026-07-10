@@ -105,3 +105,16 @@ func rotateWeeklyExports(exports []*db.Export, number int64) []*db.Export {
 
 	return exportsList
 }
+
+// rotateNoDeviceExports return a list of exports with no devices attached, can be used to cleanup leftover exports
+func rotateNoDeviceExports(exports []*db.Export) []*db.Export {
+	var exportsList []*db.Export
+
+	for _, export := range exports {
+		if export.DeviceId == "" {
+			exportsList = append(exportsList, export)
+		}
+	}
+
+	return exportsList
+}
