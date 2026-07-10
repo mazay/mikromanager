@@ -35,7 +35,6 @@
           <a href="/exports?id={{ $device.Id }}"><i class="bi-funnel"></i></a>
           {{ end }}
           {{- else -}}
-          <!-- Device not available -->
           <span class="text-muted">N/A</span>
           {{- end -}}
         </td>
@@ -48,10 +47,14 @@
         <td>{{ $export.LastModified.Format "2006-01-02 15:04:05" }}</td>
         <td>{{ humahizeBytes $export.Size }}</td>
         <td>
+          {{- with $device := $export.Device -}}
           <a class="btn btn-outline-info btn-sm" role="button" href="/export?id={{ $export.Id }}"><i
               class="bi-clipboard-pulse"></i></a>
           <a class="btn btn-outline-success btn-sm" role="button" href="/export/download?id={{ $export.Id }}"
             target="_blank"><i class="bi-download"></i></a>
+          {{- else -}}
+          <span class="text-muted">N/A</span>
+          {{- end -}}
         </td>
       </tr>
       {{ end }}
