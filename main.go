@@ -149,7 +149,7 @@ func main() {
 	if exportErr != nil {
 		logger.Error("export", zap.Any("Job", exportJob), zap.Any("error", exportErr))
 	}
-	logger.Info("export retention job interval is 24 hours")
+	logger.Info("export retention job interval is 1 hour")
 	exportRetentionJob, exportRetentionErr := scheduler.NewJob(
 		gocron.CronJob("0 * * * *", false),
 		gocron.NewTask(rotateExports, &db),
@@ -157,9 +157,9 @@ func main() {
 	if exportRetentionErr != nil {
 		logger.Error("export", zap.Any("Job", exportRetentionJob), zap.Any("error", exportRetentionErr))
 	}
-	logger.Info("session cleanup job interval is 24 hours")
+	logger.Info("session cleanup job interval runs at 00:00")
 	sessionCleanupJob, sessionCleanupErr := scheduler.NewJob(
-		gocron.CronJob("0 * * * *", false),
+		gocron.CronJob("0 0 * * *", false),
 		gocron.NewTask(cleanupSessions, &db),
 	)
 	if sessionCleanupErr != nil {
@@ -348,7 +348,6 @@ func rotateExports(db *database.DB) {
 		exportsList = append(exportsList, rotateHourlyExports(exports, policy.Hourly)...)
 		exportsList = append(exportsList, rotateDailyExports(exports, policy.Daily)...)
 		exportsList = append(exportsList, rotateWeeklyExports(exports, policy.Weekly)...)
-		exportsList = append(exportsList, rotateNoDeviceExports(exports)...)
 
 		for _, export := range exports {
 			if !exportInSlice(export, exportsList) {
@@ -364,6 +363,25 @@ func rotateExports(db *database.DB) {
 					logger.Error(err.Error())
 				}
 			}
+		}
+	}
+
+	// cleanup orphaned exports
+	allExports, err := export.GetAll(db)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	orphanExports := getNoDeviceExports(allExports)
+	for _, export := range orphanExports {
+		err := s3.DeleteFile(export.S3Key)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+
+		err = export.Delete(db)
+		if err != nil {
+			logger.Error(err.Error())
 		}
 	}
 }
