@@ -13,44 +13,35 @@ permissions:
   packages: write
   contents: read
 
-env:
-  GO_VERSION: "1.24"
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Chechout
-        uses: actions/checkout@v4
-        with:
-          path: ./src/github.com/${{ github.repository }}
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
           cache-dependency-path: "**/go.sum"
 
       - name: Install dependencies
-        run: |
-          cd ./src/github.com/${{ github.repository }}
-          go mod download
+        run: go mod download
 
       - name: Run tests
-        run: |
-          cd ./src/github.com/${{ github.repository }}
-          go test -timeout 5m ./... -coverprofile cover.out
+        run: go test -timeout 5m ./... -coverprofile cover.out
 
   docker:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Chechout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             zmazay/mikromanager
@@ -64,26 +55,26 @@ jobs:
             type=sha
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to docker registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to ghcr.io
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: "ghcr.io"
           username: "dummy-bot"
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/386,linux/ppc64le
           context: .

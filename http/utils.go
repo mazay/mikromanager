@@ -21,7 +21,7 @@ var funcMap = template.FuncMap{
 }
 
 func replace(input, from, to string) string {
-	return strings.Replace(input, from, to, -1)
+	return strings.ReplaceAll(input, from, to)
 }
 
 func humahizeBytes(b int64) string {
