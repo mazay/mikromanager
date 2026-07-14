@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.29
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.28
 	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.3.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.105.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.105.1
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-co-op/gocron/v2 v2.22.0
 	github.com/go-routeros/routeros/v3 v3.0.1
