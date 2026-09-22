@@ -23,7 +23,7 @@ RUN adduser \
     --no-create-home \
     -u 8888 \
     mikromanager
-USER mikromanager
+USER 8888
 WORKDIR /app/
 COPY templates ./templates
 COPY static ./static
