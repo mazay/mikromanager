@@ -1,13 +1,16 @@
 {
-    "files.insertFinalNewline": true,
-    "files.trimFinalNewlines": true,
-    "files.trimTrailingWhitespace": true,
-    "gopls": {
-        "fomatting.gofumpt": true
-    },
-    "go.lintTool": "golangci-lint",
-    "go.lintFlags": [
-        "run",
-        "--fast-only"
-    ]
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "go.gopath": "${env:GOPATH}",
+  "go.goroot": "${env:GOROOT}",
+  "go.lintFlags": [
+    "run",
+    "--fast-only"
+  ],
+  "go.lintTool": "golangci-lint",
+  "go.toolsGopath": "/Users/mazay/.goenv/tools",
+  "gopls": {
+    "fomatting.gofumpt": true
+  }
 }
