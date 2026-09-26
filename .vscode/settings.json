@@ -9,7 +9,7 @@
     "--fast-only"
   ],
   "go.lintTool": "golangci-lint",
-  "go.toolsGopath": "/Users/mazay/.goenv/tools",
+  "go.toolsGopath": "~/.goenv/tools",
   "gopls": {
     "fomatting.gofumpt": true
   }
