@@ -1,0 +1,65 @@
+{{ define "nav-configuration" }}active{{ end }}
+{{ define "nav-config-snippet" }}active{{ end }}
+{{ define "content" }}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Devices</a></li>
+    {{ if ne .Id "" }}
+    <li class="breadcrumb-item"><a href="/?id={{ .Id }}">{{ .Id }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+    {{ else }}
+    <li class="breadcrumb-item active" aria-current="page">New</li>
+    {{ end }}
+  </ol>
+</nav>
+<div class="container">
+  <form method="POST" action="/cs-edit">
+    {{ if ne .Id "" }}
+    <legend class="text-center display-6">Edit configuration snippet</legend>
+    <hr class="border border-primary border-3 opacity-75">
+    <div class="row mb-3">
+      <label for="disabledIdInput" class="col-sm-2 col-form-label">ID</label>
+      <div class="col-sm-10">
+        <input name="idInput" type="text" id="disabledIdInput" class="form-control-plaintext" readonly value="{{ .Id }}">
+      </div>
+    </div>
+    {{ else }}
+    <legend class="text-center display-6">Create configuration snippet</legend>
+    <hr class="border border-primary border-3 opacity-75">
+    {{ end }}
+    <div class="row mb-3">
+      <label for="inputName" class="col-sm-2 col-form-label">Snippet name</label>
+      <div class="col-sm-10">
+        <input name="name" type="text" class="form-control{{ if ne .Msg "" }} is-invalid{{ end }}" id="inputName" aria-describedby="nameHelp nameValidationFeedback" required value="{{ .Name }}">
+        <div id="nameHelp" class="form-text">Unique name for the configuration snippet</div>
+        <div id="nameValidationFeedback" class="invalid-feedback">
+          {{ .Msg }}
+        </div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="inputContent" class="col-sm-2 col-form-label">Snippet content</label>
+      <div class="col-sm-10">
+        <textarea name="content" type="number" class="form-control language-routeros" id="inputContent" aria-describedby="contentHelp">
+          {{ .Content }}
+        </textarea>
+        <div id="contentHelp" class="form-text">Content of the configuration snippet, normally a set of Router OS commands to be executed on target devices.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-2">
+      </div>
+      <div class="col-sm-10">
+        <a class="btn btn-danger" role="button" href="{{ if ne .Id "" }}/details?id={{ .Id }}{{ else }}/{{ end }}">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </form>
+</div>
+{{ end }}
+{{ define "scripts" }}
+<link rel="stylesheet" href="/static/css/routeros.min.css">
+<link rel="stylesheet" href="/static/css/atom-one-dark.css">
+<script src="/static/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{{ end }}
