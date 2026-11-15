@@ -3,7 +3,7 @@ module github.com/mazay/mikromanager
 go 1.26.0
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.47.7
+	github.com/aws/aws-sdk-go-v2 v1.48.0
 	github.com/aws/aws-sdk-go-v2/config v1.33.15
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.15
 	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.5.4
@@ -33,7 +33,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.39.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.44.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.8 // indirect
-	github.com/aws/smithy-go v1.28.8 // indirect
+	github.com/aws/smithy-go v1.28.9 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/glebarez/go-sqlite v1.23.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
